@@ -110,6 +110,39 @@ img{max-width:100%;height:auto;}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
 
+/* ===== 首页 · 今日/历史 双板块 ===== */
+.idx-sec{max-width:880px;margin:44px auto 0;padding:0 18px;}
+.idx-head{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:18px;font-weight:700;letter-spacing:1px;color:var(--ink);margin-bottom:4px;}
+.idx-head .idx-dot{width:10px;height:10px;border-radius:50%;background:var(--red);flex:none;}
+.idx-head .idx-dot.today{background:var(--red);box-shadow:0 0 0 4px rgba(179,36,31,.15);}
+.idx-sec .sub-tip{font-family:var(--sans);font-size:12px;color:var(--ink-faint);letter-spacing:1px;margin:0 0 16px;}
+
+.today-sec{max-width:880px;margin:34px auto 0;padding:0 18px;}
+.today-card{
+  display:block;background:var(--paper);border:1px solid var(--line);border-top:5px solid var(--red);
+  border-radius:4px;padding:30px 34px;text-decoration:none;color:var(--ink);position:relative;overflow:hidden;
+  box-shadow:0 1px 0 rgba(0,0,0,.03);transition:transform .15s ease,box-shadow .15s ease;
+}
+.today-card::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(to right, rgba(31,78,140,.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(31,78,140,.04) 1px, transparent 1px);
+  background-size:22px 22px;
+  mask-image:linear-gradient(to bottom, rgba(0,0,0,.7), transparent 80%);
+  -webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,.7), transparent 80%);
+}
+.today-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.1);}
+.today-card .tc-main{display:flex;align-items:baseline;gap:14px;margin-bottom:8px;position:relative;}
+.today-card .tc-label{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:2px;color:#fff;background:var(--red);padding:3px 10px;border-radius:2px;}
+.today-card .tc-date{font-family:var(--sans);font-weight:700;font-size:28px;letter-spacing:2px;color:var(--ink);}
+.today-card .tc-theme{font-size:15.5px;color:var(--ink-soft);line-height:1.8;margin-bottom:16px;position:relative;}
+.today-card .tc-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--sans);position:relative;}
+.today-card .tchip{border:1px solid var(--line);background:var(--paper-2);border-radius:3px;padding:5px 12px;font-size:12px;color:var(--ink-soft);}
+.today-card .tc-score{font-family:var(--sans);font-size:13px;color:var(--red);font-weight:700;letter-spacing:1px;}
+.today-card .tc-go{display:inline-block;margin-top:16px;font-family:var(--sans);font-size:13.5px;color:var(--blue);font-weight:600;position:relative;}
+.today-card:hover .tc-go{color:var(--red);}
+
 </style>
 </head>
 <body>
@@ -136,18 +169,22 @@ img{max-width:100%;height:auto;}
     <h1>广东省考申论时政模拟题</h1>
     <div class="sub">每日自动化生成 · 点击卡片或选择日期查看对应试卷</div>
   </div>
-  <div class="grid">
-<a class="card" href="2025-07-30.html"><span class="cdate">2025-07-30</span><span class="ctheme">新质生产力 · 城乡协调发展 · 改革开放</span><span class="cscore">得分 <b>86</b> 分</span><span class="go">打开试卷 →</span></a>
-<a class="card" href="2025-08-05.html"><span class="cdate">2025-08-05</span><span class="ctheme">制度型开放 · 新质生产力 · 民生保障 · 城乡融合</span><span class="cscore">得分 <b>80</b> 分</span><span class="go">打开试卷 →</span></a>
-<a class="card" href="2026-07-27.html"><span class="cdate">2026-07-27</span><span class="ctheme">创新驱动与新质生产力</span><span class="cscore">得分 <b>74</b> 分</span><span class="go">打开试卷 →</span></a>
-<a class="card" href="2026-07-28.html"><span class="cdate">2026-07-28</span><span class="ctheme">粤港澳大湾区融合发展与制度型开放</span><span class="cscore">得分 <b>75</b> 分</span><span class="go">打开试卷 →</span></a>
-<a class="card" href="2026-07-31.html"><span class="cdate">2026-07-31</span><span class="ctheme">高质量发展 · 百千万工程 · 制度型开放 · 新质生产力</span><span class="cscore">得分 <b>86</b> 分</span><span class="go">打开试卷 →</span></a>
-<a class="card" href="2026-08-02.html"><span class="cdate">2026-08-02</span><span class="ctheme">新质生产力与城乡区域协调发展</span><span class="cscore">得分 <b>84</b> 分</span><span class="go">打开试卷 →</span></a>
-<a class="card" href="2026-08-03.html"><span class="cdate">2026-08-03</span><span class="ctheme">新质生产力·县域经济·改革开放</span><span class="cscore">得分 <b>83</b> 分</span><span class="go">打开试卷 →</span></a>
-<a class="card" href="2026-08-04.html"><span class="cdate">2026-08-04</span><span class="ctheme">协调发展与新质生产力</span><span class="cscore">得分 <b>82</b> 分</span><span class="go">打开试卷 →</span></a>
-<a class="card" href="2026-08-06.html"><span class="cdate">2026-08-06</span><span class="ctheme">百千万工程 · 新质生产力 · 绿美广东 · 大湾区开放</span><span class="cscore">得分 <b>82</b> 分</span><span class="go">打开试卷 →</span></a>
+  <div class="today-sec"><div class="idx-head"><span class="idx-dot today"></span>今日模拟题</div><a class="today-card" href="2026-08-08.html"><div class="tc-main"><span class="tc-label">TODAY</span><span class="tc-date">2026-08-08</span></div><div class="tc-theme">新质生产力·百千万工程·绿美广东</div><div class="tc-meta"><span class="tchip">对标：<b>广东省考申论（县级卷）</b></span><span class="tc-score">得分 <b>83</b> 分</span></div><span class="tc-go">开始做题 →</span></a></div>
+  <div class="idx-sec">
+    <div class="idx-head"><span class="idx-dot"></span>历史模拟题</div>
+    <div class="sub-tip">往期试卷 · 点击查看</div>
+    <div class="grid">
 <a class="card" href="2026-08-07.html"><span class="cdate">2026-08-07</span><span class="ctheme">高质量发展 · 城乡融合 · 改革开放 · 科技创新</span><span class="cscore">得分 <b>79</b> 分</span><span class="go">打开试卷 →</span></a>
-<a class="card" href="2026-08-08.html"><span class="cdate">2026-08-08</span><span class="ctheme">新质生产力·百千万工程·绿美广东</span><span class="cscore">得分 <b>83</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-08-06.html"><span class="cdate">2026-08-06</span><span class="ctheme">百千万工程 · 新质生产力 · 绿美广东 · 大湾区开放</span><span class="cscore">得分 <b>82</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-08-04.html"><span class="cdate">2026-08-04</span><span class="ctheme">协调发展与新质生产力</span><span class="cscore">得分 <b>82</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-08-03.html"><span class="cdate">2026-08-03</span><span class="ctheme">新质生产力·县域经济·改革开放</span><span class="cscore">得分 <b>83</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-08-02.html"><span class="cdate">2026-08-02</span><span class="ctheme">新质生产力与城乡区域协调发展</span><span class="cscore">得分 <b>84</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-07-31.html"><span class="cdate">2026-07-31</span><span class="ctheme">高质量发展 · 百千万工程 · 制度型开放 · 新质生产力</span><span class="cscore">得分 <b>86</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-07-28.html"><span class="cdate">2026-07-28</span><span class="ctheme">粤港澳大湾区融合发展与制度型开放</span><span class="cscore">得分 <b>75</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-07-27.html"><span class="cdate">2026-07-27</span><span class="ctheme">创新驱动与新质生产力</span><span class="cscore">得分 <b>74</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2025-08-05.html"><span class="cdate">2025-08-05</span><span class="ctheme">制度型开放 · 新质生产力 · 民生保障 · 城乡融合</span><span class="cscore">得分 <b>80</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2025-07-30.html"><span class="cdate">2025-07-30</span><span class="ctheme">新质生产力 · 城乡协调发展 · 改革开放</span><span class="cscore">得分 <b>86</b> 分</span><span class="go">打开试卷 →</span></a>
+    </div>
   </div>
 </main>
 <footer class="foot">广东省考申论每日自动化工作流 · 仅供学习参考</footer>
