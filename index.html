@@ -91,7 +91,7 @@ img{max-width:100%;height:auto;}
 .card{
   background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--red);
   border-radius:4px;padding:20px 20px 16px;text-decoration:none;color:var(--ink);
-  display:flex;flex-direction:column;gap:8px;transition:transform .15s ease,box-shadow .15s ease;
+  display:flex;flex-direction:column;gap:8px;transition:transform .3s cubic-bezier(.32,.72,0,1),box-shadow .3s ease;
 }
 .card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.08);}
 .card .cdate{font-family:var(--sans);font-weight:700;font-size:19px;letter-spacing:1px;color:var(--ink);}
@@ -121,7 +121,7 @@ img{max-width:100%;height:auto;}
 .today-card{
   display:block;background:var(--paper);border:1px solid var(--line);border-top:5px solid var(--red);
   border-radius:4px;padding:30px 34px;text-decoration:none;color:var(--ink);position:relative;overflow:hidden;
-  box-shadow:0 1px 0 rgba(0,0,0,.03);transition:transform .15s ease,box-shadow .15s ease;
+  box-shadow:0 1px 0 rgba(0,0,0,.03);transition:transform .3s cubic-bezier(.32,.72,0,1),box-shadow .3s ease;
 }
 .today-card::before{
   content:"";position:absolute;inset:0;pointer-events:none;
@@ -164,21 +164,21 @@ img{max-width:100%;height:auto;}
   display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;
   font-family:var(--sans);padding:10px 14px;
   background:var(--paper-2);border:1px solid var(--line);border-radius:4px;
-  transition:background .25s cubic-bezier(.32,.72,0,1), transform .2s cubic-bezier(.32,.72,0,1);
+  transition:background .25s cubic-bezier(.32,.72,0,1), transform .3s cubic-bezier(.32,.72,0,1);
   -webkit-tap-highlight-color:transparent;
 }
 .month-head:hover{background:#ECEAE2;}
 .month-head:active{transform:scale(.985);background:#E7E4DB;}
 .month-arrow{
   font-size:12px;color:var(--ink-faint);width:14px;display:inline-block;
-  transition:transform .45s cubic-bezier(.32,.72,0,1);
+  transition:transform .6s cubic-bezier(.32,.72,0,1);
 }
 .month-group.closed .month-arrow{transform:rotate(-90deg);}
 .month-name{font-weight:700;font-size:15px;letter-spacing:.5px;color:var(--ink);}
 .month-count{margin-left:auto;font-size:12px;color:var(--ink-faint);}
 .month-body{
   display:grid;grid-template-rows:1fr;padding-top:14px;
-  transition:grid-template-rows .5s cubic-bezier(.32,.72,0,1), opacity .35s ease;
+  transition:grid-template-rows .7s cubic-bezier(.32,.72,0,1), opacity .4s ease;
   opacity:1;
 }
 .month-group.closed .month-body{
@@ -197,6 +197,7 @@ img{max-width:100%;height:auto;}
 /* 按压反馈：卡片 / 按钮 / 今日大卡 */
 .card,.today-card,.btn,.month-head,.rank-tag{
   -webkit-tap-highlight-color:transparent;
+  transition:transform .3s cubic-bezier(.32,.72,0,1);
 }
 .card:active,.today-card:active{
   transform:scale(.975);
@@ -205,12 +206,12 @@ img{max-width:100%;height:auto;}
 
 /* 今日大卡进场：上浮淡入 + 弹簧 */
 .today-card{
-  animation:riseIn .65s var(--spring) both;
+  animation:riseIn .7s var(--spring) both;
 }
 /* 历史卡片进场：依次错落上浮 */
 .month-group .grid .card{
-  animation:riseIn .5s var(--spring) both;
-  animation-delay:calc(var(--i,0) * 40ms);
+  animation:riseIn .65s var(--spring) both;
+  animation-delay:calc(var(--i,0) * 50ms);
 }
 @keyframes riseIn{
   from{opacity:0;transform:translateY(16px);}
@@ -218,8 +219,8 @@ img{max-width:100%;height:auto;}
 }
 
 /* 首页标题进场 */
-.home-hero h1{animation:riseIn .6s var(--spring) both;}
-.home-hero .sub{animation:riseIn .6s var(--spring) .1s both;}
+.home-hero h1{animation:riseIn .7s var(--spring) both;}
+.home-hero .sub{animation:riseIn .7s var(--spring) .12s both;}
 .idx-head{animation:riseIn .5s var(--spring) both;}
 
 /* 搜索框获得焦点微光 */
