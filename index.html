@@ -211,13 +211,13 @@ img{max-width:100%;height:auto;}
              autocomplete="off" aria-label="搜索历史主题">
     </div>
     <div id="histContainer">
-<div class="month-group" data-month="2026-08"><div class="month-head" onclick="toggleMonth(this)"><span class="month-arrow">▾</span><span class="month-name">2026年8月</span><span class="month-count">6 份</span></div><div class="month-body"><div class="grid"><a class="card" data-theme="新质生产力与城乡区域协调发展" href="2026-08-02.html"><span class="cdate">2026-08-02</span><span class="ctheme">新质生产力与城乡区域协调发展</span><span class="cscore">得分 <b>84</b> 分</span><span class="go">打开试卷 →</span></a>
+<div class="month-group" data-month="2026-08" data-closed="0"><div class="month-head" onclick="toggleMonth(this)"><span class="month-arrow">▾</span><span class="month-name">2026年8月</span><span class="month-count">6 份</span></div><div class="month-body"><div class="grid"><a class="card" data-theme="新质生产力与城乡区域协调发展" href="2026-08-02.html"><span class="cdate">2026-08-02</span><span class="ctheme">新质生产力与城乡区域协调发展</span><span class="cscore">得分 <b>84</b> 分</span><span class="go">打开试卷 →</span></a>
 <a class="card" data-theme="新质生产力·县域经济·改革开放" href="2026-08-03.html"><span class="cdate">2026-08-03</span><span class="ctheme">新质生产力·县域经济·改革开放</span><span class="cscore">得分 <b>83</b> 分</span><span class="go">打开试卷 →</span></a>
 <a class="card" data-theme="协调发展与新质生产力" href="2026-08-04.html"><span class="cdate">2026-08-04</span><span class="ctheme">协调发展与新质生产力</span><span class="cscore">得分 <b>82</b> 分</span><span class="go">打开试卷 →</span></a>
 <a class="card" data-theme="制度型开放 · 新质生产力 · 民生保障 · 城乡融合" href="2026-08-05.html"><span class="cdate">2026-08-05</span><span class="ctheme">制度型开放 · 新质生产力 · 民生保障 · 城乡融合</span><span class="cscore">得分 <b>80</b> 分</span><span class="go">打开试卷 →</span></a>
 <a class="card" data-theme="百千万工程 · 新质生产力 · 绿美广东 · 大湾区开放" href="2026-08-06.html"><span class="cdate">2026-08-06</span><span class="ctheme">百千万工程 · 新质生产力 · 绿美广东 · 大湾区开放</span><span class="cscore">得分 <b>82</b> 分</span><span class="go">打开试卷 →</span></a>
 <a class="card" data-theme="高质量发展 · 城乡融合 · 改革开放 · 科技创新" href="2026-08-07.html"><span class="cdate">2026-08-07</span><span class="ctheme">高质量发展 · 城乡融合 · 改革开放 · 科技创新</span><span class="cscore">得分 <b>79</b> 分</span><span class="go">打开试卷 →</span></a></div></div></div>
-<div class="month-group" data-month="2026-07"><div class="month-head" onclick="toggleMonth(this)"><span class="month-arrow">▾</span><span class="month-name">2026年7月</span><span class="month-count">4 份</span></div><div class="month-body"><div class="grid"><a class="card" data-theme="创新驱动与新质生产力" href="2026-07-27.html"><span class="cdate">2026-07-27</span><span class="ctheme">创新驱动与新质生产力</span><span class="cscore">得分 <b>74</b> 分</span><span class="go">打开试卷 →</span></a>
+<div class="month-group" data-month="2026-07" data-closed="0"><div class="month-head" onclick="toggleMonth(this)"><span class="month-arrow">▾</span><span class="month-name">2026年7月</span><span class="month-count">4 份</span></div><div class="month-body"><div class="grid"><a class="card" data-theme="创新驱动与新质生产力" href="2026-07-27.html"><span class="cdate">2026-07-27</span><span class="ctheme">创新驱动与新质生产力</span><span class="cscore">得分 <b>74</b> 分</span><span class="go">打开试卷 →</span></a>
 <a class="card" data-theme="粤港澳大湾区融合发展与制度型开放" href="2026-07-28.html"><span class="cdate">2026-07-28</span><span class="ctheme">粤港澳大湾区融合发展与制度型开放</span><span class="cscore">得分 <b>75</b> 分</span><span class="go">打开试卷 →</span></a>
 <a class="card" data-theme="新质生产力 · 城乡协调发展 · 改革开放" href="2026-07-30.html"><span class="cdate">2026-07-30</span><span class="ctheme">新质生产力 · 城乡协调发展 · 改革开放</span><span class="cscore">得分 <b>86</b> 分</span><span class="go">打开试卷 →</span></a>
 <a class="card" data-theme="高质量发展 · 百千万工程 · 制度型开放 · 新质生产力" href="2026-07-31.html"><span class="cdate">2026-07-31</span><span class="ctheme">高质量发展 · 百千万工程 · 制度型开放 · 新质生产力</span><span class="cscore">得分 <b>86</b> 分</span><span class="go">打开试卷 →</span></a></div></div></div>
@@ -276,6 +276,14 @@ function toggleMonth(head){
         if(match) any = true;
       } else {
         g.style.display = '';
+        // 恢复默认折叠状态：仅最近2个月展开，其余按 data-closed 恢复
+        if(g.getAttribute('data-closed') === '1'){
+          g.classList.add('closed');
+          var b2 = g.querySelector('.month-body');
+          if(b2) b2.style.display = 'none';
+          var a2 = g.querySelector('.month-arrow');
+          if(a2) a2.textContent = '▸';
+        }
       }
     });
     if(empty) empty.style.display = (q && !any) ? '' : 'none';
