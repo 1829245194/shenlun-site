@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>粤申题库 · 每日模拟题索引</title>
+<style>
+:root{
+  color-scheme:light;
+  --desk:#ECEEF1; --paper:#FCFBF7; --paper-2:#F5F3EC;
+  --ink:#23262B; --ink-soft:#5A616C; --ink-faint:#8A909B;
+  --line:#D8D8D2; --line-soft:#E7E6E0;
+  --red:#B3241F; --red-deep:#8F1D18; --red-soft:#F6E4E1;
+  --blue:#1F4E8C; --blue-soft:#E6EDF6; --gold:#A97A1A;
+  --serif:"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun","STSong",serif;
+  --sans:"Noto Sans SC","Source Han Sans SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;background:var(--desk);color:var(--ink);
+  font-family:var(--serif);font-size:16px;line-height:1.9;
+  -webkit-font-smoothing:antialiased;padding-bottom:60px;
+}
+::selection{background:var(--red);color:#fff;}
+a{color:var(--blue);text-decoration:none;border-bottom:1px solid rgba(31,78,140,.35);}
+a:hover{color:var(--red);border-bottom-color:var(--red);}
+img{max-width:100%;height:auto;}
+
+.topbar{
+  position:sticky;top:0;z-index:60;
+  background:rgba(35,38,43,.97);color:#E9EBEE;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 18px;font-family:var(--sans);
+  box-shadow:0 2px 8px rgba(0,0,0,.18);
+}
+.topbar .brand{font-weight:700;letter-spacing:2px;font-size:15px;color:#fff;white-space:nowrap;}
+.topbar .brand .seal{color:#E5484D;font-weight:700;}
+.topbar .nav{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap;}
+.topbar select{
+  font-family:var(--sans);font-size:13.5px;padding:6px 10px;border-radius:4px;
+  border:1px solid rgba(255,255,255,.25);background:#2E3238;color:#fff;cursor:pointer;
+}
+.topbar select:focus{outline:2px solid #E5484D;}
+.btn{
+  font-family:var(--sans);font-size:13px;padding:6px 12px;border-radius:4px;border:none;
+  background:rgba(255,255,255,.12);color:#E9EBEE;cursor:pointer;text-decoration:none;border-bottom:none;
+}
+.btn:hover{background:rgba(255,255,255,.22);color:#fff;}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+
+.paper{max-width:880px;margin:26px auto 0;padding:0 18px;}
+.doc-head{
+  background:var(--paper);border:1px solid var(--line);border-top:5px solid var(--red);
+  border-radius:4px;padding:34px 36px;margin-bottom:22px;position:relative;
+}
+.doc-head h1{margin:0 0 6px;font-family:var(--sans);font-size:clamp(22px,3.6vw,30px);letter-spacing:2px;color:var(--ink);line-height:1.4;}
+.doc-head .ddate{font-family:var(--sans);color:var(--ink-soft);font-size:14px;letter-spacing:1px;margin-bottom:10px;}
+.doc-head .dmeta{display:flex;flex-wrap:wrap;gap:8px;font-family:var(--sans);}
+.doc-head .chip{border:1px solid var(--line);background:var(--paper-2);border-radius:3px;padding:5px 12px;font-size:12px;color:var(--ink-soft);}
+.doc-head .chip b{color:var(--ink);}
+.doc-head .score-badge{
+  position:absolute;top:26px;right:26px;width:76px;height:76px;border:3px solid var(--red);border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:var(--red);font-family:var(--sans);font-weight:700;font-size:15px;line-height:1.2;
+  transform:rotate(8deg);opacity:.85;
+}
+.doc-head .score-badge small{font-size:9px;font-weight:400;letter-spacing:1px;}
+
+.body{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:36px 42px;}
+.body p{margin:0 0 14px;}
+.body p:last-child{margin-bottom:0;}
+.body strong{font-weight:700;color:var(--ink);}
+.body a[href^="http"]{color:var(--blue);}
+.body table{border-collapse:collapse;width:100%;margin:14px 0;font-family:var(--sans);font-size:14px;}
+.body th,.body td{border:1px solid var(--line);padding:8px 10px;text-align:left;}
+.body th{background:var(--paper-2);font-weight:700;}
+.body tr:nth-child(even) td{background:rgba(0,0,0,.015);}
+.body ul,.body ol{margin:0 0 14px;padding-left:26px;}
+.body li{margin-bottom:6px;}
+.body blockquote{margin:0 0 14px;border-left:3px solid var(--line);padding:4px 16px;color:var(--ink-soft);}
+.body hr{border:none;border-top:1px solid var(--line);margin:22px 0;}
+
+.foot{max-width:880px;margin:30px auto 0;padding:0 18px;text-align:center;font-family:var(--sans);font-size:11.5px;color:var(--ink-faint);letter-spacing:1px;line-height:2;}
+.foot .home{border:none;}
+
+.home-hero{max-width:880px;margin:44px auto 0;padding:0 18px;text-align:center;}
+.home-hero h1{font-family:var(--sans);font-size:clamp(24px,4vw,34px);letter-spacing:3px;margin:0 0 6px;}
+.home-hero .sub{color:var(--ink-soft);font-size:14px;letter-spacing:2px;font-family:var(--sans);margin-bottom:30px;}
+.grid{max-width:880px;margin:0 auto;padding:0 18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+.card{
+  background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--red);
+  border-radius:4px;padding:20px 20px 16px;text-decoration:none;color:var(--ink);
+  display:flex;flex-direction:column;gap:8px;transition:transform .15s ease,box-shadow .15s ease;
+}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.08);}
+.card .cdate{font-family:var(--sans);font-weight:700;font-size:19px;letter-spacing:1px;color:var(--ink);}
+.card .ctheme{font-size:13.5px;color:var(--ink-soft);line-height:1.7;flex:1;}
+.card .cscore{font-family:var(--sans);font-size:12px;color:var(--red);letter-spacing:1px;font-weight:700;}
+.card .cscore .na{color:var(--ink-faint);font-weight:400;}
+.card .go{align-self:flex-end;font-family:var(--sans);font-size:12.5px;color:var(--blue);font-weight:600;}
+
+@media(max-width:640px){
+  .body{padding:22px 18px;}
+  .doc-head{padding:26px 20px;}
+  .doc-head .score-badge{top:18px;right:18px;width:60px;height:60px;font-size:12px;}
+  .topbar .nav{margin-left:0;width:100%;justify-content:space-between;}
+  .grid{grid-template-columns:1fr 1fr;}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <span class="brand"><span class="seal">粤</span>申题库</span>
+  <nav class="nav">
+    <select id="dateSel" onchange="goDate(this.value)" aria-label="选择日期">
+<option value="2025-07-30">2025-07-30</option>
+<option value="2025-08-05">2025-08-05</option>
+<option value="2026-07-27">2026-07-27</option>
+<option value="2026-07-28">2026-07-28</option>
+<option value="2026-07-31">2026-07-31</option>
+<option value="2026-08-02">2026-08-02</option>
+<option value="2026-08-03">2026-08-03</option>
+<option value="2026-08-04">2026-08-04</option>
+<option value="2026-08-06">2026-08-06</option>
+<option value="2026-08-07">2026-08-07</option>
+<option value="2026-08-08">2026-08-08</option>
+    </select>
+  </nav>
+</header>
+<main>
+  <div class="home-hero">
+    <h1>广东省考申论时政模拟题</h1>
+    <div class="sub">每日自动化生成 · 点击卡片或选择日期查看对应试卷</div>
+  </div>
+  <div class="grid">
+<a class="card" href="2025-07-30.html"><span class="cdate">2025-07-30</span><span class="ctheme">新质生产力 · 城乡协调发展 · 改革开放</span><span class="cscore">得分 <b>86</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2025-08-05.html"><span class="cdate">2025-08-05</span><span class="ctheme">制度型开放 · 新质生产力 · 民生保障 · 城乡融合</span><span class="cscore">得分 <b>80</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-07-27.html"><span class="cdate">2026-07-27</span><span class="ctheme">创新驱动与新质生产力</span><span class="cscore">得分 <b>74</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-07-28.html"><span class="cdate">2026-07-28</span><span class="ctheme">粤港澳大湾区融合发展与制度型开放</span><span class="cscore">得分 <b>75</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-07-31.html"><span class="cdate">2026-07-31</span><span class="ctheme">高质量发展 · 百千万工程 · 制度型开放 · 新质生产力</span><span class="cscore">得分 <b>86</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-08-02.html"><span class="cdate">2026-08-02</span><span class="ctheme">新质生产力与城乡区域协调发展</span><span class="cscore">得分 <b>84</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-08-03.html"><span class="cdate">2026-08-03</span><span class="ctheme">新质生产力·县域经济·改革开放</span><span class="cscore">得分 <b>83</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-08-04.html"><span class="cdate">2026-08-04</span><span class="ctheme">协调发展与新质生产力</span><span class="cscore">得分 <b>82</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-08-06.html"><span class="cdate">2026-08-06</span><span class="ctheme">百千万工程 · 新质生产力 · 绿美广东 · 大湾区开放</span><span class="cscore">得分 <b>82</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-08-07.html"><span class="cdate">2026-08-07</span><span class="ctheme">高质量发展 · 城乡融合 · 改革开放 · 科技创新</span><span class="cscore">得分 <b>79</b> 分</span><span class="go">打开试卷 →</span></a>
+<a class="card" href="2026-08-08.html"><span class="cdate">2026-08-08</span><span class="ctheme">新质生产力·百千万工程·绿美广东</span><span class="cscore">得分 <b>83</b> 分</span><span class="go">打开试卷 →</span></a>
+  </div>
+</main>
+<footer class="foot">广东省考申论每日自动化工作流 · 仅供学习参考</footer>
+<script>
+var DATES = ["2025-07-30","2025-08-05","2026-07-27","2026-07-28","2026-07-31","2026-08-02","2026-08-03","2026-08-04","2026-08-06","2026-08-07","2026-08-08"];
+function goDate(d){ if(d) location.href = d + '.html'; }
+</script>
+</body>
+</html>
