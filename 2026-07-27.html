@@ -248,17 +248,68 @@ img{max-width:100%;height:auto;}
   display:flex;align-items:center;gap:12px;flex-wrap:wrap;
   cursor:pointer;user-select:none;
   border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:0;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .2s cubic-bezier(.32,.72,0,1);
 }
+.part-head:active{transform:scale(.992);}
 .part-head:hover .part-arrow{color:var(--red);}
 .part-head .part-kicker{margin-bottom:0;}
 .part-head .part-title{margin-bottom:0;}
 .part-arrow{
   margin-left:auto;font-size:16px;color:var(--ink-faint);
-  transition:transform .2s ease;
+  display:inline-block;transition:transform .5s cubic-bezier(.32,.72,0,1);
 }
+.part.closed .part-arrow{transform:rotate(-90deg);}
 .part.closed .part-head{border-bottom:1px solid var(--line-soft);}
-.part-body{overflow:hidden;}
-.part.closed .part-body{display:none;}
+.part-body{
+  display:grid;grid-template-rows:1fr;overflow:hidden;
+  transition:grid-template-rows .55s cubic-bezier(.32,.72,0,1), opacity .35s ease;
+  opacity:1;
+}
+.part.closed .part-body{grid-template-rows:0fr;opacity:0;}
+.part.closed .part-body > *{overflow:hidden;}
+
+/* ===== iOS 风格动画 ===== */
+:root{
+  --spring: cubic-bezier(.32,.72,0,1);
+}
+*{-webkit-tap-highlight-color:transparent;}
+
+/* 按压反馈 */
+.card,.today-card,.btn,.part-head,.news-item{transition:transform .2s cubic-bezier(.32,.72,0,1), box-shadow .25s ease, border-color .25s, background .25s;}
+.card:active,.today-card:active,.btn:active{transform:scale(.975);}
+.part-head:active{transform:scale(.992);}
+
+/* 卷头进场：上浮淡入 + 印章弹簧 */
+.doc-head{animation:riseIn .6s var(--spring) both;}
+.doc-head .score-badge{animation:stamp .55s cubic-bezier(.34,1.3,.4,1) both .25s;}
+@keyframes riseIn{
+  from{opacity:0;transform:translateY(18px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* 大板块进场错落 */
+.part{animation:riseIn .55s var(--spring) both;}
+.part:nth-child(1){animation-delay:.05s;}
+.part:nth-child(2){animation-delay:.1s;}
+.part:nth-child(3){animation-delay:.15s;}
+.part:nth-child(4){animation-delay:.2s;}
+.part:nth-child(5){animation-delay:.25s;}
+.part:nth-child(6){animation-delay:.3s;}
+
+/* 磨砂顶栏 */
+.topbar{
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  backdrop-filter:saturate(180%) blur(20px);
+  background:rgba(35,38,43,.75);
+}
+
+/* 减少动效偏好 */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+  .part.closed .part-body{display:none;}
+  .part-body{grid-template-rows:none;}
+}
 
 </style>
 </head>
@@ -334,11 +385,8 @@ img{max-width:100%;height:auto;}
 <div class="reviewB"><div class="banner"><div class="av">花</div><div><h3>视角B · 花生十三实战派点评</h3><div class="sub">务实 · 直接 · 考场30秒阅卷视角</div></div></div><p><strong>视角B：花生十三实战派点评</strong></p><p><strong>先说结论</strong></p><p>这份答卷在考场上大概70-75分水平——申论拿个平均分以上没问题，但离稳上岸还差一口气。</p><div class="tips"><div class="tt">最让我上火的三件事</div><p><strong>最让我上火的三件事</strong></p></div><p>1. 第一题漏要点，丢的是最容易得的分。材料2第一段讲国际环境，你跳过去了。概括归纳题80%的分来自有没有看到，不是会不会写。</p><p>2. 大作文论证方式太单一。四个分论点都是论述+说理结构，阅卷人看到第三段就已经知道第四段长什么样了。</p><p>3. 该用例子的时候不用。论证段3是企业创新主题，比亚迪从电池厂干到全球销冠，这不就是现成的例子吗？</p><p><strong>花生给你三条建议</strong></p><p>1. 做概括题时拿笔指着材料逐段读，读完一段标一个已读。</p><p>2. 练论证结构组合拳。写大作文前先定好四种不同结构分配，不换结构不落笔。</p><p>3. 材料本身就是素材库，把材料语言换成自己的话就是高质量论据。</p><p><strong>打分（仅供参考）</strong></p><table><tbody><tr class="odd"><td><strong>题型</strong></td><td><strong>分值</strong></td><td><strong>得分</strong></td><td><strong>点评</strong></td></tr><tr class="even"><td>第一题</td><td>20分</td><td>14分</td><td>漏了一个点</td></tr><tr class="odd"><td>第二题</td><td>30分</td><td>23分</td><td>最稳的一道</td></tr><tr class="even"><td>第三题</td><td>50分</td><td>33分</td><td>安全但不出彩</td></tr><tr class="odd"><td>总分</td><td>100分</td><td>70分</td><td>差口气</td></tr></tbody></table></div></div></div>
 <script>
 function togglePart(h){
-  var p = h.parentNode; var b = p.querySelector(".part-body");
-  if(!b) return;
-  var open = p.classList.toggle("closed");
-  if(open){ b.style.display = "none"; h.querySelector(".part-arrow").textContent = "▸"; }
-  else { b.style.display = ""; h.querySelector(".part-arrow").textContent = "▾"; }
+  var p = h.parentNode; if(!p) return;
+  p.classList.toggle("closed");
 }
 document.addEventListener("DOMContentLoaded", function(){
   document.querySelectorAll(".part").forEach(function(p){ p.classList.add("closed"); });
