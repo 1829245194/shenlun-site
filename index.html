@@ -184,8 +184,10 @@ img{max-width:100%;height:auto;}
 .month-group.closed .month-body{
   grid-template-rows:0fr;padding-top:0;opacity:0;
 }
-.month-group.closed .month-body .grid{overflow:hidden;}
+.month-group.closed .month-body .grid{overflow:hidden;min-height:0;}
+.month-group.closed .month-body .grid > *{min-height:0;}
 .month-group.anim .month-body{overflow:hidden;}
+.month-body > .grid{min-height:0;}
 .month-group .grid{padding:0;}
 .empty{max-width:880px;margin:20px auto;padding:40px 20px;text-align:center;color:var(--ink-faint);font-family:var(--sans);font-size:14px;}
 
