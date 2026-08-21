@@ -370,10 +370,36 @@ img{max-width:100%;height:auto;}
 .foot .home:hover{color:var(--red);}
 
 /* ============================================================
-   大板块折叠（默认全部展开）
+   大板块折叠 —— 默认全部展开，点击分区标题可收起/展开
    ============================================================ */
-.part-head{cursor:default;}
-.part-arrow{display:none;}   /* 杂志风：不做折叠，去掉箭头 */
+.part-head{
+  cursor:pointer;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .3s cubic-bezier(.32,.72,0,1);
+  padding-bottom:4px;
+}
+.part-head:active{transform:scale(.992);}
+.part-head:hover .part-arrow{color:var(--red);}
+.part-arrow{
+  margin-left:auto;font-size:15px;color:var(--ink-faint);
+  display:inline-block;transition:transform .5s cubic-bezier(.32,.72,0,1);
+  flex:none;align-self:center;
+}
+.part.closed .part-arrow{transform:rotate(-90deg);}
+.part.closed .part-kicker{color:var(--ink-faint);}
+.part.closed .part-head .part-title{color:var(--ink-soft);}
+.part-body{
+  display:grid;grid-template-rows:1fr;overflow:hidden;
+  transition:grid-template-rows .6s cubic-bezier(.32,.72,0,1),opacity .4s ease;
+  opacity:1;
+}
+.part-body-inner{min-height:0;overflow:hidden;}
+.part.closed .part-body{grid-template-rows:0fr;opacity:0;}
+.part.closed .part-head{border-bottom:1px solid var(--line-strong);}
+@media(prefers-reduced-motion:reduce){
+  .part-body{transition:none;}
+  .part.closed .part-body{display:none;}
+}
 
 /* ============================================================
    首页 · 三大板块
@@ -465,29 +491,7 @@ img{max-width:100%;height:auto;}
   .doc-head h1{font-size:24px;}
   .doc-head .ddate{font-size:clamp(46px,13vw,72px);letter-spacing:-2px;margin-bottom:18px;}
   .doc-head .score-badge{top:20px;right:6px;width:64px;height:64px;font-size:14px;}
-  .doc-head .score-badge::before{inset:4px;}
-  .doc-head .score-badge small{font-size:7px;}
-  .doc-head .hero-stats{grid-template-columns:repeat(2,1fr);gap:18px 0;padding-top:16px;}
-  .doc-head .stat{border-left:none;padding-left:0;}
-  .doc-head .stat:nth-child(2),.doc-head .stat:nth-child(4){border-left:1px solid var(--line-strong);padding-left:16px;}
-  .topbar .nav{margin-left:0;width:100%;justify-content:space-between;}
-  .paper{padding:0 14px;}
-  .grid{grid-template-columns:1fr 1fr;padding:0 14px;}
-  .today-card{padding:28px 24px;}
-  .today-card .tc-theme{font-size:15.5px;}
-  .body{padding:22px 0 30px;}
-  .body p{font-size:15.5px;}
-  .part{margin-top:48px;padding-top:30px;}
-  .part-title{font-size:22px;}
-  .reviewB{padding:24px 20px;}
-  .top5-item{padding:20px 0;}
-  .material{padding:20px 20px;}
-}
-@media(prefers-reduced-motion:reduce){
-  *{animation-duration:.01ms !important;transition-duration:.01ms !important;}
-}
-:focus-visible{outline:2px solid var(--red);outline-offset:2px;}
-
+  .doc-head
 </style>
 </head>
 <body>
@@ -618,6 +622,10 @@ function togglePart(h){
   var p = h.parentNode; if(!p) return;
   p.classList.toggle("closed");
 }
+document.addEventListener("DOMContentLoaded", function(){
+  var parts = document.querySelectorAll(".part");
+  for(var i=1;i<parts.length;i++){ parts[i].classList.add("closed"); }
+});
 </script></article>
 </main>
 <footer class="foot">
