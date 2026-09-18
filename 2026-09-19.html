@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>粤申题库 · 2026-09-19</title>
+<style>
+/* ============================================================
+   粤申题库 · 杂志风（现代编辑部 · 第三版样式）
+   ============================================================
+   设计语言：把每一天当作一份「申论晨报」的卷期号。
+   - 冷白纸底 + 近黑墨色，编辑部朱红作唯一点睛色。
+   - 超大日期作为每期的「刊头」。
+   - 编号栏眉（01 抓取 · 02 解析 · 03 命题 · 04 作答 · 05 批改）
+     是真实的工作流次序，不是装饰。
+   ------------------------------------------------------------
+   切换：如需回退到 v1 精致布局，只需把 enhance.py / build_site.py
+   中的 style_mag.css 改回 style_v1.css（或 style.css），一键还原。
+   ============================================================ */
+
+/* ---------- 全局 ---------- */
+:root{
+  color-scheme:light;
+  --paper:#FFFFFF;
+  --paper-2:#F5F6F7;
+  --ink:#14161A;
+  --ink-soft:#4A4F57;
+  --ink-faint:#9AA0A8;
+  --line:#E7E8EA;
+  --line-strong:#D8DADD;
+  --red:#C2231C;            /* 编辑部朱红 —— 唯一点睛 */
+  --red-deep:#8F1813;
+  --red-soft:#FBEDEC;
+  --desk:#F2F3F4;
+  --serif:"Source Han Serif SC","Noto Serif SC","Songti SC","SimSun","STSong",serif;
+  --sans:"Inter","Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  --mono:"SF Mono","Roboto Mono","JetBrains Mono","Menlo",monospace;
+  --maxw:1040px;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--desk);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:16px;
+  line-height:1.95;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  padding-bottom:80px;
+}
+::selection{background:var(--red);color:#fff;}
+a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line-strong);transition:color .18s ease,border-color .18s ease;}
+a:hover{color:var(--red);border-bottom-color:var(--red);}
+img{max-width:100%;height:auto;}
+
+/* ============================================================
+   顶部栏 —— 顶栏不再是「暗色胶囊」，改为白色刊头格栅。
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:60;
+  background:rgba(255,255,255,.92);
+  -webkit-backdrop-filter:saturate(160%) blur(14px);
+  backdrop-filter:saturate(160%) blur(14px);
+  border-bottom:1px solid var(--line-strong);
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:10px 20px;font-family:var(--sans);
+}
+.topbar .brand{
+  font-weight:800;letter-spacing:4px;font-size:13px;color:var(--ink);white-space:nowrap;
+  display:inline-flex;align-items:center;gap:9px;
+}
+.topbar .brand .seal{
+  font-family:var(--serif);
+  color:var(--red);font-weight:900;font-size:16px;letter-spacing:0;
+}
+.topbar .nav{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap;}
+.topbar select{
+  font-family:var(--sans);font-size:12.5px;letter-spacing:.5px;
+  padding:6px 10px;border-radius:0;background:#fff;
+  border:1px solid var(--line-strong);color:var(--ink);cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 50%,calc(100% - 11px) 50%;
+  background-size:4px 4px,4px 4px;background-repeat:no-repeat;
+  padding-right:26px;
+}
+.topbar select:focus{outline:2px solid var(--red);outline-offset:1px;}
+.btn{
+  font-family:var(--sans);font-size:12px;letter-spacing:.5px;
+  padding:6px 12px;border-radius:0;border:1px solid var(--line-strong);
+  background:transparent;color:var(--ink-soft);cursor:pointer;
+  text-decoration:none;border-bottom:1px solid var(--line-strong);
+  transition:color .18s,border-color .18s,background .18s;
+}
+.btn:hover{background:var(--ink);color:#fff;border-color:var(--ink);}
+.btn:disabled{opacity:.3;cursor:not-allowed;}
+.btn:disabled:hover{background:transparent;color:var(--ink-soft);}
+
+/* ============================================================
+   卷头 —— 超大日期刊头（本期唯一记忆点）。
+   ============================================================ */
+.paper{max-width:var(--maxw);margin:0 auto;padding:0 20px;}
+.doc-head{
+  background:var(--paper);
+  border-bottom:3px solid var(--ink);
+  padding:46px 0 30px;margin-top:16px;position:relative;
+}
+/* 刊头网格底纹：淡到几乎看不见，只留呼吸感 */
+.doc-head::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);
+  background-size:calc(var(--maxw)/12) 100%;
+}
+/* 栏目眉（小字编号） */
+.doc-head .docno{
+  font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--ink-faint);
+  text-transform:uppercase;display:flex;align-items:center;gap:12px;margin-bottom:26px;position:relative;
+}
+.doc-head .docno::before{content:"";width:34px;height:2px;background:var(--red);display:inline-block;flex:none;}
+/* 大标题 */
+.doc-head h1{
+  font-family:var(--sans);font-weight:800;font-size:clamp(22px,3vw,30px);
+  letter-spacing:.5px;color:var(--ink);line-height:1.15;margin:0 0 10px;position:relative;
+}
+/* 超大日期 */
+.doc-head .ddate{
+  font-family:var(--sans);font-weight:800;font-size:clamp(52px,11vw,120px);
+  line-height:.95;letter-spacing:-3px;color:var(--ink);
+  margin:0 0 22px;position:relative;
+  font-variant-numeric:tabular-nums;
+}
+.doc-head .ddate .plus-tag{font-size:14px;letter-spacing:2px;vertical-align:super;margin-left:14px;color:var(--red);font-weight:700;}
+.doc-head .dmeta{display:flex;flex-wrap:wrap;gap:8px;font-family:var(--sans);margin-bottom:24px;position:relative;}
+.doc-head .chip{
+  border:1px solid var(--line-strong);background:var(--paper-2);border-radius:0;
+  padding:6px 12px;font-size:12px;letter-spacing:.5px;color:var(--ink-soft);
+}
+.doc-head .chip b{color:var(--ink);font-weight:700;}
+.doc-head .chip.plus-chip{color:var(--red);border-color:var(--red);font-weight:700;}
+/* 朱红印章：模拟得分 */
+.doc-head .score-badge{
+  position:absolute;top:30px;right:20px;width:88px;height:88px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:2.5px solid var(--red);border-radius:50%;
+  color:var(--red);font-family:var(--serif);font-weight:900;font-size:18px;line-height:1.2;letter-spacing:1px;
+  z-index:2;
+  animation:stamp .5s ease-out both .2s;
+}
+.doc-head .score-badge::before{
+  content:"";position:absolute;inset:6px;border:1px solid var(--red);border-radius:50%;opacity:.35;
+}
+.doc-head .score-badge small{font-size:8px;font-weight:400;letter-spacing:2px;font-family:var(--sans);}
+@keyframes stamp{0%{opacity:0;transform:rotate(8deg) scale(1.4);}100%{opacity:1;transform:rotate(8deg) scale(1);}}
+/* 刊头统计条 */
+.doc-head .hero-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line-strong);
+  border-bottom:1px solid var(--line-strong);margin-top:4px;padding:20px 0 0;font-family:var(--sans);position:relative;
+}
+.doc-head .stat{text-align:left;padding-right:16px;border-left:1px solid var(--line-strong);padding-left:18px;}
+.doc-head .stat:first-child{border-left:none;padding-left:0;}
+.doc-head .stat .v{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums;}
+.doc-head .stat .v.red{color:var(--red);}
+.doc-head .stat .l{font-size:10.5px;color:var(--ink-faint);letter-spacing:2px;margin-top:6px;text-transform:uppercase;}
+
+/* ---------- 正文纸张 ---------- */
+.body{
+  background:var(--paper);
+  border-bottom:1px solid var(--line-strong);
+  padding:30px 0 40px;margin-top:10px;
+}
+.body > :first-child{margin-top:0;}
+.body > :last-child{margin-bottom:0;}
+.body p{margin:0 0 16px;font-size:16px;line-height:2.0;color:var(--ink);}
+.body strong{font-weight:700;color:var(--ink);}
+.body a[href^="http"]{color:var(--ink);border-bottom:1px solid var(--line-strong);}
+.body a[href^="http"]:hover{color:var(--red);border-bottom-color:var(--red);}
+.body table{border-collapse:collapse;width:100%;margin:20px 0;font-family:var(--sans);font-size:13.5px;}
+.body th,.body td{border:1px solid var(--line-strong);padding:10px 12px;text-align:left;}
+.body th{background:var(--paper-2);font-weight:700;letter-spacing:.5px;color:var(--ink);}
+.body tr:nth-child(even) td{background:rgba(0,0,0,.014);}
+.body ul,.body ol{margin:0 0 16px;padding-left:26px;}
+.body li{margin-bottom:6px;}
+.body blockquote{margin:0 0 16px;border-left:3px solid var(--ink);padding:4px 18px;color:var(--ink-soft);}
+.body hr{border:none;border-top:1px solid var(--line-strong);margin:28px 0;}
+.body .underline{text-decoration:underline;text-underline-offset:3px;}
+
+/* ============================================================
+   大板块 —— 编号栏眉（01-05 对应真实工作流次序）。
+   ============================================================ */
+.part{margin-top:64px;scroll-margin-top:80px;border-top:1px solid var(--line-strong);padding-top:40px;}
+.part:first-child{border-top:none;padding-top:0;margin-top:0;}
+.part-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px;}
+.part-kicker{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:3px;color:var(--red);
+  display:inline-flex;align-items:center;gap:8px;flex:none;
+}
+.part-kicker::before{content:"";width:22px;height:1.5px;background:var(--red);display:inline-block;}
+.part-title{
+  font-family:var(--sans);font-size:26px;margin:0;letter-spacing:-.5px;font-weight:800;
+  display:inline-flex;align-items:baseline;gap:12px;line-height:1.2;
+}
+.part-title .en{font-size:11px;color:var(--ink-faint);letter-spacing:3px;font-weight:500;text-transform:uppercase;}
+.part-note{font-family:var(--sans);font-size:12.5px;color:var(--ink-faint);letter-spacing:.5px;margin:14px 0 30px;}
+
+/* ============================================================
+   第一部分 · 时政热点速览 —— 杂志式「固定栏目」。
+   ============================================================ */
+.dim-block{margin-bottom:38px;}
+.dim-head{
+  display:flex;align-items:center;gap:14px;font-family:var(--sans);
+  font-size:18px;font-weight:800;color:var(--ink);letter-spacing:1px;
+  padding-bottom:12px;border-bottom:1px solid var(--ink);margin-bottom:4px;
+}
+.dim-head .d-n{
+  font-family:var(--mono);font-size:12px;color:var(--ink-faint);font-weight:600;letter-spacing:0;
+  border:1px solid var(--line-strong);border-radius:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:26px;height:26px;padding:0 4px;background:var(--paper-2);
+}
+.news-item{
+  border-left:2px solid transparent;padding:16px 0 16px 18px;margin-left:2px;
+  border-bottom:1px solid var(--line);
+  transition:border-color .2s,background .2s;
+}
+.news-item:last-child{border-bottom:none;}
+.news-item:hover{border-left-color:var(--red);background:linear-gradient(90deg,var(--red-soft),transparent 75%);}
+.news-item h3{
+  margin:0 0 6px;font-family:var(--sans);font-size:16px;font-weight:700;line-height:1.55;
+  display:flex;align-items:baseline;gap:10px;
+}
+.news-item h3 .idx{font-size:12px;color:var(--ink-faint);font-weight:500;font-variant-numeric:tabular-nums;flex:none;}
+.news-item p{margin:0 0 8px;font-size:14.5px;color:var(--ink-soft);line-height:1.9;}
+.news-item .src{
+  font-family:var(--sans);font-size:11px;color:var(--ink-faint);letter-spacing:.5px;
+  display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;
+}
+.news-item .src a{color:var(--ink-soft);border-bottom:1px solid var(--line-strong);font-weight:600;}
+.news-item .src a:hover{color:var(--red);border-bottom-color:var(--red);}
+
+/* ============================================================
+   第二部分 · 深度解析
+   ============================================================ */
+.trend{
+  background:var(--ink);color:#E9EBEE;border-radius:0;padding:30px 34px;
+  font-size:15.5px;line-height:2.05;margin-bottom:34px;
+}
+.trend b{color:#fff;font-weight:700;}
+.trend .tlabel{font-family:var(--mono);font-size:11px;letter-spacing:4px;color:#E5484D;display:block;margin-bottom:14px;text-transform:uppercase;}
+.top5{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line-strong);}
+.top5-item{
+  background:var(--paper);border-bottom:1px solid var(--line-strong);padding:26px 0;
+}
+.top5-item:last-child{border-bottom:none;}
+.top5-item .rankrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-family:var(--sans);}
+.rank-tag{
+  font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:2px;color:var(--ink);
+  border:1.5px solid var(--ink);padding:3px 10px;border-radius:0;flex:none;background:var(--paper-2);
+}
+.stars{color:var(--red);letter-spacing:2px;font-size:12px;font-weight:700;}
+.top5-item h3{margin:0;font-family:var(--sans);font-size:19px;font-weight:800;line-height:1.45;flex:1;min-width:220px;}
+.tfield{margin-top:10px;font-size:15px;line-height:1.95;color:var(--ink-soft);}
+.tfield .k{font-family:var(--sans);font-size:12px;font-weight:800;color:var(--ink);letter-spacing:2px;margin-right:6px;flex:none;text-transform:uppercase;}
+.kw-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.kw-tag{
+  font-family:var(--sans);font-size:11px;color:var(--ink-soft);
+  border:1px solid var(--line-strong);background:var(--paper-2);
+  padding:3px 10px;border-radius:99px;letter-spacing:.5px;
+}
+
+/* ============================================================
+   第三部分 · 模拟试题
+   ============================================================ */
+.paper-head{
+  background:var(--ink);color:#fff;border-radius:0;
+  padding:16px 22px;font-family:var(--sans);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+}
+.paper-head .t{font-size:14px;font-weight:800;letter-spacing:3px;text-transform:uppercase;}
+.paper-head .m{font-size:11px;color:#9AA0AA;letter-spacing:1px;}
+.material{
+  background:var(--paper);border:1px solid var(--line-strong);border-top:none;
+  padding:24px 30px;margin-bottom:18px;
+}
+.material:last-child{margin-bottom:0;}
+.material .mno{
+  font-family:var(--mono);font-weight:700;font-size:12px;color:var(--red);letter-spacing:3px;
+  display:inline-block;border-bottom:2px solid var(--red);padding-bottom:4px;margin-bottom:14px;
+}
+.material p{margin:0 0 12px;font-size:15.5px;line-height:2.05;}
+.qblock{border:1.5px solid var(--ink);border-radius:0;margin-top:24px;background:var(--paper);}
+.qblock .qhead{
+  font-family:var(--sans);font-weight:800;font-size:14px;background:var(--paper-2);
+  border-bottom:1px solid var(--line-strong);padding:13px 22px;letter-spacing:.5px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.qblock .qhead .p{font-size:11px;color:var(--red);border:1px solid var(--red);border-radius:0;padding:0 7px;font-weight:700;}
+.qblock .qbody{padding:16px 22px;font-size:15.5px;line-height:1.95;}
+
+/* ============================================================
+   第四部分 · 参考答案（答题卡改为清单式条目）
+   ============================================================ */
+.ans-block{margin-bottom:30px;}
+.ans-head{display:flex;align-items:center;gap:12px;font-family:var(--sans);font-size:15px;font-weight:800;letter-spacing:1px;margin-bottom:10px;}
+.ans-head .stamp{font-size:10px;color:#fff;background:var(--ink);border-radius:0;padding:3px 9px;letter-spacing:2px;font-family:var(--mono);}
+.answer-card{
+  background-color:var(--paper);border:1px solid var(--line-strong);border-left:3px solid var(--ink);
+  border-radius:0;padding:26px 28px;
+}
+.answer-card .abody p{margin:0 0 12px;font-size:15.5px;line-height:2;}
+.answer-card .abody p:last-child{margin-bottom:0;}
+.answer-card .wcount{font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-align:right;margin-top:10px;letter-spacing:1px;}
+.essay-title{font-family:var(--sans);font-weight:800;font-size:20px;letter-spacing:1px;text-align:center;margin:0 0 20px;color:var(--ink);}
+
+/* ============================================================
+   第五部分 · 批改报告
+   ============================================================ */
+.score-tbl{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:13.5px;margin:18px 0 28px;}
+.score-tbl th,.score-tbl td{border:1px solid var(--line-strong);padding:11px 12px;text-align:center;}
+.score-tbl th{background:var(--ink);color:#fff;font-weight:700;letter-spacing:1px;}
+.score-tbl tr.total td{background:var(--paper-2);font-weight:800;}
+.score-tbl tr.total td.mark-red,.score-tbl td.mark-red{color:var(--red);}
+.score-tbl td.l{text-align:left;}
+.sub-head{
+  font-family:var(--sans);font-weight:800;font-size:16px;margin:30px 0 12px;letter-spacing:.5px;
+  display:flex;align-items:center;gap:10px;padding-left:0;
+  border-left:none;
+}
+.sub-head::before{content:"";width:18px;height:18px;background:var(--red);flex:none;display:inline-block;}
+.sub-head:first-of-type{margin-top:0;}
+.rev-line{margin:0 0 12px;font-size:15px;line-height:1.95;color:var(--ink);}
+.rev-line .lbl{font-family:var(--sans);font-weight:800;color:var(--ink);margin-right:5px;}
+.deduct{border-left:3px solid var(--red);background:var(--red-soft);border-radius:0;padding:14px 18px;font-size:14px;color:var(--red-deep);margin:14px 0;line-height:1.9;}
+.improve{border-left:3px solid var(--ink);background:var(--paper-2);border-radius:0;padding:14px 18px;font-size:14px;color:var(--ink);margin:14px 0;line-height:1.9;}
+
+.reviewB{background:var(--paper);border:1px solid var(--line-strong);border-radius:0;padding:32px 36px;margin-top:34px;}
+.reviewB .banner{display:flex;align-items:center;gap:14px;padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:20px;}
+.reviewB .banner .av{
+  width:52px;height:52px;border-radius:0;background:var(--ink);color:#fff;flex:none;
+  display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:800;font-size:20px;
+}
+.reviewB .banner h3{margin:0;font-family:var(--sans);font-size:19px;letter-spacing:.5px;}
+.reviewB .banner .sub{font-size:11.5px;color:var(--ink-faint);font-family:var(--sans);letter-spacing:1px;margin-top:3px;text-transform:uppercase;}
+.reviewB p{font-size:15.5px;line-height:2;margin:0 0 14px;}
+.reviewB .hot{border-top:1px dashed var(--line-strong);margin-top:22px;padding-top:20px;}
+.reviewB .hot .h-title{font-family:var(--sans);font-weight:800;font-size:15px;color:var(--red);letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.reviewB .tips{margin-top:24px;background:var(--paper-2);border:1px solid var(--line-strong);border-radius:0;padding:20px 24px;}
+.reviewB .tips .tt{font-family:var(--sans);font-weight:800;font-size:13px;letter-spacing:2px;margin-bottom:12px;color:var(--ink);}
+.reviewB .tips ol{margin:0;padding-left:20px;}
+.reviewB .tips li{margin-bottom:8px;font-size:14.5px;line-height:1.9;}
+.reviewB .attitude{margin-top:24px;text-align:center;font-size:15.5px;color:var(--ink-soft);border-top:1px dashed var(--line-strong);padding-top:22px;line-height:2;}
+
+/* ============================================================
+   附录
+   ============================================================ */
+.src-tbl{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12.5px;}
+.src-tbl th,.src-tbl td{border:1px solid var(--line-strong);padding:9px 10px;vertical-align:top;text-align:left;}
+.src-tbl th{background:var(--ink);color:#fff;font-weight:700;letter-spacing:1px;}
+.src-tbl td.n{text-align:center;color:var(--ink-faint);font-variant-numeric:tabular-nums;font-family:var(--mono);}
+.src-tbl td.u{font-size:11.5px;word-break:break-all;font-family:var(--mono);color:var(--ink-soft);}
+.src-tbl td.u a{border:none;color:var(--ink-soft);}
+.src-tbl td.u a:hover{color:var(--red);}
+.src-tbl tr:nth-child(even) td{background:rgba(0,0,0,.014);}
+
+/* ---------- 页脚 ---------- */
+.foot{max-width:var(--maxw);margin:36px auto 0;padding:0 20px;text-align:center;font-family:var(--sans);font-size:11px;color:var(--ink-faint);letter-spacing:2px;line-height:2;text-transform:uppercase;}
+.foot .home{border:none;color:var(--ink-faint);letter-spacing:2px;}
+.foot .home:hover{color:var(--red);}
+
+/* ============================================================
+   大板块折叠 —— 默认全部展开，点击分区标题可收起/展开
+   ============================================================ */
+.part-head{
+  cursor:pointer;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .3s cubic-bezier(.32,.72,0,1);
+  padding-bottom:4px;
+}
+.part-head:active{transform:scale(.992);}
+.part-head:hover .part-arrow{color:var(--red);}
+.part-arrow{
+  margin-left:auto;font-size:15px;color:var(--ink-faint);
+  display:inline-block;transition:transform .5s cubic-bezier(.32,.72,0,1);
+  flex:none;align-self:center;
+}
+.part.closed .part-arrow{transform:rotate(-90deg);}
+.part.closed .part-kicker{color:var(--ink-faint);}
+.part.closed .part-head .part-title{color:var(--ink-soft);}
+.part-body{
+  display:grid;grid-template-rows:1fr;overflow:hidden;
+  transition:grid-template-rows .6s cubic-bezier(.32,.72,0,1),opacity .4s ease;
+  opacity:1;
+}
+.part-body-inner{min-height:0;overflow:hidden;}
+.part.closed .part-body{grid-template-rows:0fr;opacity:0;}
+.part.closed .part-head{border-bottom:1px solid var(--line-strong);}
+@media(prefers-reduced-motion:reduce){
+  .part-body{transition:none;}
+  .part.closed .part-body{display:none;}
+}
+
+/* ============================================================
+   首页 · 三大板块
+   ============================================================ */
+.home-hero{max-width:var(--maxw);margin:22px auto 0;padding:0 20px;text-align:left;border-bottom:3px solid var(--ink);padding-bottom:26px;}
+.home-hero h1{font-family:var(--sans);font-size:clamp(26px,5vw,44px);letter-spacing:-1px;margin:0 0 8px;font-weight:800;}
+.home-hero .sub{color:var(--ink-soft);font-size:14px;letter-spacing:2px;font-family:var(--sans);margin:0;position:relative;padding-left:0;display:inline-flex;align-items:center;gap:10px;}
+.home-hero .sub::before{content:"";width:22px;height:2px;background:var(--red);display:inline-block;}
+.grid{max-width:var(--maxw);margin:0 auto;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:var(--line-strong);border:1px solid var(--line-strong);}
+.card{
+  background:var(--paper);border:none;padding:26px 24px 20px;text-decoration:none;color:var(--ink);
+  display:flex;flex-direction:column;gap:10px;border-bottom:none;
+  transition:background .2s ease,transform .2s ease;
+}
+.card:hover{background:var(--paper-2);transform:translateY(-2px);}
+.card .cdate{font-family:var(--sans);font-weight:800;font-size:22px;letter-spacing:-.5px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.card .ctheme{font-size:13px;color:var(--ink-soft);line-height:1.7;flex:1;}
+.card .cscore{font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:1px;font-weight:700;text-transform:uppercase;}
+.card .cscore .na{color:var(--ink-faint);font-weight:400;}
+.card .go{align-self:flex-end;font-family:var(--sans);font-size:12px;color:var(--ink);font-weight:700;letter-spacing:.5px;}
+.card:hover .go{color:var(--red);}
+
+/* 加量卷标签 */
+.plus-tag{
+  display:inline-block;font-family:var(--sans);font-size:10px;font-weight:800;
+  color:#fff;background:var(--red);border-radius:0;padding:2px 8px;letter-spacing:1px;
+  vertical-align:middle;margin-left:6px;white-space:nowrap;
+}
+
+/* ============================================================
+   首页 · 今日/历史 双板块
+   ============================================================ */
+.idx-sec{max-width:var(--maxw);margin:0 auto;padding:0 20px;padding-top:40px;}
+.idx-head{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:17px;font-weight:800;letter-spacing:1px;color:var(--ink);margin-bottom:6px;}
+.idx-head .idx-dot{width:22px;height:3px;background:var(--ink);flex:none;}
+.idx-head .idx-dot.today{background:var(--red);}
+.idx-sec .sub-tip{font-family:var(--sans);font-size:12px;color:var(--ink-faint);letter-spacing:1px;margin:0 0 22px;}
+.today-sec{max-width:var(--maxw);margin:0 auto;padding:0 20px;padding-top:8px;}
+.today-card{
+  display:block;background:var(--ink);color:#fff;border-top:4px solid var(--red);
+  padding:34px 38px;text-decoration:none;position:relative;margin-top:20px;
+}
+.today-card .tc-main{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;}
+.today-card .tc-label{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:3px;color:#fff;background:var(--red);padding:3px 11px;}
+.today-card .tc-date{font-family:var(--sans);font-weight:800;font-size:clamp(40px,7vw,68px);letter-spacing:-2px;color:#fff;line-height:1;}
+.today-card .tc-theme{font-size:18px;color:#E9EBEE;line-height:1.8;margin-bottom:20px;font-family:var(--sans);font-weight:500;}
+.today-card .tc-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--sans);}
+.today-card .tchip{border:1px solid rgba(255,255,255,.25);padding:5px 12px;font-size:12px;color:#C9CCD2;letter-spacing:.5px;}
+.today-card .tchip b{color:#fff;font-weight:700;}
+.today-card .tc-score{font-family:var(--mono);font-size:13px;color:var(--red);font-weight:800;letter-spacing:1px;}
+.today-card .tc-go{display:inline-block;margin-top:22px;font-family:var(--sans);font-size:13px;color:#fff;font-weight:700;letter-spacing:1px;border-bottom:1px solid #fff;padding-bottom:2px;}
+.today-card:hover .tc-go{color:var(--red);border-bottom-color:var(--red);}
+.today-card:hover{background:#1B1E22;}
+
+/* 搜索 + 月份分组 */
+.search-box{max-width:var(--maxw);margin:6px auto 20px;padding:0 20px;position:relative;}
+.search-box .sb-icon{position:absolute;left:36px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.5;pointer-events:none;}
+.search-box input{
+  width:100%;padding:13px 16px 13px 44px;font-family:var(--sans);font-size:14px;
+  border:1px solid var(--line-strong);border-radius:0;background:#fff;
+  color:var(--ink);outline:none;transition:border-color .2s;
+}
+.search-box input:focus{border-color:var(--ink);}
+.search-box input::placeholder{color:var(--ink-faint);}
+.month-group{max-width:var(--maxw);margin:0 auto 14px;padding:0 20px;}
+.month-head{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;
+  border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line-strong);
+  font-family:var(--sans);background:var(--paper-2);
+}
+.month-arrow{font-size:11px;color:var(--ink-faint);width:14px;display:inline-block;transition:transform .5s;}
+.month-group.closed .month-arrow{transform:rotate(-90deg);}
+.month-name{font-weight:800;font-size:15px;letter-spacing:.5px;color:var(--ink);}
+.month-count{margin-left:auto;font-size:11px;color:var(--ink-faint);font-family:var(--mono);letter-spacing:1px;}
+.month-body{display:grid;grid-template-rows:1fr;padding-top:14px;transition:grid-template-rows .6s,opacity .35s;opacity:1;}
+.month-group.closed .month-body{grid-template-rows:0fr;padding-top:0;opacity:0;}
+.month-group.closed .month-body .grid{overflow:hidden;min-height:0;}
+.month-group.closed .month-body .grid > *{min-height:0;}
+.month-group.anim .month-body{overflow:hidden;}
+.month-body > .grid{min-height:0;}
+.month-group .grid{padding:0;}
+.empty{max-width:var(--maxw);margin:20px auto;padding:40px 20px;text-align:center;color:var(--ink-faint);font-family:var(--sans);font-size:14px;}
+
+/* ============================================================
+   响应式 & 动效
+   ============================================================ */
+@media(max-width:720px){
+  .doc-head{padding:34px 0 22px;}
+  .doc-head h1{font-size:24px;}
+  .doc-head .ddate{font-size:clamp(46px,13vw,72px);letter-spacing:-2px;margin-bottom:18px;}
+  .doc-head .score-badge{top:20px;right:6px;width:64px;height:64px;font-size:14px;}
+  .doc-head .score-badge::before{inset:4px;}
+  .doc-head .score-badge small{font-size:7px;}
+  .doc-head .hero-stats{grid-template-columns:repeat(2,1fr);gap:18px 0;padding-top:16px;}
+  .doc-head .stat{border-left:none;padding-left:0;}
+  .doc-head .stat:nth-child(2),.doc-head .stat:nth-child(4){border-left:1px solid var(--line-strong);padding-left:16px;}
+  .topbar .nav{margin-left:0;width:100%;justify-content:space-between;}
+  .paper{padding:0 14px;}
+  .grid{grid-template-columns:1fr 1fr;padding:0 14px;}
+  .today-card{padding:28px 24px;}
+  .today-card .tc-theme{font-size:15.5px;}
+  .body{padding:22px 0 30px;}
+  .body p{font-size:15.5px;}
+  .part{margin-top:48px;padding-top:30px;}
+  .part-title{font-size:22px;}
+  .reviewB{padding:24px 20px;}
+  .top5-item{padding:20px 0;}
+  .material{padding:20px 20px;}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px;}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <span class="brand"><span class="seal">粤</span>申题库</span>
+  <nav class="nav">
+    <a class="btn" href="index.html">首页</a>
+    <button class="btn" onclick="goRel(-1)" >&lsaquo; 前一天</button>
+    <select id="dateSel" onchange="goDate(this.value)" aria-label="选择日期">
+<option value="2026-07-27">2026-07-27</option>
+<option value="2026-07-28">2026-07-28</option>
+<option value="2026-07-30">2026-07-30</option>
+<option value="2026-07-31">2026-07-31</option>
+<option value="2026-08-02">2026-08-02</option>
+<option value="2026-08-03">2026-08-03</option>
+<option value="2026-08-04">2026-08-04</option>
+<option value="2026-08-05">2026-08-05</option>
+<option value="2026-08-06">2026-08-06</option>
+<option value="2026-08-07">2026-08-07</option>
+<option value="2026-08-08">2026-08-08</option>
+<option value="2026-08-09">2026-08-09</option>
+<option value="2026-08-10">2026-08-10</option>
+<option value="2026-08-11">2026-08-11</option>
+<option value="2026-08-12">2026-08-12</option>
+<option value="2026-08-13">2026-08-13</option>
+<option value="2026-08-14">2026-08-14</option>
+<option value="2026-08-15">2026-08-15</option>
+<option value="2026-08-18">2026-08-18</option>
+<option value="2026-08-19">2026-08-19</option>
+<option value="2026-08-20">2026-08-20</option>
+<option value="2026-08-21">2026-08-21</option>
+<option value="2026-08-22">2026-08-22</option>
+<option value="2026-08-23">2026-08-23</option>
+<option value="2026-08-24">2026-08-24</option>
+<option value="2026-08-25">2026-08-25</option>
+<option value="2026-08-26">2026-08-26</option>
+<option value="2026-08-27">2026-08-27</option>
+<option value="2026-08-28">2026-08-28</option>
+<option value="2026-08-29">2026-08-29</option>
+<option value="2026-08-30">2026-08-30</option>
+<option value="2026-08-31">2026-08-31</option>
+<option value="2026-09-01">2026-09-01</option>
+<option value="2026-09-02">2026-09-02</option>
+<option value="2026-09-03">2026-09-03</option>
+<option value="2026-09-04">2026-09-04</option>
+<option value="2026-09-05">2026-09-05</option>
+<option value="2026-09-06">2026-09-06</option>
+<option value="2026-09-07">2026-09-07</option>
+<option value="2026-09-08">2026-09-08</option>
+<option value="2026-09-15">2026-09-15</option>
+<option value="2026-09-16">2026-09-16</option>
+<option value="2026-09-17">2026-09-17</option>
+<option value="2026-09-18">2026-09-18</option>
+<option value="2026-09-19" selected>2026-09-19</option>
+    </select>
+    <button class="btn" onclick="goRel(1)" disabled>后一天 &rsaquo;</button>
+  </nav>
+</header>
+<main class="paper">
+  <div class="doc-head"><div class="docno">粤申模〔2026〕0919号 · 时政申论·每日晨报</div><h1>广东省考申论时政模拟题</h1><div class="ddate">2026-09-19</div><div class="dmeta"><span class="chip">主题：<b>投资于人 · 守护夕阳——扩容普惠养老、激活银发经济，以养老服务提质托起幸福晚年</b></span><span class="chip">对标：<b>广东省考县级卷（县级及以上）</b></span></div><div class="score-badge"><small>模拟得分</small>88</div><div class="hero-stats"><div class="stat"><div class="v">24</div><div class="l">时政热点</div></div><div class="stat"><div class="v">8</div><div class="l">覆盖维度</div></div><div class="stat"><div class="v">5</div><div class="l">给定材料</div></div><div class="stat"><div class="v red">88</div><div class="l">模拟作答</div></div></div></div>
+<article class="body">
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">01 · 抓取</div><h2 class="part-title">时政热点速览<span class="en">NEWS DIGEST</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><p class="part-note">本期时政热点覆盖时间为2026年9月13日至9月19日，共收录8个维度、24条重要新闻。</p>
+<div class="dim-block"><div class="dim-head"><span class="d-n">一</span>中央政策</div><div class="news-item"><h3><span class="idx">1.</span>李强主持召开国务院常务会议：听取老龄工作情况汇报，部署实施医疗康复护理扩容提升工程</h3><p>9月18日，国务院常务会议听取老龄工作情况汇报，部署实施医疗康复护理扩容提升工程。会议指出，我国人口老龄化程度不断加深，要坚持以人民为中心，把积极老龄观、健康老龄化理念融入经济社会发展全过程，加快健全社会保障体系、养老服务体系、健康支撑体系；要扩大医疗康复护理服务供给，推动优质资源下沉基层，加强专业人才培养，更好满足老年人多层次多样化需求。 [原文]点击查看</p><span class="src">（来源：中国政府网、新华社，2026-09-18）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>国务院常务会议研究推动体育赛事健康发展，审议通过《中医药传统知识保护条例（草案）》</h3><p>9月18日国务院常务会议研究推动体育赛事健康发展有关工作，强调要深化改革、优化供给，推动体育赛事规范有序发展、释放体育消费潜力；会议审议通过《中医药传统知识保护条例（草案）》，要求加强中医药传统知识保护、传承和创新，更好发挥中医药在疾病预防、治疗、康复和健康养老中的独特作用。 [原文]点击查看</p><span class="src">（来源：中国政府网、国务院新闻办，2026-09-18）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>16个部委联合印发通知，首个民族团结进步宣传周将于9月21日至27日举办</h3><p>9月15日，国家民委会同15个部委联合印发通知，明确《民族团结进步促进法》施行后的首个民族团结进步宣传周于9月21日至27日在全国开展，主题为“铸牢共同体 中华一家亲”。各地将结合自身实际开展形式多样的宣传教育活动，推动各民族广泛交往、全面交流、深度交融。 [原文]点击查看</p><span class="src">（来源：人民日报、光明日报，2026-09-15/16）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">二</span>广东要闻</div><div class="news-item"><h3><span class="idx">1.</span>中央第四生态环境保护督察组向广东省反馈督察情况，黄坤明作表态发言：严而又严实而又实做好整改“后半篇文章”</h3><p>9月18日，中央第四生态环境保护督察组向广东省反馈督察情况。省委书记黄坤明作表态发言，表示对督察组反馈的问题诚恳接受、照单全收，不折不扣推动督察反馈问题整改落实到位，以高水平生态环境保护支撑高质量发展，守护好广东的蓝天碧水、大美山川，让良好生态环境成为最普惠的民生福祉。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网、南方日报，2026-09-18）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>全省推进思想政治工作专题会议在广州召开：深耕思政沃土，凝聚奋进力量</h3><p>9月18日，全省推进思想政治工作专题会议在广州召开，会议总结交流各领域思想政治工作经验做法，强调要坚持守正创新，把思想政治工作做深做实，凝聚起推进中国式现代化广东实践的强大精神力量。 [原文]点击查看</p><span class="src">（来源：南方日报、羊城晚报，2026-09-18）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>孟凡利分别会见中国人保、中国节能负责人：以金融、绿色产业力量服务广东高质量发展</h3><p>近日，广东省委副书记、省长孟凡利在广州分别会见中国人民保险集团、中国节能环保集团负责人，围绕深化保险保障服务、绿色低碳转型、生态环保产业等领域合作深入交流，希望央企加大在粤投资布局力度，为广东高质量发展提供更优质的金融和绿色产业支撑。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网、广州日报，2026-09-19）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">三</span>经济发展</div><div class="news-item"><h3><span class="idx">1.</span>广东加快培育银发经济产业园：到2030年力争创建不少于2个国家级银发经济产业园区</h3><p>省民政厅等部门联合发文，加快培育广东省银发经济产业园，围绕老年用品制造、智慧健康养老、康复辅具、抗衰老产品、适老化家居等重点领域，推动银发经济集群化、规模化发展，明确到2030年力争创建不少于2个国家级银发经济产业园区，把“银发需求”转化为“朝阳产业”。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网、广东省民政厅，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>广东15部门联合发文进一步促进消费：推动消费品以旧换新、服务消费扩容提质</h3><p>广东省15个部门联合发文进一步促进消费，围绕汽车、家电、家居等消费品以旧换新，以及文旅、体育、健康、养老、家政等服务消费扩容提质，推出一批务实举措，省商务厅上线“民声热线”介绍全省消费品以旧换新工作成效，以政策组合拳释放内需潜力、惠及百姓生活。 [原文]点击查看</p><span class="src">（来源：中国质量报、广东省商务厅，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>一张消费券串联餐饮文旅汽车多场景：云浮多领域消费潜力持续释放</h3><p>云浮市以一张消费券串联餐饮、文旅、汽车等多个消费场景，推动政策红利直达经营主体和消费者，国庆中秋“双节”临近，多领域消费潜力持续释放，为县域消费市场注入新活力。 [原文]点击查看</p><span class="src">（来源：云浮日报、云浮市人民政府网，2026-09-17）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">四</span>社会治理</div><div class="news-item"><h3><span class="idx">1.</span>广东22部门联合发布文件深化养老服务改革发展：健全县镇村三级养老服务网络</h3><p>广东省民政厅等22个部门联合印发关于深化养老服务改革发展的若干措施及政策解读，围绕健全县、镇、村三级养老服务网络，大力发展居家社区养老，推进公办养老机构改革，加强养老护理人才队伍建设，完善综合监管等方面作出系统部署，推动实现老有所养、老有所医、老有所乐、老有所安。 [原文]点击查看</p><span class="src">（来源：广东省民政厅，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>华南地区首个实体化运作的长期照护服务产业园在清远揭牌</h3><p>9月16日，华南地区首个实体化运作的长期照护服务产业园在清远正式揭牌，园区聚焦失能失智老年人长期照护需求，集成照护服务、辅具适配、人才培养、标准研发等功能，探索解决“一人失能、全家失衡”难题，为长期照护服务体系建设提供了实体化载体。 [原文]点击查看</p><span class="src">（来源：新浪财经、清远发布，2026-09-16）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>广州首发银发经济新场景“全景图”：五大类20个场景激活“银发”新活力</h3><p>广州市发布20个银发经济新场景清单，围绕“医、食、住、行、娱、购”五大类，深耕全市221万老年人的消费新场景，推动适老产品和服务从“有没有”向“好不好”升级，让老年人不出社区就能享受到就餐、康复、助浴、文化娱乐等服务。 [原文]点击查看</p><span class="src">（来源：广州市人民政府网、广州市民政局，2026-09）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">五</span>科技创新</div><div class="news-item"><h3><span class="idx">1.</span>广东拟实施“人工智能+养老”行动：给养老装上“智慧大脑”</h3><p>广东省拟实施“人工智能+养老”行动，加强老年医学发展，推动人工智能在健康监测、辅助诊疗、康复护理、生活照料、安全守护等场景落地应用，支持企业研发适老化智能产品和解决方案，推动建立智慧健康养老产品及服务推广目录，以科技赋能破解养老服务供给不足、专业人才短缺等难题。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网、羊城晚报，2026-08/09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>广州白云区银发经济产业园揭牌，全市首个适老智慧科普馆开业运营</h3><p>广州白云区银发经济产业园揭牌，全市首个适老智慧科普馆同步开业运营，集中展示适老化家居、智能穿戴、康复辅具、无障碍改造等产品和服务，让老年人和家属“看得见、摸得着、用得上”，推动适老科技从展台走向家庭。 [原文]点击查看</p><span class="src">（来源：中国日报、广州市人民政府网，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>南沙发布10项智慧养老综合服务场景</h3><p>广州南沙区集中发布10项智慧养老综合服务场景，涵盖居家安全监测、一键呼叫、远程健康管理、助餐配送、认知障碍照护等领域，依托智慧养老平台实现“老人点单、平台派单、机构接单”，让数据多跑路、老人少跑腿。 [原文]点击查看</p><span class="src">（来源：广州市人民政府网，2026-09）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">六</span>生态环保</div><div class="news-item"><h3><span class="idx">1.</span>中央第四生态环境保护督察组向广东反馈督察情况：以高水平生态环境保护支撑高质量发展</h3><p>9月18日，中央第四生态环境保护督察组向广东省反馈督察情况，既肯定了广东在绿美广东生态建设、污染防治攻坚等方面取得的成效，也指出部分领域存在的突出问题，要求从严从实抓好整改，推动经济社会发展全面绿色转型。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网，2026-09-18）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>黄坤明：不折不扣推动督察反馈问题整改落实到位，守护好广东蓝天碧水大美山川</h3><p>省委书记黄坤明在反馈会上强调，要严而又严、实而又实做好整改“后半篇文章”，不折不扣推动督察反馈问题整改落实到位，把督察整改作为改进工作的契机，让良好生态环境成为人民群众可感可及的幸福底色，成为最普惠的民生福祉。 [原文]点击查看</p><span class="src">（来源：南方日报、广州日报，2026-09-18/19）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>生态环境与养老健康相融合：绿美广东为老年友好社会厚植绿色底色</h3><p>随着绿美广东生态建设深入推进，城市公园、社区绿道、适老步道、森林康养基地等不断增多，良好生态环境为老年人休闲健身、康养疗愈提供了更多就近可达的绿色空间，生态环境的“颜值”正加快转化为人民群众特别是老年群体生活品质的“价值”。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网、南方日报，2026-09）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">七</span>乡村振兴</div><div class="news-item"><h3><span class="idx">1.</span>广州南沙榄核镇大坳村颐康服务站：医养康养惠民生，守护农村长者夕阳红</h3><p>广州南沙区榄核镇大坳村颐康服务站把医养康养服务送到村口，为农村老年人提供健康监测、康复理疗、日间照料、助餐配餐、文化娱乐等服务，让农村老人在家门口享受到与城里差不多的养老服务，探索破解农村养老服务“最后一公里”难题。 [原文]点击查看</p><span class="src">（来源：中国报道，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>佛山高明明阳村拟入选全国示范性老年友好型社区</h3><p>佛山市高明区明阳村拟入选全国示范性老年友好型社区，通过适老化改造、无障碍设施建设、志愿服务常态化和敬老文化建设，让老年人在熟悉的环境里安心生活、老有所乐，为乡村老年友好型社区建设提供了样本。 [原文]点击查看</p><span class="src">（来源：南方+ ，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>县域养老服务补短板：广东推动农村区域性养老服务中心建设</h3><p>广东在推进“百千万工程”中同步补齐农村养老服务短板，推动人口较集中的乡镇建设区域性养老服务中心，通过“中心带站点、站点连家庭”的方式，把专业照护资源向农村延伸，让农村老年人共享发展成果。 [原文]点击查看</p><span class="src">（来源：广东省民政厅，2026-09）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">八</span>改革开放</div><div class="news-item"><h3><span class="idx">1.</span>粤港跨境养老协同深化：“湾区通”让港澳老人在粤养老更便利</h3><p>广东携手港澳深化养老服务领域规则衔接、机制对接，推动港澳居民在粤养老享受更多便利化服务，在资格认证、医疗结算、社保“湾区通”等方面持续探索，让港澳老年人共享大湾区优质养老服务资源，以制度型开放拓展养老服务供给半径。 [原文]点击查看</p><span class="src">（来源：南方日报、广东省人民政府网，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>省老年基金会银发项目（珠海）活动中心启用：“公益助老+中医药康养+跨境协同”</h3><p>9月17日，广东省老年基金会银发项目（珠海）活动中心正式启用，以“公益助老+中医药康养+跨境协同”为特色，为老年人提供公益服务、健康调理和文化活动，并探索承接港澳老年人康养需求，是养老服务业开放合作的一次新尝试。 [原文]点击查看</p><span class="src">（来源：珠海特区报，2026-09-17）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>养老金融创新：广东多部门联合支持越秀区打造养老金融示范样板</h3><p>广东多部门联合广州发布若干措施，支持广州越秀区打造养老金融示范样板，围绕养老理财、长期护理保险、住房反向抵押、养老产业信贷等方面探索创新，引导更多金融资源投向养老服务领域，以金融活水浇灌“银发经济”。 [原文]点击查看</p><span class="src">（来源：证券时报、南方网，2026-09）</span></div></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">02 · 解析</div><h2 class="part-title">时政热点深度解析<span class="en">TREND ANALYSIS</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><div class="trend"><span class="tlabel">今日热点趋势判断</span>结合申论命题规律，对本期新闻逐条评估命题潜力（★1-5星），识别关键词、政策背景与命题方向。今日热点趋势判断1.主线一：民生主题从“兜底保障”升级为“投资于人”，养老是这一转向最集中的场景。9月18日国务院常务会议同一天听取老龄工作情况汇报、部署医疗康复护理扩容提升工程、审议通过《中医药传统知识保护条例（草案）》，再加上此前中办国办印发的保障和改善民生意见，可以看到一条清晰的逻辑：民生投入不再仅仅被理解为“花钱”，而是被定位为面向人力资本和消费潜力的“投资”。养老恰恰是这条逻辑最有说服力的样本——它一头连着亿万老年人的急难愁盼，一头连着银发经济这一超大规模增量市场。考生必须掌握“积极老龄观”“健康老龄化”“普惠可及”“医养康养结合”“银发经济”“服务消费扩容提质”这一整套话术，才能把题目答出高度。2.主线二：“服务体系”与“服务产业”双轮驱动，是广东养老答卷最鲜明的特色。中央层面强调“加快健全社会保障体系、养老服务体系、健康支撑体系”三大体系；广东层面则一边以22部门联合发文健全县镇村三级养老服务网络、推行居家社区养老，一边以银发经济产业园、20个消费新场景、适老智慧科普馆发力产业端。这种“事业补短板、产业拉长板”的双轮格局，几乎是广东省考命题人最偏爱的结构：它既能出一道“概括做法”的题，也能出一道“提对策”的题——供给不足、人才短缺、区域不均衡是事业短板，产品不适老、企业融资难、市场培育不足是产业短板，两类问题各自成体系，答题时切不可混为一谈。3.主线三：“科技+”与“机制通”是破解养老难题的两把钥匙，也是最能出彩的加分项。前者体现在广东拟实施“人工智能+养老”行动、南沙10项智慧养老场景、适老智慧科普馆，指向的是用技术替代稀缺的专业人力、用平台打通分散的服务资源；后者体现在粤港澳跨境养老协同、养老金融创新、长期护理保险和长期照护服务产业园，指向的是用制度和机制的联通扩大优质资源的配置半径。可以预判，未来的养老类命题将越来越倾向于考察考生能否把“暖心”的民生话题，落到“技术路径”和“制度路径”上去——只写“要重视养老、要关爱老人”是感动不了阅卷人的，能写出“AI替代+平台调度”“跨境结算+标准互认+长护险扩面”的，才是真功夫。</div>
+<div class="top5"><div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP1</span><span class="stars"></span><h3>国务院常务会议听取老龄工作情况汇报：把积极老龄观、健康老龄化理念融入发展全过程（命题潜力 ★★★★★）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">积极老龄观</span><span class="kw-tag">健康老龄化</span><span class="kw-tag">普惠养老</span><span class="kw-tag">医疗康复护理扩容</span><span class="kw-tag">医养结合</span><span class="kw-tag">服务体系</span></span></div><p class="tfield">核心事件：9月18日，国务院常务会议听取老龄工作情况汇报，部署实施医疗康复护理扩容提升工程，强调扩大医疗康复护理服务供给、推动优质资源下沉基层、加强专业人才培养，更好满足老年人多层次多样化需求。这是本年度养老领域规格最高的一次部署，紧接广东22部门深化养老服务改革发展措施、拟实施“人工智能+养老”行动，形成“中央部署—广东落实”的完整政策链条。</p><p class="tfield">政策背景：我国人口老龄化程度不断加深，养老已从民生问题上升为关系现代化建设全局的战略问题。中央强调“把积极老龄观、健康老龄化理念融入经济社会发展全过程”，这一表述本身就是极佳的大作文立意素材——养老不只是“兜底”，更是“投资于人”。</p><p class="tfield">命题方向：概括题（广东健全养老服务体系的做法）／对策题（破解供给不足、人才短缺、医养分离）／公文题（实施方案、调研报告）／大作文（以养老之“暖”托起民生之“实”）。时效性最强、政治站位最高，是本年度养老主题的“总纲”。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP2</span><span class="stars"></span><h3>广东深化养老服务改革与银发经济：把“银发需求”转化为“朝阳产业”（命题潜力 ★★★★★）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">养老服务改革</span><span class="kw-tag">县镇村三级网络</span><span class="kw-tag">居家社区养老</span><span class="kw-tag">银发经济</span><span class="kw-tag">适老产品</span><span class="kw-tag">老年友好</span></span></div><p class="tfield">核心事件：广东省民政厅等22个部门联合印发深化养老服务改革发展的若干措施，健全县镇村三级养老服务网络、大力发展居家社区养老、加强护理人才队伍建设；广东加快培育银发经济产业园，明确到2030年力争创建不少于2个国家级园区；广州发布20个银发经济新场景清单、深耕221万老年人消费新场景，白云区银发经济产业园揭牌、全市首个适老智慧科普馆开业。供给端与产业端同步发力。</p><p class="tfield">政策背景：积极应对人口老龄化国家战略与扩大内需战略在此交汇——养老既是民生保障，也是经济增量。国务院常务会议同日研究体育赛事健康发展、释放消费潜力，释放出“服务消费扩容提质”的鲜明信号，而养老正是服务消费最具确定性的增长点。</p><p class="tfield">命题方向：概括题（广东推动养老服务提质、发展银发经济的做法）／对策题（破解供给结构失衡、产品不适老、区域不平衡）／访谈/推介稿（银发经济产业园招商）／大作文（以银发经济之“新”托举民生之“暖”）。广东特色最鲜明、素材最丰富。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP3</span><span class="stars"></span><h3>“人工智能+养老”：以科技赋能破解养老服务的供需矛盾（命题潜力 ★★★★☆）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">人工智能+养老</span><span class="kw-tag">智慧养老</span><span class="kw-tag">适老化改造</span><span class="kw-tag">数字鸿沟</span><span class="kw-tag">数据壁垒</span><span class="kw-tag">场景牵引</span></span></div><p class="tfield">核心事件：广东拟实施“人工智能+养老”行动，推动人工智能在健康监测、辅助诊疗、康复护理、安全守护等场景落地，支持研发适老化智能产品；南沙发布10项智慧养老综合服务场景，依托平台实现“老人点单、平台派单、机构接单”；广州建成全市首个适老智慧科普馆，推动适老科技从展台走向家庭。</p><p class="tfield">政策背景：“人工智能+”是继“互联网+”后的系统性数智化部署。养老领域劳动力紧缺、服务成本高、专业门槛高，正是AI最能发挥作用的典型场景；但同时也存在设备“不好用、不会用、用不起”与数据壁垒等现实堵点，矛盾张力足，命题空间大。</p><p class="tfield">命题方向：概括题（广东智慧养老的做法）／对策题（破解数字鸿沟、数据壁垒、产品不适老）／公文题（行动方案、政策解读）／大作文（以科技之“智”解养老之“难”）。专业话术储备价值高，容易拉开分差。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP4</span><span class="stars"></span><h3>中央生态环保督察整改：以高水平生态环境保护支撑高质量发展（命题潜力 ★★★★☆）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">生态环境保护督察</span><span class="kw-tag">整改“后半篇文章”</span><span class="kw-tag">绿美广东</span><span class="kw-tag">绿色转型</span><span class="kw-tag">最普惠的民生福祉</span></span></div><p class="tfield">核心事件：9月18日，中央第四生态环境保护督察组向广东省反馈督察情况，省委书记黄坤明作表态发言，强调严而又严、实而又实做好整改“后半篇文章”，不折不扣推动督察反馈问题整改落实到位。反馈既肯定绿美广东生态建设成效，也指出部分领域突出问题。</p><p class="tfield">政策背景：生态环境保护督察是推动生态文明建设的重要制度安排，“督察—反馈—整改—回头看”构成完整闭环。把督察整改作为改进工作的契机，是理解“以高水平保护支撑高质量发展”这一辩证关系的关键切口。</p><p class="tfield">命题方向：概括题（广东推进督察整改的做法）／对策题（破解整改“一阵风”、长效机制不健全）／公文题（整改方案、督办通知）／大作文（以生态之“绿”厚植发展之“底”）。时效性强，适合作为大作文的论据层或对策题的一个维度。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP5</span><span class="stars"></span><h3>银发经济与养老服务开放：跨境养老协同与养老金融创新（命题潜力 ★★★★☆）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">跨境养老</span><span class="kw-tag">湾区通</span><span class="kw-tag">制度型开放</span><span class="kw-tag">养老金融</span><span class="kw-tag">长期护理保险</span><span class="kw-tag">中医药康养</span></span></div><p class="tfield">核心事件：广东携手港澳深化养老服务规则衔接、机制对接，推动港澳居民在粤养老享受资格认证、医疗结算、社保“湾区通”等便利；9月17日省老年基金会银发项目（珠海）活动中心启用，以“公益助老+中医药康养+跨境协同”为特色；广东多部门联合支持广州越秀区打造养老金融示范样板，探索长期护理保险、养老产业信贷等创新。</p><p class="tfield">政策背景：粤港澳大湾区建设与积极应对人口老龄化国家战略在此叠加。养老服务领域的规则衔接、机制对接，正是“制度型开放”在民生领域的具体落点，也是广东区别于其他省份的独有素材。</p><p class="tfield">命题方向：概括题（大湾区养老服务协同的做法）／对策题（破解跨境结算、标准互认、监管衔接难题）／公文题（合作框架协议、推介稿）／大作文（以机制之“通”促民生之“优”）。</p></div></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">03 · 命题</div><h2 class="part-title">模拟试题<span class="en">MOCK EXAM</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><p>给定材料围绕“投资于人、守护夕阳，扩容普惠养老、激活银发经济”主题，共5则材料。请认真阅读并作答。</p>
+<h2 id="给定材料">给定材料</h2>
+<h3 id="材料1">材料1</h3>
+<p>我国人口老龄化程度不断加深。9月18日，国务院常务会议听取老龄工作情况汇报，部署实施医疗康复护理扩容提升工程，强调要坚持以人民为中心，把积极老龄观、健康老龄化理念融入经济社会发展全过程，加快健全社会保障体系、养老服务体系、健康支撑体系，扩大医疗康复护理服务供给，推动优质资源下沉基层，加强专业人才培养，更好满足老年人多层次多样化需求。同一次会议还审议通过《中医药传统知识保护条例（草案）》，要求更好发挥中医药在疾病预防、治疗、康复和健康养老中的独特作用。</p>
+<p>在广东，一张覆盖城乡的养老服务网正在加快织密。省民政厅等22个部门联合印发深化养老服务改革发展的若干措施，围绕健全县、镇、村三级养老服务网络，大力发展居家社区养老，推进公办养老机构改革，加强养老护理人才队伍建设，完善综合监管等作出系统部署。全省已建成一批街道综合养老服务中心、社区嵌入式养老服务站点和长者饭堂，越来越多的老年人不出社区就能吃上一顿热饭、量上一次血压。一位社区干部说：“养老这件事，说到底是家门口的事。老人家不愿意离开熟悉的地方，我们的服务站就得建在他抬脚就到的地方。”</p>
+<p>但“家门口的幸福”也遇到现实制约。有养老机构负责人算过一笔账：一名持证养老护理员每月到手三四千元，工作强度大、社会认同度不高，招得来、留不住；有的服务站建起来了，却因为缺少专业照护人员，“能开饭、难照护”。还有的地方医养两张皮，养老院看不了病，医院不收住老人，“转来转去、两头为难”。（改编自中国政府网、广东省民政厅、新华社2026年9月报道）</p>
+<h3 id="材料2">材料2</h3>
+<p>养老服务既要“兜得住底”，也要“办得好”。近年来，广东着力补齐失能失智老年人照护这一最突出短板。9月16日，华南地区首个实体化运作的长期照护服务产业园在清远揭牌，园区聚焦失能失智老年人长期照护需求，集成照护服务、辅具适配、人才培养、标准研发等功能，探索破解“一人失能、全家失衡”的难题。一名入住老人的家属说：“以前是我一个人24小时守着，饭吃不上、觉睡不好。现在有专业团队照护，我在外打工心里也踏实。”</p>
+<p>农村养老是另一块必须啃下的硬骨头。在推进“百千万工程”中，广东推动人口较集中的乡镇建设区域性养老服务中心，以“中心带站点、站点连家庭”的方式把专业照护资源向农村延伸。广州南沙区榄核镇大坳村把颐康服务站建到了村口，为农村老年人提供健康监测、康复理疗、日间照料、助餐配餐和文化娱乐服务；佛山高明区明阳村通过适老化改造、无障碍设施建设和常态化志愿服务，拟入选全国示范性老年友好型社区。</p>
+<p>不过，区域之间、城乡之间的差距仍然明显。珠三角一些城市的养老机构“一床难求”，而粤东西北部分县域的空置率却不低——不是没有床位，而是缺护理、缺医疗、离子女太远。有基层干部坦言，一些乡镇敬老院房屋老旧、设备简陋，“想改造，钱从哪来？”也有老年人反映，助餐、助浴、助医等服务“城里有了，我们这里还没影”。（改编自新浪财经、中国报道、南方+等报道）</p>
+<h3 id="材料3">材料3</h3>
+<p>“银发需求”正在成为“朝阳产业”。广东加快培育银发经济产业园，围绕老年用品制造、智慧健康养老、康复辅具、抗衰老产品、适老化家居等重点领域，明确到2030年力争创建不少于2个国家级银发经济产业园区。9月，广州白云区银发经济产业园揭牌，全市首个适老智慧科普馆同步开业运营，集中展示适老化家居、智能穿戴、康复辅具、无障碍改造等产品和服务，让老年人和家属“看得见、摸得着、用得上”。广州还首次发布20个银发经济新场景清单，围绕“医、食、住、行、娱、购”五大类深耕全市221万老年人的消费新场景。</p>
+<p>消费端的活力也在释放。广东15个部门联合发文进一步促进消费，推动消费品以旧换新和服务消费扩容提质；云浮以一张消费券串联餐饮、文旅、汽车等多个场景，把政策红利直达经营主体和消费者。一位园区企业负责人说：“过去我们做老年用品，最怕的是产品做出来没人认。现在政府建了产业园、办了科普馆，还帮我们对接场景，客户能亲眼看到效果，订单自然就来了。”</p>
+<p>但企业也有苦恼。有负责人反映，适老化产品研发周期长、投入大，一个智能轮椅从设计到量产要三年，“最缺的是耐心资本”；也有企业担心，行业标准不统一，同样一款康复辅具，各地准入要求不一样，“想做大就得反复改”。还有老年人直言：“有些智能产品按键密密麻麻，我们眼花手抖，按错一次就不敢用了。”也有子女担心，老年人消费容易踩坑，“保健品、理疗仪，说得比唱得好听，钱花了人也伤了”。（改编自广东省人民政府网、广州市人民政府网、中国日报等报道）</p>
+<h3 id="材料4">材料4</h3>
+<p>科技正在为养老打开新的可能。广东拟实施“人工智能+养老”行动，加强老年医学发展，推动人工智能在健康监测、辅助诊疗、康复护理、生活照料、安全守护等场景落地应用，支持企业研发适老化智能产品和解决方案。在广州南沙，区里集中发布10项智慧养老综合服务场景，涵盖居家安全监测、一键呼叫、远程健康管理、助餐配送、认知障碍照护等领域，依托智慧养老平台实现“老人点单、平台派单、机构接单”，让数据多跑路、老人少跑腿。</p>
+<p>在一个试点社区，独居的刘阿姨家里装上了跌倒监测设备和一键呼叫按钮。有天夜里她在卫生间摔倒，还没来得及呼救，系统已经报警，社区网格员和家属五分钟内赶到。“这玩意儿比我儿子还灵。”刘阿姨笑着说。社区工作人员介绍，平台还能根据用水用电数据判断老人生活是否异常，“如果连续十几个小时没有用水记录，系统会自动提示我们上门看看。”</p>
+<p>但智慧养老落地并不轻松。有社区反映，不同厂商的设备和系统“各说各话”，数据打不通、接口不兼容，“装了七八个APP，老人自己根本管不过来”；有的老年人因为不会用智能手机，反而被挡在了服务之外；也有基层干部算过成本账，一套智能照护设备动辄上万元，“财政补一点、机构贴一点，长期运维的钱还没着落”。一位从业者说：“智慧养老不能变成‘智慧秀’，关键要让老人觉得好用、用得起、离不了。”（改编自广东省人民政府网、广州市人民政府网等报道）</p>
+<h3 id="材料5">材料5</h3>
+<p>养老服务不是“一个人的事”，也不是“一个省的事”。广东携手港澳深化养老服务领域规则衔接、机制对接，推动港澳居民在粤养老享受资格认证、医疗结算、社保“湾区通”等便利化服务。9月17日，广东省老年基金会银发项目（珠海）活动中心启用，以“公益助老+中医药康养+跨境协同”为特色，为老年人提供公益服务、健康调理和文化活动，并探索承接港澳老年人康养需求。与此同时，广东多部门联合发布若干措施，支持广州越秀区打造养老金融示范样板，围绕养老理财、长期护理保险、养老产业信贷等方面探索创新。</p>
+<p>养老服务的质量，最终要落到“安全”和“安心”上。今年以来，广东持续加强养老机构消防、食品、用药等安全监管，开展防范养老诈骗专项行动，推动养老服务综合监管常态化。一名民政部门工作人员说：“养老机构最怕出事，一次事故就能把一个家庭拖垮。我们宁可检查得密一点、麻烦一点，也不能让风险漏过去。”</p>
+<p>与此同时，良好生态环境正成为老年人的“健康底色”。中央第四生态环境保护督察组近日向广东反馈督察情况，省委书记黄坤明表示要严而又严、实而又实做好整改“后半篇文章”，让良好生态环境成为最普惠的民生福祉。随着绿美广东生态建设推进，城市公园、社区绿道、适老步道和森林康养基地不断增多，老年人身边可就近可达的绿色空间越来越多。一位每天到公园晨练的老人说：“环境好了，心情就好，人也就显得年轻。”（综合广东省人民政府网、南方日报、珠海特区报报道改写）</p>
+<h2 id="作答要求">作答要求</h2>
+<p><strong>一、根据“给定材料1、材料2、材料3”，概括广东推动养老服务扩容提质、发展银发经济的主要做法。</strong></p>
+<p>要求：准确、全面、有条理；不超过200字。（20分）</p>
+<p><strong>二、材料1、材料2、材料3、材料4反映当前养老服务仍存在专业人才短缺、医养分离、城乡区域供给不均衡、适老产品不适销、数字鸿沟明显等问题。请结合给定材料，就进一步推动养老服务高质量发展提出对策。</strong></p>
+<p>要求：针对性强、具体可行、条理清晰；不超过300字。（30分）</p>
+<p><strong>三、习近平总书记强调，要着力保障和改善民生，更加注重“投资于人”。请深入理解“投资于人”的深刻内涵，结合给定材料，联系实际，自选角度，自拟标题，写一篇议论文。</strong></p>
+<p>要求：（1）观点明确，见解深刻；（2）参考给定材料，但不拘泥于给定材料；（3）思路清晰，语言流畅；（4）字数800-1000字。（50分）</p>
+<div class="paper-head"><span class="t">给定材料</span><span class="m">材料一 — 材料五</span></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">04 · 作答</div><h2 class="part-title">参考答案与示范作答<span class="en">MODEL ANSWERS</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><div class="ans-block"><div class="ans-head"><span class="stamp">一</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第一题参考答案20分">第一题参考答案（20分）</h2><p>一是健全服务网络。22部门联合发文，健全县镇村三级养老网络，发展居家社区养老。二是补齐照护短板。建长期照护服务产业园，集成照护、辅具、人才、标准功能。三是下沉农村资源。以“中心带站点、站点连家庭”延伸专业照护，建颐康服务站和老年友好社区。四是壮大银发产业。培育银发经济产业园，争创国家级园区。五是激活消费场景。发布银发经济新场景清单，建适老科普馆，促消费扩容提质。（179字）</p></div></div></div>
+<div class="ans-block"><div class="ans-head"><span class="stamp">二</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第二题参考答案30分">第二题参考答案（30分）</h2><p>推动养老服务高质量发展，要坚持强人才、促医养、补短板、适老需、通数据、优保障：一是政府加强人才培养。实施养老护理员技能提升行动，健全薪酬和职称晋升机制，深化校企合作订单式培养。二是推进医养结合。支持养老机构内设医疗机构，推动医疗康复护理资源下沉，做实双向转介和上门巡诊。三是优化城乡布局。以区域性养老服务中心辐射农村，盘活闲置资源，做强助餐助浴助医。四是企业做适老产品。建立统一行业标准，简化产品设计，推动适老产品纳入以旧换新目录；发展耐心资本。五是政企打通数据。制定智慧养老平台统一接口标准，保留线下渠道，开展适老培训和防诈宣传。六是健全保障。扩大长期护理保险，创新养老金融，强化综合监管与机构安全，做实志愿服务和家庭照护支持。（295字左右）</p></div></div></div>
+<div class="ans-block"><div class="ans-head"><span class="stamp">三</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第三题示范作答50分">第三题示范作答（50分）</h2><p><strong>标题：投资于人暖夕阳 守护最美“银发族”</strong></p><p>从社区长者饭堂里一顿热腾腾的午饭，到村口颐康服务站里一次上门理疗；从智能设备在深夜发出的那声警报，到长期照护产业园里专业团队的托举——南粤大地上，一个个具体而微的场景，勾勒出“投资于人”最温暖的注脚。习近平总书记强调，要着力保障和改善民生，更加注重“投资于人”。在人口老龄化程度不断加深的今天，投资于人，就是要投资于每一位老年人的晚年幸福。唯有以服务之“实”兜住底、以产业之“新”激活力、以科技之“智”提效能，方能托起最美的“夕阳红”。</p><p>以普惠服务之“实”，兜住养老之底。养老说到底是家门口的事，老人家最认的是“抬脚就到”。广东以22个部门联合发文健全县镇村三级养老服务网络，把服务站、长者饭堂建到社区和乡村；南沙大坳村把颐康服务站建在村口，让农村老人享受到与城里差不多的服务。投资于人，首先就要投在基本公共服务的均等化上——把服务送到老人身边，让“老有所养”从纸面落进日常。</p><p>以银发产业之“新”，激活夕阳之力。养老既是民生事业，也是朝阳产业。广东加快培育银发经济产业园，明确到2030年力争创建不少于2个国家级园区；广州发布20个银发经济新场景清单，深耕221万老年人的消费新场景；白云区适老智慧科普馆让适老产品“看得见、摸得着、用得上”。投资于人，就要把老年人的需求从“负担”看成“机遇”——需求有人回应，产业才有奔头；产业有了奔头，就业和税收自然水到渠成。</p><p>以智能科技之“智”，破解照护之难。专业护理人员“招得来、留不住”，是养老最难啃的骨头。广东拟实施“人工智能+养老”行动，南沙发布10项智慧养老综合服务场景，用平台实现“老人点单、平台派单、机构接单”；独居老人夜里跌倒，系统五分钟内报警救人。投资于人，也要敢于投在技术上——让智能设备替代稀缺人力、让数据打通替代重复奔波。但科技不能变成“智慧秀”，标准统一、界面简化、成本可控，才是老人真正“离不了”的关键。</p><p>以制度机制之“通”，拓展服务之界。养老不是一省一地的家务事。广东携手港澳深化养老服务规则衔接，推动资格认证、医疗结算、社保“湾区通”；珠海以“公益助老+中医药康养+跨境协同”探索承接港澳康养需求；越秀区探索养老金融示范样板。投资于人，还要投在制度供给上——打通区域壁垒、创新金融工具、扩大长期护理保险，让优质资源在更大范围内流动起来。</p><p>“老吾老以及人之老”，是刻在中国人骨子里的温情，也应当成为一项制度安排。投资于人，投的是当下，赢的是长远。只要坚持以普惠服务兜底、以银发产业赋能、以智能科技提效、以制度创新破界，就一定能让每一位老年人都能安享有尊严、有品质的晚年，让“夕阳红”成为南粤大地最温暖的底色。</p></div></div></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">05 · 批改</div><h2 class="part-title">批改报告<span class="en">GRADING REPORT</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><div class="reviewA"><h2 id="视角a粉笔申论阅卷人刘哲宇李梦园体系">视角A：粉笔申论阅卷人（刘哲宇/李梦园体系）</h2>
+<p>批改原则：严格按踩点给分，材料为王。第一题20分、第二题30分、第三题50分。</p>
+<table class="score-tbl"><thead><tr class="header"><th>题号</th><th>分值</th><th>得分</th><th>得分率</th></tr></thead><tbody><tr class="odd"><td>第一题（概括归纳）</td><td>20</td><td>17</td><td>85%</td></tr><tr class="even"><td>第二题（提出对策）</td><td>30</td><td>27</td><td>90%</td></tr><tr class="odd"><td>第三题（大作文）</td><td>50</td><td>44</td><td>88%</td></tr><tr class="even"><td>合计</td><td>100</td><td>88.0</td><td>88.0%</td></tr></tbody></table>
+<div class="sub-head">第一题精批（17/20分）</div>
+<p>【优点】作答按“健全服务网络—补齐照护短板—下沉农村资源—壮大银发产业—激活消费场景”五个层次归纳，分类清晰、互不交叉，符合概括题“同义合并、分类归整”的要求；“县镇村三级网络”“居家社区养老”“长期照护服务产业园”“中心带站点、站点连家庭”“颐康服务站”“银发经济产业园”“国家级园区”“新场景清单”“适老科普馆”“消费扩容提质”等采分点全部落在给定材料1、2、3范围内，忠实材料、无过度引申；总括词前置，每条“总括词＋具体阐述”结构完整，字数控制在179字，规范度高。整体属于二类卷上等，具备冲击18分的空间。</p>
+<div class="improve">【失分点】一是材料1中“把积极老龄观、健康老龄化理念融入经济社会发展全过程”“加快健全社会保障体系、养老服务体系、健康支撑体系”这一总纲性表述未被提炼为要点，若单列一条“树牢积极老龄观”会更有政治站位；二是“长期照护服务产业园”一条的关键词原本是“破解失能失智照护难题、一人失能全家失衡”，本答删去后只剩功能罗列，案例落点丢失，建议保留“破解失能照护难题”一句；三是材料3中“以消费品以旧换新带动适老产品消费”这一交叉做法未被采点，可补“推动适老产品纳入以旧换新”；四是字数偏紧（仅179字），材料1的“中医药康养”“公办养老机构改革”等做法本可再补半条，浪费了20字的空间。</div>
+<div class="sub-head">第二题精批（27/30分）</div>
+<p>【优点】对策严格遵循“谁来做＋做什么＋怎么做”三要素，按“强人才—促医养—补短板—适老需—通数据—优保障”六条推进，覆盖人才、医养、城乡布局、产品、数字、金融监管的完整链条；针对材料1“招得来、留不住”“能开饭、难照护”“医养两张皮”，材料2“一床难求与空置并存”“想改造钱从哪来”，材料3“缺耐心资本、标准不统一、按键密密麻麻”，材料4“APP太多、不会用、运维没着落”等问题逐一对症开方；“订单式培养”“双向转介和上门巡诊”“区域性养老服务中心辐射农村”“纳入以旧换新目录”“发展耐心资本”“统一接口标准”“保留线下渠道”“扩大长期护理保险”等表述专业精准，且每条均点明主体，“强人才、促医养、补短板、适老需、通数据、优保障”的总起句提炼到位。</p>
+<div class="improve">【失分点】一是第四条把“统一标准”“适老设计”“耐心资本”三件事塞在一条里，容量偏大、层次略杂，建议拆为“企业做适老产品”与“政策引导耐心资本”两条，阅卷更易采点；二是材料5涉及的“跨境协同、养老金融”在第六条中只以“创新养老金融”一句带过，未展开粤港澳养老服务规则衔接这一广东独有的亮点，得分空间还有富余；三是本答已达295字，几乎顶格，若开头总起句再压缩几字，可为第六条的“跨境协同”腾出位置。综合评为二类卷上游，具备冲击28分可能。</div>
+<div class="sub-head">第三题精批（44/50分）</div>
+<p>评分细目：立意13.5/15、结构9.5/10、论证16.5/20、语言4.5/5。</p>
+<p>【立意13.5/15】标题“投资于人暖夕阳 守护最美‘银发族’”对仗工整、指向明确，“投资于人”直接扣住题干的核心表述，“暖夕阳”“银发族”落回养老主题，切题度高。开篇以长者饭堂、村口颐康服务站、智能警报、长期照护产业园四个具体场景切入，随即引用总书记重要论述并提出核心观点，站位准确、画面感强，是标准的“场景+引语+观点”开头范式。</p>
+<p>【结构9.5/10】开头约200字引出主题、亮明观点并点出“服务—产业—科技—制度”四个层面；四个分论点分别以“兜住底、激活力、提效能（破难题）、拓界”立意，每段175-200字，落点清晰、彼此不交叉，且“实、新、智、通”四字形成整齐照应；结尾约110字以“老吾老以及人之老”回扣主题，首尾呼应、层层递进，结构完整。稍有不足的是“投资于人”的机理论证在分论点中展开不够，四段更偏“怎么做”，对“为什么养老投入是投资而不是负担”这一核心命题的正面回应偏弱。</p>
+<p>【论证16.5/20】每个分论点均以“观点句＋阐释＋案例/数据论据＋结论”展开，22部门发文、县镇村三级网络、大坳村颐康服务站、2030年2个国家级园区、221万老年人、20个新场景、10项智慧养老场景、“五分钟内赶到”等素材信手拈来、贴切充实；分论点一与三的案例尤其扎实。不足之处：一是“联系实际”的鲜活度还能增强，缺少对全国其他地区经验或自身生活观察的适度延伸；二是第四段（制度机制）的论据密度低于前三段，珠海银发项目中心与越秀养老金融的展开略显仓促；三是“投资于人”与“人力资本”“消费潜力”之间的学理链条未充分点透。</p>
+<p>【语言4.5/5】文白相宜、温情与张力兼具，“投资于人暖夕阳”“最美银发族”“老吾老以及人之老”“让‘夕阳红’成为南粤大地最温暖的底色”等表达既有文采又有温度，“实、新、智、通”四字贯穿全文，语言是本文最大亮点。</p>
+<div class="sub-head">总体评语（视角A）</div>
+<div class="improve">本卷整体处于广东省考县级卷88分上下段位，三题作答规范、材料吃得透、政策话术储备扎实。第一题五条分类清晰、要点齐全，仅对“积极老龄观、健康老龄化”这一总纲提炼不足；第二题六条对策主体分明、链条完整、专业性强，是三题中完成度最高者；第三题立意准确、场景入题、语言出彩，“实、新、智、通”四字贯穿始终，读来一气呵成，仅“投资于人”的机理论证还差一层。建议：一是概括题强化对材料“总纲性表述”的提炼，把领导讲话式、理念式的句子单列为要点；二是对策题适度拆分信息量过大的条目，并补齐“社会组织、志愿服务、家庭”等社会主体；三是大作文必须在核心概念上“点透机理”——“投资于人”为什么是投资而非成本，“银发经济”为什么既是民生也是增长点，讲清这一层，作文就能从44分迈向46分。持续积累“积极老龄观”“健康老龄化”“普惠可及”“医养康养结合”“银发经济”“长期护理保险”“投资于人”等政策话术，稳定冲击90+。</div></div>
+<div class="reviewB"><div class="banner"><div class="av">花</div><div><h3>视角B · 花生十三实战派点评</h3><div class="sub">务实 · 直接 · 考场30秒阅卷视角</div></div></div><h2 id="视角b花生十三实战派点评">视角B：花生十三实战派点评</h2><p>风格提示：务实直接、口语化、效率导向——从“考场30秒阅卷能拿多少分”的角度来看这份卷子。</p><h3 id="一句话结论">一句话结论</h3><p>88分，稳中有亮。阅卷人30秒扫下来：第一题五个总括词齐齐整整，一看就是按材料分堆写的，“县镇村三级网络”“长护产业园”“中心带站点”“银发经济产业园”这些词一出来，就知道你把材料吃透了；第二题“强人才—促医养—补短板—适老需—通数据—优保障”六条，谁做、做啥、咋做全套齐活，“订单式培养”“双向转介”“耐心资本”“统一接口标准”“长护险扩面”这些词一亮，阅卷人立刻觉得你懂行；第三题标题“投资于人暖夕阳 守护最美‘银发族’”一眼就是下过功夫的，开头四个场景铺陈、四个分论点“实、新、智、通”，阅卷人心情都好。今天这主题——国常会谈老龄工作、广东22部门养老新政、AI+养老——是这周的头部大稿，全撞在广东命题人的枪口上，你押中了。</p><div class="tips"><div class="tt">最让我上火的三件事</div><h3 id="最让我上火的三件事">最让我上火的三件事</h3></div><p>第一件：第一题把“积极老龄观、健康老龄化”这块金子丢了。材料1开门第一段就是国常会的原话——“把积极老龄观、健康老龄化理念融入经济社会发展全过程”，这是养老类题目的“总纲句”，政治站位的天花板。你写了五条做法，条条都对，但全是“技”，没有“道”，阅卷人扫完会觉得你是个好学生，但不是个有政治高度的考生。这种“理念型”采分点，是养老题最容易拉分的地方，弯腰就能捡，你没弯腰。</p><p>第二件：第二题第四条“一口吃成胖子”。你把“统一行业标准＋简化适老设计＋纳入以旧换新＋发展耐心资本”四件事塞进一条，全篇300字里这一条最挤，其余各条被压得喘不过气。阅卷人按点给分，你一条里塞四个点，他反而容易漏看两个。对策题的铁律是“一条一事、一事一句”，宁可写六条七条，也别写“万能大条”。另外社会力量——社区志愿、家庭照护、社会组织——你只在第六条最尾巴“做实志愿服务和家庭照护支持”捎了七个字，埋得太深，广东卷特别看这个。</p><p>第三件：第三题“投资于人”讲得好看，但没讲透。你这篇作文语言没得挑，但四段分论点全是“怎么做”，缺一句“为什么”。题干给的是“投资于人”——这个词的分量在于它把民生支出重新定义成了人力资本投资和消费潜力培育。你要是在第二段开头补一句“养老投入不是‘花掉的钱’，而是投向亿万家庭幸福感和超大规模市场的‘本钱’”，整篇文章的高度立刻不一样。现在这样，像是一篇写得很漂亮的养老工作报告，不像一篇议论文。</p><div class="tips"><div class="tt">三条实战建议</div><h3 id="三条实战建议">三条实战建议</h3></div><p>1. 概括题先“捡理念”，再“捡做法”。拿到民生类材料，先扫一眼有没有“理念型”“总纲型”表述——今天材料1的“积极老龄观、健康老龄化”“三大体系”就是现成的。这类话不需要你自己编，抄下来就是政治站位，一条能顶半条做法。然后再按“网络—照护—农村—产业—消费”分堆。今天材料里的“县镇村三级网络”“中心带站点、站点连家庭”“长期照护服务产业园”“银发经济产业园”“适老智慧科普馆”全是金子，一个都别丢。</p><p>2. 对策题备一张“主体+要素”双清单。主体清单：政府、企业、社会组织/志愿力量、金融机构、高校院所、家庭、老人自身。要素清单：人、钱、地、技术、数据、标准、制度。写完政府该干的，逐个过一遍清单，至少补两个社会主体和一个要素弱项。今天第二题你六条里五条都是“政府＋企业”，把“社区志愿服务和家庭照护支持”“社会组织参与标准制定”提到显眼位置，27分就能变29分。还有一条铁律：一条一事，别写成“大杂烩”。</p><p>3. 大作文遇到“概念型”题干，先破题再谋篇。像“投资于人”“化短板为潜力板”这种题干，核心概念必须先解释清楚，否则后面全是空中楼阁。破题三步：这个词改写了什么旧认知？（养老投入不是成本，是投资）它指向什么现实问题？（老龄化加深＋服务消费扩容）它要求我们怎么做？（分论点）。今天你这篇，前两步都没做足，直接跳到第三步，所以读起来像总结汇报。补上破题的两句话，44分能变47分。</p><h3 id="花生式结语">花生式结语</h3><p>说句掏心窝子的话：今天这卷子，在广东考场上已经能打掉一大半人了。主题押得准，材料吃得透，答案写得满，第三题那标题和“实、新、智、通”的排比放真考场就是“加分脸”。你差的这2分，就差在“理念有没有站上去、条目会不会拆、概念有没有讲透”这三个习惯上——不是能力问题，是手感问题，练两天就能改过来。养老这个主题，广东今年从中央到省里连着发文件，你后面还会碰到——“积极老龄观＋健康老龄化＋三级网络＋医养结合＋银发经济＋长护险＋AI+养老＋跨境协同”这一串，背成肌肉记忆，90+就是你的日常。别飘，稳住，冲！</p></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">附</div><h2 class="part-title">素材来源链接汇总<span class="en">SOURCES</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><p>以下为本套模拟题素材来源，均可在浏览器中点击查看原文。</p>
+<table class="src-tbl"><thead><tr class="header"><th>序号</th><th>标题</th><th>来源</th><th>URL</th></tr></thead><tbody><tr class="odd"><td>1</td><td>李强主持召开国务院常务会议 听取老龄工作情况汇报（部署实施医疗康复护理扩容提升工程、研究推动体育赛事健康发展、审议通过《中医药传统知识保护条例（草案）》）</td><td>中国政府网</td><td><a href="https://www.gov.cn/yaowen/liebiao/202609/content_7081464.htm"><span class="underline">https://www.gov.cn/yaowen/liebiao/202609/content_7081464.htm</span></a></td></tr><tr class="even"><td>2</td><td>国务院常务会议解读丨国务院常务会议部署实施医疗康复护理扩容提升工程</td><td>中国政府网</td><td><a href="https://www.gov.cn/zhengce/202609/content_7081473.htm"><span class="underline">https://www.gov.cn/zhengce/202609/content_7081473.htm</span></a></td></tr><tr class="odd"><td>3</td><td>李强主持召开国务院常务会议（新华社）</td><td>新华网</td><td><a href="http://www.xinhuanet.com.cn/politics/20260918/fcc91a682bdc4ac796123c41af18d1fb/c.html"><span class="underline">http://www.xinhuanet.com.cn/politics/20260918/fcc91a682bdc4ac796123c41af18d1fb/c.html</span></a></td></tr><tr class="even"><td>4</td><td>16个部委联合印发通知，首个民族团结进步宣传周将于9月21日启动</td><td>广东省民族宗教事务委员会</td><td><a href="https://mzzjw.gd.gov.cn/mzzjw/dtyw/zscd/content/post_4957306.html"><span class="underline">https://mzzjw.gd.gov.cn/mzzjw/dtyw/zscd/content/post_4957306.html</span></a></td></tr><tr class="odd"><td>5</td><td>首个民族团结进步宣传周将于9月21日至27日举办</td><td>人民网</td><td><a href="http://society.people.com.cn/n1/2026/0915/c1008-40799269.html"><span class="underline">http://society.people.com.cn/n1/2026/0915/c1008-40799269.html</span></a></td></tr><tr class="even"><td>6</td><td>中央第四生态环境保护督察组向广东省反馈督察情况</td><td>广东省人民政府网</td><td><a href="https://www.gd.gov.cn/zzzq/gdyw/content/post_4957574.html"><span class="underline">https://www.gd.gov.cn/zzzq/gdyw/content/post_4957574.html</span></a></td></tr><tr class="odd"><td>7</td><td>黄坤明在中央第四生态环境保护督察组督察广东省情况反馈会上作表态发言：严而又严实而又实做好整改“后半篇文章”</td><td>广东省人民政府网</td><td><a href="https://www.gd.gov.cn/xxts/content/post_4957667.html"><span class="underline">https://www.gd.gov.cn/xxts/content/post_4957667.html</span></a></td></tr><tr class="even"><td>8</td><td>不折不扣从严从实抓好督察反馈问题整改 以高水平生态环境保护支撑高质量发展</td><td>广州日报数字报</td><td><a href="https://gzdaily.dayoo.com/pc/html/2026-09/19/content_866_915195.htm"><span class="underline">https://gzdaily.dayoo.com/pc/html/2026-09/19/content_866_915195.htm</span></a></td></tr><tr class="odd"><td>9</td><td>全省推进思想政治工作专题会议在穗召开：深耕思政沃土 凝聚奋进力量</td><td>南方日报</td><td><a href="https://epaper.nfnews.com/nfdaily/html/202609/18/content_10181786.html"><span class="underline">https://epaper.nfnews.com/nfdaily/html/202609/18/content_10181786.html</span></a></td></tr><tr class="even"><td>10</td><td>孟凡利分别会见中国人保谭炯、中国节能廖家生</td><td>广东省人民政府网</td><td><a href="https://www.gd.gov.cn/zzzq/gdyw/content/post_4957454.html"><span class="underline">https://www.gd.gov.cn/zzzq/gdyw/content/post_4957454.html</span></a></td></tr><tr class="odd"><td>11</td><td>广东22部门联合发布文件 深化养老服务改革发展</td><td>广东省民政厅</td><td><a href="https://smzt.gd.gov.cn/mzzx/mzyw/content/post_4854556.html"><span class="underline">https://smzt.gd.gov.cn/mzzx/mzyw/content/post_4854556.html</span></a></td></tr><tr class="even"><td>12</td><td>《广东省深化养老服务改革发展的若干措施》政策解读</td><td>广东省民政厅</td><td><a href="https://smzt.gd.gov.cn/zwgk/zcfg/zcjd/spyp/content/post_4854600.html"><span class="underline">https://smzt.gd.gov.cn/zwgk/zcfg/zcjd/spyp/content/post_4854600.html</span></a></td></tr><tr class="odd"><td>13</td><td>广东加快培育银发经济产业园 到2030年力争创建不少于2个国家级银发经济产业园区</td><td>广东省人民政府网</td><td><a href="https://www.gd.gov.cn/zwgk/zdlyxxgkzl/mzxx/content/mpost_4910698.html"><span class="underline">https://www.gd.gov.cn/zwgk/zdlyxxgkzl/mzxx/content/mpost_4910698.html</span></a></td></tr><tr class="even"><td>14</td><td>广东拟实施“人工智能+养老”行动</td><td>广东省人民政府网</td><td><a href="https://www.gd.gov.cn/gdywdt/bmdt/content/mpost_4938299.html"><span class="underline">https://www.gd.gov.cn/gdywdt/bmdt/content/mpost_4938299.html</span></a></td></tr><tr class="odd"><td>15</td><td>就在清远！华南地区首个实体化运作的长护服务产业园正式揭牌</td><td>新浪财经</td><td><a href="https://finance.sina.com.cn/roll/2026-09-16/doc-iniryzkw6684680.shtml"><span class="underline">https://finance.sina.com.cn/roll/2026-09-16/doc-iniryzkw6684680.shtml</span></a></td></tr><tr class="even"><td>16</td><td>深耕221万老年人消费新场景，广州银发经济迸发澎湃新活力</td><td>广州市人民政府网</td><td><a href="https://www.gz.gov.cn/xw/zwlb/bmdt/content/mpost_10833508.html"><span class="underline">https://www.gz.gov.cn/xw/zwlb/bmdt/content/mpost_10833508.html</span></a></td></tr><tr class="odd"><td>17</td><td>首发！广州绘就银发经济新场景“全景图” 五大类二十场景激活“银发”新活力</td><td>广州市人民政府网</td><td><a href="https://www.gz.gov.cn/xw/zwlb/bmdt/smzj/content/post_10744935.html"><span class="underline">https://www.gz.gov.cn/xw/zwlb/bmdt/smzj/content/post_10744935.html</span></a></td></tr><tr class="even"><td>18</td><td>广州白云区银发经济产业园揭牌，全市首个适老智慧科普馆开业运营</td><td>中国日报</td><td><a href="http://ex.chinadaily.com.cn/exchange/partners/82/rss/channel/cn/columns/j3u3t6/stories/WS6970b3bba310942cc499c40d.html"><span class="underline">http://ex.chinadaily.com.cn/exchange/partners/82/rss/channel/cn/columns/j3u3t6/stories/WS6970b3bba310942cc499c40d.html</span></a></td></tr><tr class="odd"><td>19</td><td>南沙发布10项智慧养老综合服务场景</td><td>广州市人民政府网</td><td><a href="https://www.gz.gov.cn/xw/zwlb/gqdt/nsq/content/post_10725932.html"><span class="underline">https://www.gz.gov.cn/xw/zwlb/gqdt/nsq/content/post_10725932.html</span></a></td></tr><tr class="even"><td>20</td><td>广州市南沙区榄核镇大坳村颐康服务站：医养康养惠民生 守护农村长者夕阳红</td><td>中国报道</td><td><a href="http://new.chinareports.org.cn/index/news/122631.html"><span class="underline">http://new.chinareports.org.cn/index/news/122631.html</span></a></td></tr><tr class="odd"><td>21</td><td>佛山高明唯一！明阳村拟入选全国示范性老年友好型社区</td><td>南方+</td><td><a href="https://www.nfnews.com/content/VoQVJpZPy5.html"><span class="underline">https://www.nfnews.com/content/VoQVJpZPy5.html</span></a></td></tr><tr class="even"><td>22</td><td>广东省15部门联合发文 进一步促进消费</td><td>中国质量报</td><td><a href="https://www.zhonghongwang.com/show-257-457768-1.html"><span class="underline">https://www.zhonghongwang.com/show-257-457768-1.html</span></a></td></tr><tr class="odd"><td>23</td><td>一张消费券串联餐饮文旅汽车多场景 我市多领域消费潜力持续释放</td><td>云浮市人民政府网</td><td><a href="https://www.yunfu.gov.cn/zxzx/xsqxw/content/post_2041206.html"><span class="underline">https://www.yunfu.gov.cn/zxzx/xsqxw/content/post_2041206.html</span></a></td></tr><tr class="even"><td>24</td><td>“公益助老+中医药康养+跨境协同”，省老年基金会银发项目（珠海）活动中心启用</td><td>珠海特区报</td><td><a href="https://pub-zhtb.hizh.cn/a/202609/17/AP6aabe657e4b0814cee300cb9.html"><span class="underline">https://pub-zhtb.hizh.cn/a/202609/17/AP6aabe657e4b0814cee300cb9.html</span></a></td></tr><tr class="odd"><td>25</td><td>广东多部门联合广州发布若干措施 支持越秀区打造养老金融示范样板</td><td>证券时报</td><td><a href="https://www.stcn.com/article/detail/3896587.html"><span class="underline">https://www.stcn.com/article/detail/3896587.html</span></a></td></tr><tr class="even"><td>26</td><td>汕尾市民政局关于《汕尾市深化养老服务改革发展实施方案（征求意见稿）》公开征求意见的公告</td><td>汕尾市人民政府网</td><td><a href="https://www.shanwei.gov.cn/swmz/ztzt/zdly/yljgjbxx/content/post_1275810.html"><span class="underline">https://www.shanwei.gov.cn/swmz/ztzt/zdly/yljgjbxx/content/post_1275810.html</span></a></td></tr></tbody></table>
+<p>注：以上链接均为2026年9月19日搜索时的原文地址，部分链接可能因网站更新而失效。</p>
+<p>主题方向：投资于人 · 守护夕阳——扩容普惠养老、激活银发经济，以养老服务提质托起幸福晚年</p>
+<p>对标广东省考县级卷（县级及以上）</p>
+<p>总得分：88.0/100</p></div></div></div>
+<script>
+function togglePart(h){
+  var p = h.parentNode; if(!p) return;
+  p.classList.toggle("closed");
+}
+document.addEventListener("DOMContentLoaded", function(){
+  var parts = document.querySelectorAll(".part");
+  for(var i=1;i<parts.length;i++){ parts[i].classList.add("closed"); }
+});
+</script></article>
+</main>
+<footer class="foot">
+  <a class="home" href="index.html">返回日期索引</a> ·
+  广东省考申论每日自动化工作流 · 仅供学习参考
+</footer>
+<script>
+var DATES = ["2026-07-27","2026-07-28","2026-07-30","2026-07-31","2026-08-02","2026-08-03","2026-08-04","2026-08-05","2026-08-06","2026-08-07","2026-08-08","2026-08-09","2026-08-10","2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-15","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-22","2026-08-23","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-08-29","2026-08-30","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-05","2026-09-06","2026-09-07","2026-09-08","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-19"];
+var cur = "2026-09-19";
+function goDate(d){ if(d) location.href = d + '.html'; }
+function goRel(n){
+  var i = DATES.indexOf(cur);
+  if(i < 0) return;
+  var j = Math.min(Math.max(i + n, 0), DATES.length - 1);
+  if(j !== i) location.href = DATES[j] + '.html';
+}
+document.getElementById('dateSel').value = cur;
+</script>
+</body>
+</html>
