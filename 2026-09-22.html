@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>粤申题库 · 2026-09-22</title>
+<style>
+/* ============================================================
+   粤申题库 · 杂志风（现代编辑部 · 第三版样式）
+   ============================================================
+   设计语言：把每一天当作一份「申论晨报」的卷期号。
+   - 冷白纸底 + 近黑墨色，编辑部朱红作唯一点睛色。
+   - 超大日期作为每期的「刊头」。
+   - 编号栏眉（01 抓取 · 02 解析 · 03 命题 · 04 作答 · 05 批改）
+     是真实的工作流次序，不是装饰。
+   ------------------------------------------------------------
+   切换：如需回退到 v1 精致布局，只需把 enhance.py / build_site.py
+   中的 style_mag.css 改回 style_v1.css（或 style.css），一键还原。
+   ============================================================ */
+
+/* ---------- 全局 ---------- */
+:root{
+  color-scheme:light;
+  --paper:#FFFFFF;
+  --paper-2:#F5F6F7;
+  --ink:#14161A;
+  --ink-soft:#4A4F57;
+  --ink-faint:#9AA0A8;
+  --line:#E7E8EA;
+  --line-strong:#D8DADD;
+  --red:#C2231C;            /* 编辑部朱红 —— 唯一点睛 */
+  --red-deep:#8F1813;
+  --red-soft:#FBEDEC;
+  --desk:#F2F3F4;
+  --serif:"Source Han Serif SC","Noto Serif SC","Songti SC","SimSun","STSong",serif;
+  --sans:"Inter","Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  --mono:"SF Mono","Roboto Mono","JetBrains Mono","Menlo",monospace;
+  --maxw:1040px;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--desk);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:16px;
+  line-height:1.95;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  padding-bottom:80px;
+}
+::selection{background:var(--red);color:#fff;}
+a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line-strong);transition:color .18s ease,border-color .18s ease;}
+a:hover{color:var(--red);border-bottom-color:var(--red);}
+img{max-width:100%;height:auto;}
+
+/* ============================================================
+   顶部栏 —— 顶栏不再是「暗色胶囊」，改为白色刊头格栅。
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:60;
+  background:rgba(255,255,255,.92);
+  -webkit-backdrop-filter:saturate(160%) blur(14px);
+  backdrop-filter:saturate(160%) blur(14px);
+  border-bottom:1px solid var(--line-strong);
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:10px 20px;font-family:var(--sans);
+}
+.topbar .brand{
+  font-weight:800;letter-spacing:4px;font-size:13px;color:var(--ink);white-space:nowrap;
+  display:inline-flex;align-items:center;gap:9px;
+}
+.topbar .brand .seal{
+  font-family:var(--serif);
+  color:var(--red);font-weight:900;font-size:16px;letter-spacing:0;
+}
+.topbar .nav{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap;}
+.topbar select{
+  font-family:var(--sans);font-size:12.5px;letter-spacing:.5px;
+  padding:6px 10px;border-radius:0;background:#fff;
+  border:1px solid var(--line-strong);color:var(--ink);cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 50%,calc(100% - 11px) 50%;
+  background-size:4px 4px,4px 4px;background-repeat:no-repeat;
+  padding-right:26px;
+}
+.topbar select:focus{outline:2px solid var(--red);outline-offset:1px;}
+.btn{
+  font-family:var(--sans);font-size:12px;letter-spacing:.5px;
+  padding:6px 12px;border-radius:0;border:1px solid var(--line-strong);
+  background:transparent;color:var(--ink-soft);cursor:pointer;
+  text-decoration:none;border-bottom:1px solid var(--line-strong);
+  transition:color .18s,border-color .18s,background .18s;
+}
+.btn:hover{background:var(--ink);color:#fff;border-color:var(--ink);}
+.btn:disabled{opacity:.3;cursor:not-allowed;}
+.btn:disabled:hover{background:transparent;color:var(--ink-soft);}
+
+/* ============================================================
+   卷头 —— 超大日期刊头（本期唯一记忆点）。
+   ============================================================ */
+.paper{max-width:var(--maxw);margin:0 auto;padding:0 20px;}
+.doc-head{
+  background:var(--paper);
+  border-bottom:3px solid var(--ink);
+  padding:46px 0 30px;margin-top:16px;position:relative;
+}
+/* 刊头网格底纹：淡到几乎看不见，只留呼吸感 */
+.doc-head::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);
+  background-size:calc(var(--maxw)/12) 100%;
+}
+/* 栏目眉（小字编号） */
+.doc-head .docno{
+  font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--ink-faint);
+  text-transform:uppercase;display:flex;align-items:center;gap:12px;margin-bottom:26px;position:relative;
+}
+.doc-head .docno::before{content:"";width:34px;height:2px;background:var(--red);display:inline-block;flex:none;}
+/* 大标题 */
+.doc-head h1{
+  font-family:var(--sans);font-weight:800;font-size:clamp(22px,3vw,30px);
+  letter-spacing:.5px;color:var(--ink);line-height:1.15;margin:0 0 10px;position:relative;
+}
+/* 超大日期 */
+.doc-head .ddate{
+  font-family:var(--sans);font-weight:800;font-size:clamp(52px,11vw,120px);
+  line-height:.95;letter-spacing:-3px;color:var(--ink);
+  margin:0 0 22px;position:relative;
+  font-variant-numeric:tabular-nums;
+}
+.doc-head .ddate .plus-tag{font-size:14px;letter-spacing:2px;vertical-align:super;margin-left:14px;color:var(--red);font-weight:700;}
+.doc-head .dmeta{display:flex;flex-wrap:wrap;gap:8px;font-family:var(--sans);margin-bottom:24px;position:relative;}
+.doc-head .chip{
+  border:1px solid var(--line-strong);background:var(--paper-2);border-radius:0;
+  padding:6px 12px;font-size:12px;letter-spacing:.5px;color:var(--ink-soft);
+}
+.doc-head .chip b{color:var(--ink);font-weight:700;}
+.doc-head .chip.plus-chip{color:var(--red);border-color:var(--red);font-weight:700;}
+/* 朱红印章：模拟得分 */
+.doc-head .score-badge{
+  position:absolute;top:30px;right:20px;width:88px;height:88px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:2.5px solid var(--red);border-radius:50%;
+  color:var(--red);font-family:var(--serif);font-weight:900;font-size:18px;line-height:1.2;letter-spacing:1px;
+  z-index:2;
+  animation:stamp .5s ease-out both .2s;
+}
+.doc-head .score-badge::before{
+  content:"";position:absolute;inset:6px;border:1px solid var(--red);border-radius:50%;opacity:.35;
+}
+.doc-head .score-badge small{font-size:8px;font-weight:400;letter-spacing:2px;font-family:var(--sans);}
+@keyframes stamp{0%{opacity:0;transform:rotate(8deg) scale(1.4);}100%{opacity:1;transform:rotate(8deg) scale(1);}}
+/* 刊头统计条 */
+.doc-head .hero-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line-strong);
+  border-bottom:1px solid var(--line-strong);margin-top:4px;padding:20px 0 0;font-family:var(--sans);position:relative;
+}
+.doc-head .stat{text-align:left;padding-right:16px;border-left:1px solid var(--line-strong);padding-left:18px;}
+.doc-head .stat:first-child{border-left:none;padding-left:0;}
+.doc-head .stat .v{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums;}
+.doc-head .stat .v.red{color:var(--red);}
+.doc-head .stat .l{font-size:10.5px;color:var(--ink-faint);letter-spacing:2px;margin-top:6px;text-transform:uppercase;}
+
+/* ---------- 正文纸张 ---------- */
+.body{
+  background:var(--paper);
+  border-bottom:1px solid var(--line-strong);
+  padding:30px 0 40px;margin-top:10px;
+}
+.body > :first-child{margin-top:0;}
+.body > :last-child{margin-bottom:0;}
+.body p{margin:0 0 16px;font-size:16px;line-height:2.0;color:var(--ink);}
+.body strong{font-weight:700;color:var(--ink);}
+.body a[href^="http"]{color:var(--ink);border-bottom:1px solid var(--line-strong);}
+.body a[href^="http"]:hover{color:var(--red);border-bottom-color:var(--red);}
+.body table{border-collapse:collapse;width:100%;margin:20px 0;font-family:var(--sans);font-size:13.5px;}
+.body th,.body td{border:1px solid var(--line-strong);padding:10px 12px;text-align:left;}
+.body th{background:var(--paper-2);font-weight:700;letter-spacing:.5px;color:var(--ink);}
+.body tr:nth-child(even) td{background:rgba(0,0,0,.014);}
+.body ul,.body ol{margin:0 0 16px;padding-left:26px;}
+.body li{margin-bottom:6px;}
+.body blockquote{margin:0 0 16px;border-left:3px solid var(--ink);padding:4px 18px;color:var(--ink-soft);}
+.body hr{border:none;border-top:1px solid var(--line-strong);margin:28px 0;}
+.body .underline{text-decoration:underline;text-underline-offset:3px;}
+
+/* ============================================================
+   大板块 —— 编号栏眉（01-05 对应真实工作流次序）。
+   ============================================================ */
+.part{margin-top:64px;scroll-margin-top:80px;border-top:1px solid var(--line-strong);padding-top:40px;}
+.part:first-child{border-top:none;padding-top:0;margin-top:0;}
+.part-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px;}
+.part-kicker{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:3px;color:var(--red);
+  display:inline-flex;align-items:center;gap:8px;flex:none;
+}
+.part-kicker::before{content:"";width:22px;height:1.5px;background:var(--red);display:inline-block;}
+.part-title{
+  font-family:var(--sans);font-size:26px;margin:0;letter-spacing:-.5px;font-weight:800;
+  display:inline-flex;align-items:baseline;gap:12px;line-height:1.2;
+}
+.part-title .en{font-size:11px;color:var(--ink-faint);letter-spacing:3px;font-weight:500;text-transform:uppercase;}
+.part-note{font-family:var(--sans);font-size:12.5px;color:var(--ink-faint);letter-spacing:.5px;margin:14px 0 30px;}
+
+/* ============================================================
+   第一部分 · 时政热点速览 —— 杂志式「固定栏目」。
+   ============================================================ */
+.dim-block{margin-bottom:38px;}
+.dim-head{
+  display:flex;align-items:center;gap:14px;font-family:var(--sans);
+  font-size:18px;font-weight:800;color:var(--ink);letter-spacing:1px;
+  padding-bottom:12px;border-bottom:1px solid var(--ink);margin-bottom:4px;
+}
+.dim-head .d-n{
+  font-family:var(--mono);font-size:12px;color:var(--ink-faint);font-weight:600;letter-spacing:0;
+  border:1px solid var(--line-strong);border-radius:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:26px;height:26px;padding:0 4px;background:var(--paper-2);
+}
+.news-item{
+  border-left:2px solid transparent;padding:16px 0 16px 18px;margin-left:2px;
+  border-bottom:1px solid var(--line);
+  transition:border-color .2s,background .2s;
+}
+.news-item:last-child{border-bottom:none;}
+.news-item:hover{border-left-color:var(--red);background:linear-gradient(90deg,var(--red-soft),transparent 75%);}
+.news-item h3{
+  margin:0 0 6px;font-family:var(--sans);font-size:16px;font-weight:700;line-height:1.55;
+  display:flex;align-items:baseline;gap:10px;
+}
+.news-item h3 .idx{font-size:12px;color:var(--ink-faint);font-weight:500;font-variant-numeric:tabular-nums;flex:none;}
+.news-item p{margin:0 0 8px;font-size:14.5px;color:var(--ink-soft);line-height:1.9;}
+.news-item .src{
+  font-family:var(--sans);font-size:11px;color:var(--ink-faint);letter-spacing:.5px;
+  display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;
+}
+.news-item .src a{color:var(--ink-soft);border-bottom:1px solid var(--line-strong);font-weight:600;}
+.news-item .src a:hover{color:var(--red);border-bottom-color:var(--red);}
+
+/* ============================================================
+   第二部分 · 深度解析
+   ============================================================ */
+.trend{
+  background:var(--ink);color:#E9EBEE;border-radius:0;padding:30px 34px;
+  font-size:15.5px;line-height:2.05;margin-bottom:34px;
+}
+.trend b{color:#fff;font-weight:700;}
+.trend .tlabel{font-family:var(--mono);font-size:11px;letter-spacing:4px;color:#E5484D;display:block;margin-bottom:14px;text-transform:uppercase;}
+.top5{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line-strong);}
+.top5-item{
+  background:var(--paper);border-bottom:1px solid var(--line-strong);padding:26px 0;
+}
+.top5-item:last-child{border-bottom:none;}
+.top5-item .rankrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-family:var(--sans);}
+.rank-tag{
+  font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:2px;color:var(--ink);
+  border:1.5px solid var(--ink);padding:3px 10px;border-radius:0;flex:none;background:var(--paper-2);
+}
+.stars{color:var(--red);letter-spacing:2px;font-size:12px;font-weight:700;}
+.top5-item h3{margin:0;font-family:var(--sans);font-size:19px;font-weight:800;line-height:1.45;flex:1;min-width:220px;}
+.tfield{margin-top:10px;font-size:15px;line-height:1.95;color:var(--ink-soft);}
+.tfield .k{font-family:var(--sans);font-size:12px;font-weight:800;color:var(--ink);letter-spacing:2px;margin-right:6px;flex:none;text-transform:uppercase;}
+.kw-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.kw-tag{
+  font-family:var(--sans);font-size:11px;color:var(--ink-soft);
+  border:1px solid var(--line-strong);background:var(--paper-2);
+  padding:3px 10px;border-radius:99px;letter-spacing:.5px;
+}
+
+/* ============================================================
+   第三部分 · 模拟试题
+   ============================================================ */
+.paper-head{
+  background:var(--ink);color:#fff;border-radius:0;
+  padding:16px 22px;font-family:var(--sans);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+}
+.paper-head .t{font-size:14px;font-weight:800;letter-spacing:3px;text-transform:uppercase;}
+.paper-head .m{font-size:11px;color:#9AA0AA;letter-spacing:1px;}
+.material{
+  background:var(--paper);border:1px solid var(--line-strong);border-top:none;
+  padding:24px 30px;margin-bottom:18px;
+}
+.material:last-child{margin-bottom:0;}
+.material .mno{
+  font-family:var(--mono);font-weight:700;font-size:12px;color:var(--red);letter-spacing:3px;
+  display:inline-block;border-bottom:2px solid var(--red);padding-bottom:4px;margin-bottom:14px;
+}
+.material p{margin:0 0 12px;font-size:15.5px;line-height:2.05;}
+.qblock{border:1.5px solid var(--ink);border-radius:0;margin-top:24px;background:var(--paper);}
+.qblock .qhead{
+  font-family:var(--sans);font-weight:800;font-size:14px;background:var(--paper-2);
+  border-bottom:1px solid var(--line-strong);padding:13px 22px;letter-spacing:.5px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.qblock .qhead .p{font-size:11px;color:var(--red);border:1px solid var(--red);border-radius:0;padding:0 7px;font-weight:700;}
+.qblock .qbody{padding:16px 22px;font-size:15.5px;line-height:1.95;}
+
+/* ============================================================
+   第四部分 · 参考答案（答题卡改为清单式条目）
+   ============================================================ */
+.ans-block{margin-bottom:30px;}
+.ans-head{display:flex;align-items:center;gap:12px;font-family:var(--sans);font-size:15px;font-weight:800;letter-spacing:1px;margin-bottom:10px;}
+.ans-head .stamp{font-size:10px;color:#fff;background:var(--ink);border-radius:0;padding:3px 9px;letter-spacing:2px;font-family:var(--mono);}
+.answer-card{
+  background-color:var(--paper);border:1px solid var(--line-strong);border-left:3px solid var(--ink);
+  border-radius:0;padding:26px 28px;
+}
+.answer-card .abody p{margin:0 0 12px;font-size:15.5px;line-height:2;}
+.answer-card .abody p:last-child{margin-bottom:0;}
+.answer-card .wcount{font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-align:right;margin-top:10px;letter-spacing:1px;}
+.essay-title{font-family:var(--sans);font-weight:800;font-size:20px;letter-spacing:1px;text-align:center;margin:0 0 20px;color:var(--ink);}
+
+/* ============================================================
+   第五部分 · 批改报告
+   ============================================================ */
+.score-tbl{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:13.5px;margin:18px 0 28px;}
+.score-tbl th,.score-tbl td{border:1px solid var(--line-strong);padding:11px 12px;text-align:center;}
+.score-tbl th{background:var(--ink);color:#fff;font-weight:700;letter-spacing:1px;}
+.score-tbl tr.total td{background:var(--paper-2);font-weight:800;}
+.score-tbl tr.total td.mark-red,.score-tbl td.mark-red{color:var(--red);}
+.score-tbl td.l{text-align:left;}
+.sub-head{
+  font-family:var(--sans);font-weight:800;font-size:16px;margin:30px 0 12px;letter-spacing:.5px;
+  display:flex;align-items:center;gap:10px;padding-left:0;
+  border-left:none;
+}
+.sub-head::before{content:"";width:18px;height:18px;background:var(--red);flex:none;display:inline-block;}
+.sub-head:first-of-type{margin-top:0;}
+.rev-line{margin:0 0 12px;font-size:15px;line-height:1.95;color:var(--ink);}
+.rev-line .lbl{font-family:var(--sans);font-weight:800;color:var(--ink);margin-right:5px;}
+.deduct{border-left:3px solid var(--red);background:var(--red-soft);border-radius:0;padding:14px 18px;font-size:14px;color:var(--red-deep);margin:14px 0;line-height:1.9;}
+.improve{border-left:3px solid var(--ink);background:var(--paper-2);border-radius:0;padding:14px 18px;font-size:14px;color:var(--ink);margin:14px 0;line-height:1.9;}
+
+.reviewB{background:var(--paper);border:1px solid var(--line-strong);border-radius:0;padding:32px 36px;margin-top:34px;}
+.reviewB .banner{display:flex;align-items:center;gap:14px;padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:20px;}
+.reviewB .banner .av{
+  width:52px;height:52px;border-radius:0;background:var(--ink);color:#fff;flex:none;
+  display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:800;font-size:20px;
+}
+.reviewB .banner h3{margin:0;font-family:var(--sans);font-size:19px;letter-spacing:.5px;}
+.reviewB .banner .sub{font-size:11.5px;color:var(--ink-faint);font-family:var(--sans);letter-spacing:1px;margin-top:3px;text-transform:uppercase;}
+.reviewB p{font-size:15.5px;line-height:2;margin:0 0 14px;}
+.reviewB .hot{border-top:1px dashed var(--line-strong);margin-top:22px;padding-top:20px;}
+.reviewB .hot .h-title{font-family:var(--sans);font-weight:800;font-size:15px;color:var(--red);letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.reviewB .tips{margin-top:24px;background:var(--paper-2);border:1px solid var(--line-strong);border-radius:0;padding:20px 24px;}
+.reviewB .tips .tt{font-family:var(--sans);font-weight:800;font-size:13px;letter-spacing:2px;margin-bottom:12px;color:var(--ink);}
+.reviewB .tips ol{margin:0;padding-left:20px;}
+.reviewB .tips li{margin-bottom:8px;font-size:14.5px;line-height:1.9;}
+.reviewB .attitude{margin-top:24px;text-align:center;font-size:15.5px;color:var(--ink-soft);border-top:1px dashed var(--line-strong);padding-top:22px;line-height:2;}
+
+/* ============================================================
+   附录
+   ============================================================ */
+.src-tbl{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12.5px;}
+.src-tbl th,.src-tbl td{border:1px solid var(--line-strong);padding:9px 10px;vertical-align:top;text-align:left;}
+.src-tbl th{background:var(--ink);color:#fff;font-weight:700;letter-spacing:1px;}
+.src-tbl td.n{text-align:center;color:var(--ink-faint);font-variant-numeric:tabular-nums;font-family:var(--mono);}
+.src-tbl td.u{font-size:11.5px;word-break:break-all;font-family:var(--mono);color:var(--ink-soft);}
+.src-tbl td.u a{border:none;color:var(--ink-soft);}
+.src-tbl td.u a:hover{color:var(--red);}
+.src-tbl tr:nth-child(even) td{background:rgba(0,0,0,.014);}
+
+/* ---------- 页脚 ---------- */
+.foot{max-width:var(--maxw);margin:36px auto 0;padding:0 20px;text-align:center;font-family:var(--sans);font-size:11px;color:var(--ink-faint);letter-spacing:2px;line-height:2;text-transform:uppercase;}
+.foot .home{border:none;color:var(--ink-faint);letter-spacing:2px;}
+.foot .home:hover{color:var(--red);}
+
+/* ============================================================
+   大板块折叠 —— 默认全部展开，点击分区标题可收起/展开
+   ============================================================ */
+.part-head{
+  cursor:pointer;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .3s cubic-bezier(.32,.72,0,1);
+  padding-bottom:4px;
+}
+.part-head:active{transform:scale(.992);}
+.part-head:hover .part-arrow{color:var(--red);}
+.part-arrow{
+  margin-left:auto;font-size:15px;color:var(--ink-faint);
+  display:inline-block;transition:transform .5s cubic-bezier(.32,.72,0,1);
+  flex:none;align-self:center;
+}
+.part.closed .part-arrow{transform:rotate(-90deg);}
+.part.closed .part-kicker{color:var(--ink-faint);}
+.part.closed .part-head .part-title{color:var(--ink-soft);}
+.part-body{
+  display:grid;grid-template-rows:1fr;overflow:hidden;
+  transition:grid-template-rows .6s cubic-bezier(.32,.72,0,1),opacity .4s ease;
+  opacity:1;
+}
+.part-body-inner{min-height:0;overflow:hidden;}
+.part.closed .part-body{grid-template-rows:0fr;opacity:0;}
+.part.closed .part-head{border-bottom:1px solid var(--line-strong);}
+@media(prefers-reduced-motion:reduce){
+  .part-body{transition:none;}
+  .part.closed .part-body{display:none;}
+}
+
+/* ============================================================
+   首页 · 三大板块
+   ============================================================ */
+.home-hero{max-width:var(--maxw);margin:22px auto 0;padding:0 20px;text-align:left;border-bottom:3px solid var(--ink);padding-bottom:26px;}
+.home-hero h1{font-family:var(--sans);font-size:clamp(26px,5vw,44px);letter-spacing:-1px;margin:0 0 8px;font-weight:800;}
+.home-hero .sub{color:var(--ink-soft);font-size:14px;letter-spacing:2px;font-family:var(--sans);margin:0;position:relative;padding-left:0;display:inline-flex;align-items:center;gap:10px;}
+.home-hero .sub::before{content:"";width:22px;height:2px;background:var(--red);display:inline-block;}
+.grid{max-width:var(--maxw);margin:0 auto;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:var(--line-strong);border:1px solid var(--line-strong);}
+.card{
+  background:var(--paper);border:none;padding:26px 24px 20px;text-decoration:none;color:var(--ink);
+  display:flex;flex-direction:column;gap:10px;border-bottom:none;
+  transition:background .2s ease,transform .2s ease;
+}
+.card:hover{background:var(--paper-2);transform:translateY(-2px);}
+.card .cdate{font-family:var(--sans);font-weight:800;font-size:22px;letter-spacing:-.5px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.card .ctheme{font-size:13px;color:var(--ink-soft);line-height:1.7;flex:1;}
+.card .cscore{font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:1px;font-weight:700;text-transform:uppercase;}
+.card .cscore .na{color:var(--ink-faint);font-weight:400;}
+.card .go{align-self:flex-end;font-family:var(--sans);font-size:12px;color:var(--ink);font-weight:700;letter-spacing:.5px;}
+.card:hover .go{color:var(--red);}
+
+/* 加量卷标签 */
+.plus-tag{
+  display:inline-block;font-family:var(--sans);font-size:10px;font-weight:800;
+  color:#fff;background:var(--red);border-radius:0;padding:2px 8px;letter-spacing:1px;
+  vertical-align:middle;margin-left:6px;white-space:nowrap;
+}
+
+/* ============================================================
+   首页 · 今日/历史 双板块
+   ============================================================ */
+.idx-sec{max-width:var(--maxw);margin:0 auto;padding:0 20px;padding-top:40px;}
+.idx-head{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:17px;font-weight:800;letter-spacing:1px;color:var(--ink);margin-bottom:6px;}
+.idx-head .idx-dot{width:22px;height:3px;background:var(--ink);flex:none;}
+.idx-head .idx-dot.today{background:var(--red);}
+.idx-sec .sub-tip{font-family:var(--sans);font-size:12px;color:var(--ink-faint);letter-spacing:1px;margin:0 0 22px;}
+.today-sec{max-width:var(--maxw);margin:0 auto;padding:0 20px;padding-top:8px;}
+.today-card{
+  display:block;background:var(--ink);color:#fff;border-top:4px solid var(--red);
+  padding:34px 38px;text-decoration:none;position:relative;margin-top:20px;
+}
+.today-card .tc-main{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;}
+.today-card .tc-label{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:3px;color:#fff;background:var(--red);padding:3px 11px;}
+.today-card .tc-date{font-family:var(--sans);font-weight:800;font-size:clamp(40px,7vw,68px);letter-spacing:-2px;color:#fff;line-height:1;}
+.today-card .tc-theme{font-size:18px;color:#E9EBEE;line-height:1.8;margin-bottom:20px;font-family:var(--sans);font-weight:500;}
+.today-card .tc-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--sans);}
+.today-card .tchip{border:1px solid rgba(255,255,255,.25);padding:5px 12px;font-size:12px;color:#C9CCD2;letter-spacing:.5px;}
+.today-card .tchip b{color:#fff;font-weight:700;}
+.today-card .tc-score{font-family:var(--mono);font-size:13px;color:var(--red);font-weight:800;letter-spacing:1px;}
+.today-card .tc-go{display:inline-block;margin-top:22px;font-family:var(--sans);font-size:13px;color:#fff;font-weight:700;letter-spacing:1px;border-bottom:1px solid #fff;padding-bottom:2px;}
+.today-card:hover .tc-go{color:var(--red);border-bottom-color:var(--red);}
+.today-card:hover{background:#1B1E22;}
+
+/* 搜索 + 月份分组 */
+.search-box{max-width:var(--maxw);margin:6px auto 20px;padding:0 20px;position:relative;}
+.search-box .sb-icon{position:absolute;left:36px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.5;pointer-events:none;}
+.search-box input{
+  width:100%;padding:13px 16px 13px 44px;font-family:var(--sans);font-size:14px;
+  border:1px solid var(--line-strong);border-radius:0;background:#fff;
+  color:var(--ink);outline:none;transition:border-color .2s;
+}
+.search-box input:focus{border-color:var(--ink);}
+.search-box input::placeholder{color:var(--ink-faint);}
+.month-group{max-width:var(--maxw);margin:0 auto 14px;padding:0 20px;}
+.month-head{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;
+  border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line-strong);
+  font-family:var(--sans);background:var(--paper-2);
+}
+.month-arrow{font-size:11px;color:var(--ink-faint);width:14px;display:inline-block;transition:transform .5s;}
+.month-group.closed .month-arrow{transform:rotate(-90deg);}
+.month-name{font-weight:800;font-size:15px;letter-spacing:.5px;color:var(--ink);}
+.month-count{margin-left:auto;font-size:11px;color:var(--ink-faint);font-family:var(--mono);letter-spacing:1px;}
+.month-body{display:grid;grid-template-rows:1fr;padding-top:14px;transition:grid-template-rows .6s,opacity .35s;opacity:1;}
+.month-group.closed .month-body{grid-template-rows:0fr;padding-top:0;opacity:0;}
+.month-group.closed .month-body .grid{overflow:hidden;min-height:0;}
+.month-group.closed .month-body .grid > *{min-height:0;}
+.month-group.anim .month-body{overflow:hidden;}
+.month-body > .grid{min-height:0;}
+.month-group .grid{padding:0;}
+.empty{max-width:var(--maxw);margin:20px auto;padding:40px 20px;text-align:center;color:var(--ink-faint);font-family:var(--sans);font-size:14px;}
+
+/* ============================================================
+   响应式 & 动效
+   ============================================================ */
+@media(max-width:720px){
+  .doc-head{padding:34px 0 22px;}
+  .doc-head h1{font-size:24px;}
+  .doc-head .ddate{font-size:clamp(46px,13vw,72px);letter-spacing:-2px;margin-bottom:18px;}
+  .doc-head .score-badge{top:20px;right:6px;width:64px;height:64px;font-size:14px;}
+  .doc-head .score-badge::before{inset:4px;}
+  .doc-head .score-badge small{font-size:7px;}
+  .doc-head .hero-stats{grid-template-columns:repeat(2,1fr);gap:18px 0;padding-top:16px;}
+  .doc-head .stat{border-left:none;padding-left:0;}
+  .doc-head .stat:nth-child(2),.doc-head .stat:nth-child(4){border-left:1px solid var(--line-strong);padding-left:16px;}
+  .topbar .nav{margin-left:0;width:100%;justify-content:space-between;}
+  .paper{padding:0 14px;}
+  .grid{grid-template-columns:1fr 1fr;padding:0 14px;}
+  .today-card{padding:28px 24px;}
+  .today-card .tc-theme{font-size:15.5px;}
+  .body{padding:22px 0 30px;}
+  .body p{font-size:15.5px;}
+  .part{margin-top:48px;padding-top:30px;}
+  .part-title{font-size:22px;}
+  .reviewB{padding:24px 20px;}
+  .top5-item{padding:20px 0;}
+  .material{padding:20px 20px;}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px;}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <span class="brand"><span class="seal">粤</span>申题库</span>
+  <nav class="nav">
+    <a class="btn" href="index.html">首页</a>
+    <button class="btn" onclick="goRel(-1)" >&lsaquo; 前一天</button>
+    <select id="dateSel" onchange="goDate(this.value)" aria-label="选择日期">
+<option value="2026-07-27">2026-07-27</option>
+<option value="2026-07-28">2026-07-28</option>
+<option value="2026-07-30">2026-07-30</option>
+<option value="2026-07-31">2026-07-31</option>
+<option value="2026-08-02">2026-08-02</option>
+<option value="2026-08-03">2026-08-03</option>
+<option value="2026-08-04">2026-08-04</option>
+<option value="2026-08-05">2026-08-05</option>
+<option value="2026-08-06">2026-08-06</option>
+<option value="2026-08-07">2026-08-07</option>
+<option value="2026-08-08">2026-08-08</option>
+<option value="2026-08-09">2026-08-09</option>
+<option value="2026-08-10">2026-08-10</option>
+<option value="2026-08-11">2026-08-11</option>
+<option value="2026-08-12">2026-08-12</option>
+<option value="2026-08-13">2026-08-13</option>
+<option value="2026-08-14">2026-08-14</option>
+<option value="2026-08-15">2026-08-15</option>
+<option value="2026-08-18">2026-08-18</option>
+<option value="2026-08-19">2026-08-19</option>
+<option value="2026-08-20">2026-08-20</option>
+<option value="2026-08-21">2026-08-21</option>
+<option value="2026-08-22">2026-08-22</option>
+<option value="2026-08-23">2026-08-23</option>
+<option value="2026-08-24">2026-08-24</option>
+<option value="2026-08-25">2026-08-25</option>
+<option value="2026-08-26">2026-08-26</option>
+<option value="2026-08-27">2026-08-27</option>
+<option value="2026-08-28">2026-08-28</option>
+<option value="2026-08-29">2026-08-29</option>
+<option value="2026-08-30">2026-08-30</option>
+<option value="2026-08-31">2026-08-31</option>
+<option value="2026-09-01">2026-09-01</option>
+<option value="2026-09-02">2026-09-02</option>
+<option value="2026-09-03">2026-09-03</option>
+<option value="2026-09-04">2026-09-04</option>
+<option value="2026-09-05">2026-09-05</option>
+<option value="2026-09-06">2026-09-06</option>
+<option value="2026-09-07">2026-09-07</option>
+<option value="2026-09-08">2026-09-08</option>
+<option value="2026-09-15">2026-09-15</option>
+<option value="2026-09-16">2026-09-16</option>
+<option value="2026-09-17">2026-09-17</option>
+<option value="2026-09-18">2026-09-18</option>
+<option value="2026-09-19">2026-09-19</option>
+<option value="2026-09-20">2026-09-20</option>
+<option value="2026-09-21">2026-09-21</option>
+<option value="2026-09-22" selected>2026-09-22</option>
+    </select>
+    <button class="btn" onclick="goRel(1)" disabled>后一天 &rsaquo;</button>
+  </nav>
+</header>
+<main class="paper">
+  <div class="doc-head"><div class="docno">粤申模〔2026〕0922号 · 时政申论·每日晨报</div><h1>广东省考申论时政模拟题</h1><div class="ddate">2026-09-22</div><div class="dmeta"><span class="chip">主题：<b>强基固本 · 为民造福——树立大抓基层的鲜明导向，持之以恒推进全面从严治党，以高质量党建引领高效能基层治理，把党的政治优势、组织优势转化为治理效能和发展动能</b></span><span class="chip">对标：<b>广东省考县级卷（县级及以上）</b></span></div><div class="hero-stats"><div class="stat"><div class="v">24</div><div class="l">时政热点</div></div><div class="stat"><div class="v">8</div><div class="l">覆盖维度</div></div><div class="stat"><div class="v">5</div><div class="l">给定材料</div></div><div class="stat"><div class="v">—</div><div class="l">模拟作答</div></div></div></div>
+<article class="body">
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">01 · 抓取</div><h2 class="part-title">时政热点速览<span class="en">NEWS DIGEST</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><p class="part-note">本期时政热点覆盖时间为2026年9月15日至9月22日，共收录8个维度、24条重要新闻。</p>
+<div class="dim-block"><div class="dim-head"><span class="d-n">一</span>中央政策</div><div class="news-item"><h3><span class="idx">1.</span>中共中央政治局召开会议，决定二十届五中全会10月26日至29日召开</h3><p>9月21日，中共中央政治局召开会议，研究持之以恒推进全面从严治党重大问题，中共中央总书记习近平主持会议。会议决定，中国共产党第二十届中央委员会第五次全体会议于10月26日至29日在北京召开，届时将审议《中共中央关于持之以恒推进全面从严治党若干重大问题的决定》稿。会议强调坚持严的基调不动摇，健全全面从严治党体系，确保党始终成为中国特色社会主义事业的坚强领导核心。 [原文]点击查看</p><span class="src">（来源：新华社、新华网，2026-09-21）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>石泰峰：坚持不懈大抓基层、为民造福</h3><p>9月18日，石泰峰在学习贯彻习近平关于基层工作方法的重要论述座谈会上强调，要学深悟透用好习近平关于基层工作方法的重要论述，坚持不懈大抓基层、为民造福，推动基层党组织全面进步全面过硬，把党的政治优势、组织优势转化为治理效能，让基层党组织成为群众信赖的“主心骨”。 [原文]点击查看</p><span class="src">（来源：工人日报、全国总工会，2026-09-18）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>《整治形式主义为基层减负若干规定》出台两周年，基层减负持续深化</h3><p>《整治形式主义为基层减负若干规定》出台两年来，中央层面专项工作机制持续发力，聚焦文山会海、督查检查考核过多过频、过度留痕、“指尖上的形式主义”等突出问题深化整治，推动基层干部把更多时间和精力用在抓落实、办实事上，以减负赋能激励担当作为。 [原文]点击查看</p><span class="src">（来源：中央纪委国家监委网站等，2026-09-18）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">二</span>广东要闻</div><div class="news-item"><h3><span class="idx">1.</span>广东省委常委会部署“强基工程”，推动大抓基层落到实处</h3><p>广东深入实施新一轮基层党建“强基工程”，聚焦组织覆盖、队伍建设、阵地提升、减负赋能等重点任务，推动资源力量向基层倾斜，建强村（社区）党组织书记和专职工作者队伍，深化镇街管理体制改革，把基层党组织建设成为推动“百千万工程”、服务群众的坚强战斗堡垒。 [原文]点击查看</p><span class="src">（来源：南方日报、广东组织工作网，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>广东公开通报2起整治形式主义为基层减负典型问题</h3><p>8月28日，广东省公开通报2起整治形式主义为基层减负典型问题，涉及督查检查考核过多过频、工作任务层层加码、以“属地管理”为名向基层推卸责任等情形，释放出持续向形式主义“开刀”、切实为基层松绑减负的鲜明信号，推动各级把减负要求落实到“最后一公里”。 [原文]点击查看</p><span class="src">（来源：人民网、中央纪委国家监委网站，2026-08-28）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>广东阳山：党建引领基层善治凭什么叫好</h3><p>广东清远阳山县坚持以党建引领基层善治，把党组织建在网格上、把服务送到家门口，推行“党建＋网格＋积分”治理模式，健全“群众点单、支部派单、党员接单”响应机制，把矛盾化解在基层、把问题解决在萌芽状态，探索出一条后发地区以党建强治理、以治理促发展的有效路径。 [原文]点击查看</p><span class="src">（来源：广东组织工作网，2026-09）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">三</span>经济发展</div><div class="news-item"><h3><span class="idx">1.</span>中央统战部：四方面发力引导民营经济人士把握“十五五”发展大势</h3><p>9月18日，中央统战部提出从加强思想政治引领、服务高质量发展、促进“两个健康”、优化营商环境四个方面发力，引导民营经济人士准确把握“十五五”发展大势，坚定走高质量发展之路，凝聚起广大民营企业担当奋进“十五五”的强大合力。 [原文]点击查看</p><span class="src">（来源：中央统战部、福建省委统战部，2026-09-18）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>2026民营经济创新发展大会在温州举行</h3><p>9月，2026民营经济创新发展大会在浙江温州举行，与会各方围绕民营经济创新驱动、产业升级、培育新质生产力等议题深入研讨，提出要引导民营经济抢跑未来产业新赛道，加强科技创新与产业创新深度融合，以民营经济之“进”支撑高质量发展之“稳”。 [原文]点击查看</p><span class="src">（来源：人民政协网、中华全国工商业联合会，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>“税惠东风劲，粤企竞千帆”，广东连出举措助力民营经济</h3><p>广东税务部门持续优化税费服务、落实结构性减税降费政策，深化支持小微企业融资协调工作机制，推动惠企政策“免申即享”“直达快享”，从融资端和发展端两端发力，助力民营企业轻装上阵、做大做强，为制造业当家和新质生产力培育注入源头活水。 [原文]点击查看</p><span class="src">（来源：中华工商时报、南方日报，2026-09-21）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">四</span>社会治理</div><div class="news-item"><h3><span class="idx">1.</span>国务院推行常住地提供基本公共服务，让服务跟着人走</h3><p>《国务院关于推行常住地提供基本公共服务的实施意见》明确，推动基本公共服务随人走，促进未落户常住人口与户籍人口同等享有基本公共服务，围绕教育、医疗、就业、住房、社保等领域优化供给机制，让在城市打拼的劳动者及其家庭“转得出、留得下、过得好”。 [原文]点击查看</p><span class="src">（来源：中国政府网、广东省民政厅，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>广东潮州开展“强新联新暖新”行动，变赶路人为合伙人</h3><p>广东潮州聚焦快递员、外卖配送员、网约车司机等新就业群体，开展“强新联新暖新”行动，通过建强党组织、建设暖“新”驿站、畅通诉求渠道，引导新就业群体从“赶路人”变为基层治理的“合伙人”，让新兴领域党建既有温度又有力度。 [原文]点击查看</p><span class="src">（来源：人民日报、潮州市人民政府网，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>韶关翁源：暖“新”服务聚人心，新就业群体融入基层治理</h3><p>广东韶关翁源县以暖“新”服务为切入点，整合社区党群服务中心资源，为新就业群体提供歇脚充电、饮水热饭、政策咨询等服务，同时建立“随手拍、随时报”问题反馈机制，把新就业群体转化为社区治理的“流动哨兵”，实现服务与治理双向奔赴。 [原文]点击查看</p><span class="src">（来源：广东组织工作网，2026-09）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">五</span>科技创新</div><div class="news-item"><h3><span class="idx">1.</span>以制度创新重塑数据特区新优势</h3><p>9月21日，光明日报刊发时评指出，广东系统推进粤港澳大湾区数据特区建设，要以制度创新破除数据跨境流动的体制机制障碍，在数据确权、流通交易、安全治理等方面先行先试，把制度优势转化为数据要素配置效率优势，为全国数据要素市场化配置改革探路。 [原文]点击查看</p><span class="src">（来源：光明日报、人民网理论频道，2026-09-21）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>广东前海率先跑通金融、医疗数据跨境</h3><p>深圳前海依托深港合作优势，建设数据跨境流动基础设施，率先跑通金融、医疗等领域数据跨境场景，为粤港澳三地机构提供合规、便捷的数据流通通道，推动数据要素在大湾区内高效配置，助力打造国际数据合作新高地。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网、深圳市人民政府网，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>聚合智能产业发展大会：推动AI时代三大产业加速融合</h3><p>9月，聚合智能产业发展大会在武汉光谷举行，聚焦人工智能、智能网联汽车、低空飞行器三大产业跨界融合，提出未来三年开放八大融合场景，推动“汽车—机器人—飞行器”一体化发展，以场景开放牵引技术迭代，以生态协同培育产业新增长极。 [原文]点击查看</p><span class="src">（来源：中国工业新闻网、上海证券报，2026-09）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">六</span>生态环保</div><div class="news-item"><h3><span class="idx">1.</span>黄坤明：严而又严实而又实做好督察整改“后半篇文章”</h3><p>9月18日，中央第四生态环境保护督察组向广东省反馈督察情况后，省委书记黄坤明作表态发言，强调对督察组反馈的问题诚恳接受、照单全收，要严而又严、实而又实做好整改“后半篇文章”，守护好广东蓝天碧水大美山川，以高水平生态环境保护支撑高质量发展。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网、广东组织工作网，2026-09-18）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>广东卖“碳”十年，完成高质量发展三次跳跃</h3><p>广东作为全国碳排放权交易试点，十年来碳市场累计成交量和成交额位居全国前列，以市场化机制引导企业节能降碳，推动能源结构、产业结构、生活方式绿色转型，实现从“被动减排”到“主动增绿”的转变，让绿色成为高质量发展的鲜明底色。 [原文]点击查看</p><span class="src">（来源：中国林业网、广东省生态环境厅，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>从岁岁丰收之景，看广东城乡蝶变之路</h3><p>广东以“百千万工程”为牵引，把绿美生态建设与乡村振兴、城乡融合有机结合，岭南特色农业提质增效，“粤字号”土特产走向全国，镇村面貌焕然一新，生态优势加快转化为发展优势，走出一条生产发展、生活富裕、生态良好的城乡蝶变之路。 [原文]点击查看</p><span class="src">（来源：广东省农业农村厅、南方网，2026-09）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">七</span>乡村振兴</div><div class="news-item"><h3><span class="idx">1.</span>广东“百千万工程”激活县镇村发展新动能</h3><p>广东深入实施“百千万工程”，聚焦县域经济发展、镇域功能提升、乡村全面振兴，推动土地、资金、人才、技术等要素向县镇村流动，一批县域特色产业集群加快成型，镇村基础设施和公共服务水平明显提升，城乡居民收入差距持续缩小，城乡区域协调发展取得新进展。 [原文]点击查看</p><span class="src">（来源：广东省农业农村厅、南方网，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>全省新一轮横向帮扶协作动员部署会在广州召开</h3><p>广东召开全省新一轮横向帮扶协作动员部署会，强调以更有力举措、更精准支持推动帮扶协作全面提质升级，深化珠三角地市与粤东粤西粤北产业共建、园区协同、消费帮扶、人才交流结对，把城乡区域发展不平衡的“短板”加快转化为高质量发展的“潜力板”。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>广东新丰县政协建言推动郊野经济带行稳致远</h3><p>9月17日，广东韶关新丰县政协围绕郊野经济带建设开展建言，提出要立足生态资源禀赋，推动农文旅融合发展，完善配套设施和联农带农机制，让郊野经济成为强村富民新引擎，把绿水青山转化为群众增收致富的金山银山。 [原文]点击查看</p><span class="src">（来源：人民政协网，2026-09-17）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">八</span>改革开放</div><div class="news-item"><h3><span class="idx">1.</span>深圳前海扩区五年GDP近翻番，制度创新指数全国“五连冠”</h3><p>深圳前海深港现代服务业合作区扩区五年来，地区生产总值接近翻番，制度创新指数实现全国“五连冠”，累计推出大批制度创新成果并向全国复制推广，成为新时代改革开放的“策源地”和“试验田”，以高水平开放服务构建新发展格局。 [原文]点击查看</p><span class="src">（来源：证券之星、深圳新闻网，2026-09-09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>第四届“人民·大公”湾区智汇政策圆桌会在深圳举行</h3><p>第四届“人民·大公”湾区智汇政策圆桌会在深圳举行，与会嘉宾围绕“港建跨境平台、助力湾区标准走向亚太”展开研讨，提出发挥港澳“超级联系人”作用，推进规则衔接、机制对接和标准共建，助力大湾区企业和技术更好走向亚太、走向世界。 [原文]点击查看</p><span class="src">（来源：大公文汇网，2026-09-20）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>广东发布《中国（广东）自由贸易试验区发展“十五五”规划（征求意见稿）》</h3><p>广东省商务厅就《中国（广东）自由贸易试验区发展“十五五”规划（征求意见稿）》公开征求意见，围绕投资自由化便利化、贸易新业态新模式、金融开放创新、粤港澳深度合作等谋划未来五年任务，推动自贸区在制度型开放上持续领跑。 [原文]点击查看</p><span class="src">（来源：广东省商务厅，2026-09）</span></div></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">02 · 解析</div><h2 class="part-title">时政热点深度解析<span class="en">TREND ANALYSIS</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><div class="trend"><span class="tlabel">今日热点趋势判断</span>结合申论命题规律，对本期新闻逐条评估命题潜力（★1-5星），识别关键词、政策背景与命题方向。今日热点趋势判断</div>
+<div class="top5"><div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP1</span><span class="stars"></span><h3>二十届五中全会10月召开，全面从严治党成核心议题（★★★★★）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">【申论关键词】全面从严治党</span><span class="kw-tag">自我革命</span><span class="kw-tag">健全全面从严治党体系</span><span class="kw-tag">政治建设为统领</span><span class="kw-tag">党的领导核心。</span></span></div><p class="tfield">【核心事件】9月21日，中共中央政治局召开会议，研究持之以恒推进全面从严治党重大问题，决定党的二十届五中全会于10月26日至29日在北京召开，审议《中共中央关于持之以恒推进全面从严治党若干重大问题的决定》稿。</p><p class="tfield">【政策背景与广东关联】时隔五年召开的五中全会以党建为主题，政治信号极其强烈。广东地处改革开放前沿、毗邻港澳，市场主体活跃、新业态集聚，越是开放越要加强党的领导和党的建设。以高质量党建引领高质量发展，是广东“走在前、作示范、挑大梁”的政治保证。</p><p class="tfield">【命题方向】大作文（以“党建引领”“自我革命”为主题）、概括题（概括全面从严治党的着力点）。材料改编可行性中高，需将政治话语转化为可感知的基层场景，避免空泛说教。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP2</span><span class="stars"></span><h3>大抓基层、为基层减负：把党的组织优势转化为治理效能（★★★★★）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">【申论关键词】大抓基层</span><span class="kw-tag">基层减负</span><span class="kw-tag">形式主义</span><span class="kw-tag">指尖上的形式主义</span><span class="kw-tag">赋能增效</span><span class="kw-tag">抓落实。</span></span></div><p class="tfield">【核心事件】9月18日，石泰峰在学习贯彻习近平关于基层工作方法的重要论述座谈会上强调，坚持不懈大抓基层、为民造福；同一时间节点，《整治形式主义为基层减负若干规定》出台两周年，中央持续深化整治形式主义为基层减负；8月28日广东省公开通报2起减负典型问题。</p><p class="tfield">【政策背景与广东关联】广东镇街数量多、村（社区）点多面广，基层承担着“百千万工程”、绿美生态、平安建设等大量落地任务，“上面千条线、下面一根针”矛盾突出。减负与赋能并重，是广东提升基层治理效能、激发干部担当作为的关键一招。</p><p class="tfield">【命题方向】提出对策题（如何为基层减负赋能）、概括题（概括基层负担重的表现）。材料改编可行性极高，可从督查考核、留痕报表、属地甩锅、数字形式主义等具体场景切入。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP3</span><span class="stars"></span><h3>以高质量党建引领高效能基层治理（★★★★☆）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">【申论关键词】党建引领</span><span class="kw-tag">网格化治理</span><span class="kw-tag">共建共治共享</span><span class="kw-tag">新就业群体</span><span class="kw-tag">党组织覆盖</span><span class="kw-tag">服务下沉。</span></span></div><p class="tfield">【核心事件】广东阳山推行“党建＋网格＋积分”治理模式，健全“群众点单、支部派单、党员接单”响应机制；潮州开展“强新联新暖新”行动，把新就业群体从“赶路人”变“合伙人”；韶关翁源以暖“新”服务引导新就业群体融入基层治理。</p><p class="tfield">【政策背景与广东关联】广东新就业形态劳动者规模庞大，外卖骑手、快递小哥、网约车司机等群体流动性强、组织化程度低，既是治理对象也是治理力量。把这支“流动大军”组织起来、凝聚起来，是广东基层党建和治理创新的鲜活切口，具有很强的“广东辨识度”。</p><p class="tfield">【命题方向】概括题（概括广东党建引领基层治理的做法）、公文题（编写经验交流材料/倡议书）、大作文（以“共建共治共享”为主题）。材料改编可行性高，案例具体、可写性强。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP4</span><span class="stars"></span><h3>推行常住地提供基本公共服务：让服务跟着人走（★★★★☆）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">【申论关键词】常住地</span><span class="kw-tag">基本公共服务均等化</span><span class="kw-tag">随迁子女</span><span class="kw-tag">异地就医</span><span class="kw-tag">新市民</span><span class="kw-tag">可及性。</span></span></div><p class="tfield">【核心事件】《国务院关于推行常住地提供基本公共服务的实施意见》明确，推动基本公共服务随人走，促进未落户常住人口与户籍人口同等享有基本公共服务；9月20日国新办解读“随人走”公共服务供给机制。</p><p class="tfield">【政策背景与广东关联】广东常住人口超1.27亿，流动人口规模全国第一，随迁子女入学、异地就医结算、社保转移接续、住房保障等需求巨大。“服务跟着人走”与“百千万工程”推动公共服务下沉县镇村的方向高度一致，也是广东推进以人为核心的新型城镇化的必答题。</p><p class="tfield">【命题方向】提出对策题（如何让公共服务随人走）、概括题（概括基本公共服务均等化的堵点）。可与就业、教育、养老等场景结合，材料改编可行性高。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP5</span><span class="stars"></span><h3>促进民营经济健康发展、高质量发展（★★★★☆）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">【申论关键词】“两个健康”</span><span class="kw-tag">民营经济促进法</span><span class="kw-tag">营商环境</span><span class="kw-tag">惠企政策直达快享</span><span class="kw-tag">中小企业</span><span class="kw-tag">预期信心。</span></span></div><p class="tfield">【核心事件】9月18日，中央统战部提出从思想政治引领、服务高质量发展、促进“两个健康”、优化营商环境四个方面发力，引导民营经济人士把握“十五五”发展大势；广东税务部门深化支持小微企业融资协调工作机制，推动惠企政策“免申即享”。</p><p class="tfield">【政策背景与广东关联】广东民营经济主体数量全国第一，贡献了全省过半的GDP和绝大部分就业。稳预期、强信心、优环境，既是民营经济自身发展的需要，也是广东稳住经济基本盘、培育新质生产力的关键支撑。</p><p class="tfield">【命题方向】公文题（起草优化营商环境的实施方案/倡议书）、对策题（如何为民营企业纾困解难）。材料可围绕融资难、政策落地慢、涉企服务等具体问题组织。</p><p class="tfield">第一，政治信号的高度集中是本周期最突出的特征。9月21日政治局会议研究全面从严治党并定档五中全会，与石泰峰“大抓基层、为民造福”的讲话、《整治形式主义为基层减负若干规定》出台两周年形成共振，构成一个完整的政治主题链条。备考时须高度重视党建类、基层治理类话题，这很可能是本年度省考的重要命题方向。</p><p class="tfield">第二，“减负”与“赋能”是一体两面。中央三令五申为基层减负，说明基层负担重仍是顽疾；而广东阳山、潮州、翁源的做法说明，减负的最终指向是让基层把精力用在服务群众、推动发展上。命题很可能落在“如何让基层既有时间、又有能力办事”这一矛盾点上。</p><p class="tfield">第三，广东命题偏好“省级部署＋基层场景”。本套模拟题选取“强基固本、为民造福”作为主切口，以基层减负、新就业群体融入治理、公共服务随人走三个场景支撑，既贴近最新政治热点，又体现广东省考“立足广东、放眼全国”的命题风格，与9月19日“投资于人·守护夕阳”、9月21日“反内卷·提质效”形成主题互补。</p></div></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">03 · 命题</div><h2 class="part-title">模拟试题<span class="en">MOCK EXAM</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><p>本题本共3道题，满分100分，作答参考时限150分钟。请仔细阅读给定材料，按要求作答。答案须写在答题卡指定位置，在本题本上作答无效。</p>
+<h2 id="给定材料">给定材料</h2>
+<h3 id="给定材料一">给定材料一</h3>
+<p>翻开粤东某镇党委副书记老李的工作日志，密密麻麻：周一迎接安全生产检查，周二参加视频会议，周三填报三张进度表，周四陪同调研，周五准备台账资料。“一周五天，真正下村的时间不到一天。”老李说，上级十几个部门都往下派任务，哪一个都得“留痕”，手机里工作群有十七八个，半夜还在响。</p>
+<p>这不是个别现象。有基层干部反映，一些地方督查检查考核过多过频，同一件事多个部门分头查、反复查；一些工作层层加码，省市给的时间是三个月，到了乡镇就变成一个月；有的地方以“属地管理”为名，把本该由部门承担的责任推给基层，“谁的地盘谁负责”，出了问题先问责乡镇。</p>
+<p>“指尖上的形式主义”也让基层不堪其扰。有的地方要求干部每天在多个政务APP上打卡、签到、上传照片，有的村（社区）一周被要求填报十几份表格，数据反复填报、重复报送。一位社区书记算过账：社区一共9个人，一年填表用了近三分之一的工时。</p>
+<p>广东省曾公开通报2起整治形式主义为基层减负典型问题，涉及督查检查考核过多过频、工作任务层层加码、以“属地管理”为名向基层推卸责任等情形。通报指出，这些问题看似是工作方法问题，实质是政绩观偏差、作风不实，必须坚决纠治。</p>
+<h3 id="给定材料二">给定材料二</h3>
+<p>在粤北山区的阳山县，一套“党建＋网格＋积分”的治理模式让基层面貌为之一新。全县把党组织建在网格上，每个网格都有一名党员网格员，群众有诉求可以“扫码说事”；支部收到后分类派单，党员和相关部门限时接单办理，办结情况由群众打分。“群众点单、支部派单、党员接单、群众评单”，形成了闭环。</p>
+<p>“过去群众有事找不着人，现在我们主动上门问。”一名党员网格员说，他负责的网格有200多户，每月至少走访一遍，谁家有矛盾、谁家有困难，心里有本账。去年以来，他所在的网格矛盾纠纷化解率达98％，基本做到了“小事不出格、大事不出村”。</p>
+<p>减负也在同步推进。阳山建立镇村工作事项准入制度，凡是要压给村级组织的事项，须经县级审核；能合并的会议合并开，能共享的数据不再重复报送；把过去考核基层的30多项指标精简到10项以内，重点看群众满意度。有村干部说：“报表少了，下村多了，群众脸上的笑也多了。”</p>
+<p>“减负不是减责任，而是把干部的精力从填表报数中解放出来，用在为群众办实事上。”县委组织部负责人说，让基层轻装上阵，党的组织优势才能真正转化为治理效能。</p>
+<h3 id="给定材料三">给定材料三</h3>
+<p>在粤东潮州，每天有近万名快递员、外卖配送员、网约车司机穿梭在大街小巷。过去，他们大多“单打独斗”，遇到困难不知道该找谁。改变始于一场“强新联新暖新”行动——当地把党组织建到快递、外卖、网约车等新业态企业，建成一批暖“新”驿站，提供饮水、充电、热饭、歇脚、政策咨询等服务。</p>
+<p>“以前跑单累了只能在路边蹲一会儿，现在有了驿站，能喝口热水、歇十分钟。”外卖骑手小陈说。更让他没想到的是，自己还被聘为“社区民情观察员”，“送餐路上看到井盖坏了、路灯不亮，随手一拍上传就能报修，社区还会回复处理结果，感觉自己也是这个城市的主人了。”</p>
+<p>在韶关翁源，类似的“暖新”服务同样在推进。当地把新就业群体纳入社区志愿服务体系，建立“随手拍、随时报”问题反馈机制，鼓励他们担任“流动哨兵”，参与隐患排查、文明劝导。“过去我们把他们当服务对象，现在他们是我们的治理力量。”社区党委书记说。</p>
+<p>“新就业群体流动性强、组织化程度低，但不能成为党建的‘空白点’。”省委组织部有关负责人表示，要坚持“人在哪里、党组织就建到哪里”，把党的组织覆盖和工作覆盖延伸到新业态、新空间，让党的组织优势转化为凝聚服务群众的强大力量。</p>
+<h3 id="给定材料四">给定材料四</h3>
+<p>“转得出、留得下、过得好”，这是许多在广东打拼的外来务工人员最朴素的期待。广东常住人口超过1.27亿，流动人口规模全国第一，如何让他们在常住地享有与户籍人口同等的基本公共服务，是一道必须答好的民生大题。</p>
+<p>《国务院关于推行常住地提供基本公共服务的实施意见》明确，推动基本公共服务随人走，围绕教育、医疗、就业、住房、社保等领域优化供给机制。在珠三角某市，随迁子女凭居住证、社保缴纳记录即可申请公办学位，入学材料由“一摞证”精简到“一张表”；异地就医直接结算覆盖到所有镇街卫生院，参保人“看病不用先垫钱”；灵活就业人员可参加职工养老、医疗保险，缴费档次自主选择。</p>
+<p>不过，难题依然不少。某区教育部门负责人坦言，随迁子女入学需求逐年增长，学位供给压力大，“每年都要新建、改扩建学校”；医保关系跨省转移接续仍有时限长、流程繁的问题；一些地方在住房保障、养老服务上，对非户籍常住人口的覆盖还不够。</p>
+<p>“服务跟着人走，考验的是城市的治理能力和公共服务供给能力。”一位公共管理学者指出，推行常住地提供基本公共服务，既要加大财政投入、扩大供给，也要打破数据壁垒、简化办事流程，更要防止“一放了之”，确保服务“可及、可用、有质量”。</p>
+<h3 id="给定材料五">给定材料五</h3>
+<p>基层是党的执政之基、力量之源。9月18日，石泰峰在学习贯彻习近平关于基层工作方法的重要论述座谈会上强调，要坚持不懈大抓基层、为民造福。此前，中共中央政治局9月21日召开会议，研究持之以恒推进全面从严治党重大问题，强调坚持严的基调不动摇，健全全面从严治党体系。</p>
+<p>“大抓基层，关键是要把资源、服务、管理下沉到基层。”省委党校一位教授分析，广东镇街数量多、村（社区）点多面广，基层承担着“百千万工程”、绿美生态建设、平安广东建设等大量落地任务，必须推动人往基层走、钱往基层投、政策往基层倾斜，让基层有权办事、有人干事、有钱做事。</p>
+<p>在广东，基层党建“强基工程”正在扎实推进。各地聚焦组织覆盖、队伍建设、阵地提升、减负赋能等重点任务，建强村（社区）党组织书记和专职工作者队伍，深化镇街管理体制改革，推动党群服务中心从“挂牌子”到“真服务”。“过去服务中心门可罗雀，现在有了食堂、书屋、四点半课堂，天天有人气。”一位社区书记说。</p>
+<p>“以高质量党建引领高效能基层治理，是广东在新征程上走在前列的重要支撑。”该教授强调，只有把基层党组织建设得更加坚强有力，把党的政治优势、组织优势转化为治理效能和发展动能，才能为推进中国式现代化的广东实践提供根本保证。</p>
+<h2 id="作答要求">作答要求</h2>
+<p><strong>第一题：根据给定材料一，请概括当前基层负担过重的主要表现。（20分）</strong></p>
+<p>要求：概括准确、条理清晰，不超过200字。</p>
+<p><strong>第二题：根据给定材料二、材料三，请就广东如何以高质量党建引领高效能基层治理提出对策建议。（30分）</strong></p>
+<p>要求：紧扣材料、措施具体、切实可行，不超过300字。</p>
+<p><strong>第三题：根据给定材料，结合广东实际，请围绕“强基固本，为民造福”这一主题，自拟标题，写一篇议论文。（50分）</strong></p>
+<p>要求：（1）观点明确，立意深刻；（2）结合材料但不拘泥于材料，联系广东实际；（3）结构完整，论证充分，语言流畅；（4）800—1000字。</p>
+<div class="paper-head"><span class="t">给定材料</span><span class="m">材料一 — 材料五</span></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">04 · 作答</div><h2 class="part-title">参考答案与示范作答<span class="en">MODEL ANSWERS</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><div class="ans-block"><div class="ans-head"><span class="stamp">一</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第一题-参考答案20分">第一题 参考答案（20分）</h2><p>当前基层负担过重主要表现为：一是事务缠身，迎接检查、参加会议、填报表格、陪同调研、准备台账占用大量时间，下基层时间少；二是督查检查考核过多过频，同一事项多部门分头反复查；三是工作任务层层加码，压缩基层完成时限；四是以“属地管理”为名向基层推卸责任，部门责任变基层责任；五是“指尖上的形式主义”，政务APP打卡签到、重复填报报表繁多。</p><p>其根源在于政绩观偏差、作风不实，导致基层干部精力耗于留痕报数，难以专注服务群众。</p></div></div></div>
+<div class="ans-block"><div class="ans-head"><span class="stamp">二</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第二题-参考答案30分">第二题 参考答案（30分）</h2><p>一是党委组织部门推动减负赋能。建立镇村工作事项准入制度，压给村级的事项须经县级审核；合并会议、共享数据、精简考核指标，重点看群众满意度。</p><p>二是基层党组织构建网格化治理闭环。把党组织建在网格上，推行“群众点单、支部派单、党员接单、群众评单”机制，党员网格员定期走访，推动矛盾化解在基层。</p><p>三是党委社会工作部门加强新业态党建覆盖。在新业态企业建立党组织，建好暖“新”驿站，提供饮水充电、政策咨询等服务，做到“人在哪里、党组织就建到哪里”。</p><p>四是社区引导新就业群体融入治理。将其纳入志愿服务体系，建立“随手拍、随时报”反馈机制，聘为“民情观察员”“流动哨兵”，参与隐患排查、文明劝导。</p><p>五是各级党委强化资源力量下沉。推动人往基层走、钱往基层投、政策往基层倾斜，深化镇街管理体制改革，提升党群服务中心服务功能，让基层有权办事、有人干事、有钱做事。</p></div></div></div>
+<div class="ans-block"><div class="ans-head"><span class="stamp">三</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第三题-示范作答50分">第三题 示范作答（50分）</h2><p><strong>标题：强基固本筑堡垒 为民造福践初心</strong></p><p>粤北山区一位党员网格员，每月走访一遍自己负责的200多户人家，谁家有矛盾、谁家有困难，心里都有本账；粤东潮州的一群外卖骑手，从“单打独斗”的赶路人变成参与社区治理的“合伙人”。这些发生在南粤大地的鲜活场景，共同指向一个朴素而深刻的道理：基层是党的执政之基、力量之源，只有强基固本、为民造福，才能把党的政治优势、组织优势转化为治理效能和发展动能。</p><p>强基固本，要在“减负”上动真格，让基层轻装上阵。基层负担过重，是长期困扰治理效能的顽疾。督查检查过多过频、工作任务层层加码、“属地管理”变成“责任下推”、“指尖上的形式主义”反复填表，把干部困在了办公室里。广东阳山县建立镇村工作事项准入制度，能合并的会议合并开、能共享的数据不再重复报，把30多项考核指标精简到10项以内。实践证明，减负不是减责任，而是把干部的精力从填表报数中解放出来，让它回到田间地头、回到群众身边。</p><p>强基固本，要在“赋能”上出实招，让基层干事有底气。减负之后，还要有能力。阳山把党组织建在网格上，用“群众点单、支部派单、党员接单、群众评单”的闭环，把服务送到家门口，网格矛盾纠纷化解率达到98％；广东推动人往基层走、钱往基层投、政策往基层倾斜，深化镇街管理体制改革，让基层有权办事、有人干事、有钱做事。可见，“减”与“赋”是一体两面，减去的是无效消耗，赋上的是干事本领，两者共同托举起基层治理的效能。</p><p>强基固本，要在“聚力”上求突破，让治理力量汇成一股绳。基层治理不是党组织的“独角戏”，而是全社会的“大合唱”。潮州开展“强新联新暖新”行动，把快递员、外卖配送员、网约车司机组织起来；韶关翁源让新就业群体担任“流动哨兵”，参与隐患排查、文明劝导。当“人在哪里、党组织就建到哪里”，当每一个奔波在街巷中的普通人都能成为治理的参与者，基层治理就获得了最广泛、最持久的动力。</p><p>为民造福，是强基固本的出发点和落脚点。基层党组织强不强，最终要看群众的笑脸多不多、获得感的成色足不足。广东常住人口超过1.27亿，流动人口规模全国第一，让随迁子女“一表申请”就能入学、让异地就医“看病不用先垫钱”、让党群服务中心从“挂牌子”变成“真服务”，这些看似琐碎的民生小事，恰恰是党建工作的价值刻度。把党的组织优势转化为治理效能和发展动能，归根到底，是要让群众在每一件实事中感受到党的关怀与温度。</p><p>根深则叶茂，本固则枝荣。以减负松绑让基层轻装上阵，以赋能提质让基层干事有力，以聚力凝新让治理众志成城，南粤大地的基层党组织必将更加坚强有力，为推进中国式现代化的广东实践筑牢最坚实的根基。</p></div></div></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">05 · 批改</div><h2 class="part-title">批改报告<span class="en">GRADING REPORT</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><div class="reviewA"><h2 id="视角a粉笔申论阅卷人刘哲宇李梦园体系">视角A：粉笔申论阅卷人（刘哲宇／李梦园体系）</h2>
+<p>按“材料为王、踩点给分”原则逐题批改。第一题按要点个数与准确度给分，第二题按对策的针对性、可行性、完整性给分，第三题按立意15分、结构10分、论证20分、语言5分打分。评分尺度从严，宁缺毋滥。</p>
+<table class="score-tbl"><thead><tr class="header"><th>题目</th><th>满分</th><th>得分</th><th>等级</th></tr></thead><tbody><tr class="odd"><td>第一题 概括归纳</td><td>20</td><td>17.5</td><td>良好</td></tr><tr class="even"><td>第二题 提出对策</td><td>30</td><td>26.0</td><td>良好</td></tr><tr class="odd"><td>第三题 大作文</td><td>50</td><td>42.0</td><td>良好</td></tr><tr class="even"><td>合 计</td><td>100</td><td>85.5</td><td>—</td></tr></tbody></table>
+<div class="sub-head">第一题精批（20分，得17.5分）</div>
+<p class="rev-line"><span class="lbl">【参考要点】①事务缠身，检查、会议、填表、调研、台账占用大量时间，下基层时间少；②督查检查考核过多过频，同一事项多部门分头反复查；③工作任务层层加码，压缩完成时限；④以“属地管理”为名向基层推卸责任；⑤“指尖上的形式主义”，政务APP打卡签到、报表重复填报、数据重复报送。</span></p>
+<p>【得分拆解】表现层面5个要点全部命中（15分给14分）；根因层面答出“政绩观偏差、作风不实”（5分给3.5分）。合计17.5分。</p>
+<p>【失分点】一是“同一事项多部门分头反复查”与“督查检查考核过多过频”属同义合并，实际可拆为两个采分点（“次数多”“部门杂”）却并成一条，略显可惜；二是根因部分只答“政绩观偏差、作风不实”，材料一中“实质是政绩观偏差、作风不实”可直接引用，但未补上“基层权责不匹配、条块关系不顺”这一上位判断；三是字数约200字，压线无余量，最后一句“难以专注服务群众”可删以腾出空间补要点。</p>
+<div class="improve">【提分建议】概括题要点宁多勿少，把“多部门分头反复查”单列一条，把“权责不匹配”作为根因补充，即可冲上19分。分层词“一是/二是”使用规范，继续保持。</div>
+<div class="sub-head">第二题精批（30分，得26.0分）</div>
+<p class="rev-line"><span class="lbl">【参考要点】减负赋能（事项准入、合并会议、共享数据、精简考核）；网格化闭环（党组织建在网格、四单机制、定期走访）；新业态党建覆盖（建党组织、暖新驿站）；引导融入治理（志愿服务、随手拍、观察员）；资源力量下沉（人钱政策向下、体制改革、服务中心提质）。</span></p>
+<p>【得分拆解】五条对策“谁来做＋做什么＋怎么做”三要素齐备，主体明确区分了党委组织部门、基层党组织、社会工作部门、社区、各级党委，针对性强（18分给16分）；可行性好，措施均可落地（12分给10分）。合计26.0分。</p>
+<p>【失分点】一是第二条网格化治理未点出“积分”这一阳山模式的特色要素，材料二明确提到“党建＋网格＋积分”，漏采一分；二是“数字赋能”未单独成条，材料一“指尖上的形式主义”的反向启示（用数据共享替代重复报送）可作为对策补入，属材料一、二跨则迁移的高阶得分点；三是“权责对等”“清单管理”等上位表述偏少，对策略显就事论事。</p>
+<div class="improve">【提分建议】对策题在“主体多元”基础上，应再往“机制创新”上抬一层。例如第五条可改写为“推动人钱政策下沉，健全基层权责清单和事务准入机制，让基层有权办事、有人干事、有钱做事”，一个“清单”即提升了对策的制度含金量。</div>
+<div class="sub-head">第三题精批（50分，得42.0分）</div>
+<p>【立意15分：得13分】准确抓住“强基固本”与“为民造福”的关系，标题“强基固本筑堡垒 为民造福践初心”对仗工整、政治站位准确，未跑题。扣2分在于“全面从严治党”这一最新政治背景（9月21日政治局会议）在文中仅一笔带过，未能借势拔高立意。</p>
+<p>【结构10分：得9分】总—分—总结构完整。开头由党员网格员、外卖骑手两个鲜活的广东场景切入（约150字）亮明观点；三个分论点“减负—赋能—聚力”层层递进，且共用“强基固本，要在……上……”的统一句式；结尾回扣主题并升华（约100字），结构清晰。</p>
+<p>【论证20分：得15.5分】例证全部取自材料且具广东辨识度（阳山网格化、潮州暖新驿站、翁源流动哨兵、随迁子女入学），做到了“结合材料＋联系实际”。失分在：一是理论论证薄弱，“全面从严治党”“党的自我革命”“条块关系”等政策原理未展开，第三分论点“为民造福”段更多是场景罗列，理论提升不足；二是数据使用偏少，材料中“98％”“30多项精简到10项”可用而未用足；三是论证层次略平，缺少对“减负与赋能为何是一体两面”的机理阐发。</p>
+<p>【语言5分：得4.5分】语言流畅、凝练，“根深则叶茂，本固则枝荣”收尾得体，政治表述规范，无明显病句。扣0.5分在于个别语句偏口号化，如“众志成城”略显套语。</p>
+<p>【总体评价】属考场上的中上水平作答，85.5分对应“要点基本齐全、结构完整、例证充分但理论与数据支撑略显不足”这一档。若能补强理论话语并多用材料数据，可望冲击90分。</p>
+<p>【特别提示】党建类主题极易滑向“空对空”，本题用三个具体场景把宏大主题落到可感可及的细节上，是值得肯定的处理方式；但也要警惕由此带来的“重叙事、轻论理”倾向，考场作答应保持“例证—分析—升华”的完整链条。</p></div>
+<div class="reviewB"><div class="banner"><div class="av">花</div><div><h3>视角B · 花生十三实战派点评</h3><div class="sub">务实 · 直接 · 考场30秒阅卷视角</div></div></div><h2 id="视角b花生十三实战派点评">视角B：花生十三实战派点评</h2><div class="tips"><div class="tt">不看情怀，只看考场上阅卷老师那几十秒能看到啥。三句话讲完最让我上火的事，再给三条能立刻用上的建议。</div><p>不看情怀，只看考场上阅卷老师那几十秒能看到啥。三句话讲完最让我上火的事，再给三条能立刻用上的建议。</p></div><div class="tips"><div class="tt">最让我上火的三件事</div><h3 id="最让我上火的三件事">最让我上火的三件事</h3></div><p>第一件：第一题二十个字的一个要点，你硬塞到一句话里，阅卷老师一眼扫过去只看到一个点。材料一明明给了五个层次——检查会议多、督查考核频、任务层层加码、属地甩锅、指尖形式主义，你该一条一条摆开，而不是揉成一段。概括题最值钱的就是那几个“一是二是”，你写的是优美的长句，老师看到的是漏掉的分数。</p><p>第二件：第二题主体分得挺清楚，可惜阳山那个“积分”你没提。题干说“根据材料二、材料三”，材料二白纸黑字写着“党建＋网格＋积分”，三个词你就丢了一个，这不是不会写，是没看细。材料里带引号的专有表述，基本就是采分点，看到引号就该条件反射地抄进去。</p><p>第三件：大作文最大的问题是“感情充沛、理论不足”。三个分论点“减负—赋能—聚力”排得挺齐，可你对“为什么要减负”“为什么减负和赋能是一回事”讲得太浅。党建类作文最怕写成好人好事的表扬稿。9月21日政治局会议刚开完，你提一句“持之以恒推进全面从严治党”，文章的站位立刻就不一样了，这么好的素材不用，可惜。</p><div class="tips"><div class="tt">三条实战建议</div><h3 id="三条实战建议">三条实战建议</h3></div><p>建议一：看到引号就抄。申论材料里带引号的词——比如“属地管理”“指尖上的形式主义”“党建＋网格＋积分”——基本就是命题人埋的采分点，能抄则抄，抄了就得分。这条规矩，背下来比背范文有用。</p><p>建议二：对策题摆完主体再摆机制。政府干什么、社区干什么、社会力量干什么，这是“谁来做”；事项准入、清单管理、数据共享，这是“靠什么保证”。两层一叠，阅卷老师一看就知道你懂治理，而不是只会喊口号。</p><p>建议三：党建类作文必须“上接天线、下接地气”。上接天线，就是开头或分论点嵌一句最新政治表述（比如全面从严治党、大抓基层）；下接地气，就是例子要从材料里来、从广东来。天线接地气，分数才有上限。</p><h3 id="最后说两句">最后说两句</h3><p>说句公道话，这套卷子答得不难看，85.5分放考场上属于“稳稳进面、冲一冲能进前三”的水平。你也确实抓住了党建类题目的命门——不空谈，用阳山、潮州、翁源这些具体场景把大道理讲小了、讲活了，这一点很多考生做不到。</p><p>你现在缺的不是素材，是“抠材料”的那股劲儿。带引号的词、带数字的句子，都是命题人递到你手上的分，看你接不接。下次做完题，拿红笔把材料里所有引号和数字圈一遍，再看看你的答案漏了几个，一目了然。</p><p>加油。基层减负这事儿，写明白了是分，做明白了是本事。先把答案的“负担”减下来——别写那么多没分的话。</p></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">附</div><h2 class="part-title">素材来源链接汇总<span class="en">SOURCES</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><p>以下为本套模拟题素材来源，均可在浏览器中点击查看原文。</p>
+<table class="src-tbl"><thead><tr class="header"><th>序号</th><th>标题</th><th>来源</th><th>URL</th></tr></thead><tbody><tr class="odd"><td>1</td><td>中共中央政治局召开会议 讨论拟提请二十届五中全会审议的文件 中共中央总书记习近平主持会议</td><td>新华社、新华网</td><td><a href="https://www.news.cn/politics/20260921/f2ac80a685154ec6a44a7130542ff19b/c.html"><span class="underline">https://www.news.cn/politics/20260921/f2ac80a685154ec6a44a7130542ff19b/c.html</span></a></td></tr><tr class="even"><td>2</td><td>新华社消息丨中共中央政治局召开会议（五中全会10月26日至29日召开）</td><td>新华网</td><td><a href="https://www.news.cn/politics/20260921/f62b63be21164652a0e78d7046e40ada/c.html"><span class="underline">https://www.news.cn/politics/20260921/f62b63be21164652a0e78d7046e40ada/c.html</span></a></td></tr><tr class="odd"><td>3</td><td>石泰峰：学深悟透用好习近平关于基层工作方法的重要论述 坚持不懈大抓基层为民造福</td><td>工人日报、全国总工会</td><td><a href="https://www.workercn.cn/c/2026-09-18/8897381.shtml"><span class="underline">https://www.workercn.cn/c/2026-09-18/8897381.shtml</span></a></td></tr><tr class="even"><td>4</td><td>为基层减负 促实干担当——《整治形式主义为基层减负若干规定》出台两周年观察</td><td>中央纪委国家监委网站</td><td><a href="http://keqzyzq.tl.nmgjjjc.gov.cn//single/2026/09/18/26091811264471479620-18091709204263833479.html?t=1789883324192"><span class="underline">http://keqzyzq.tl.nmgjjjc.gov.cn//single/2026/09/18/26091811264471479620-18091709204263833479.html?t=1789883324192</span></a></td></tr><tr class="odd"><td>5</td><td>中共中央办公厅 国务院办公厅印发《整治形式主义为基层减负若干规定》</td><td>中国政府网</td><td><a href="https://www.gov.cn/zhengce/202508/content_7035438.htm"><span class="underline">https://www.gov.cn/zhengce/202508/content_7035438.htm</span></a></td></tr><tr class="even"><td>6</td><td>广东省公开通报2起整治形式主义为基层减负典型问题</td><td>人民网</td><td><a href="http://zzxszy.people.cn/n1/2026/0828/c458759-40788089.html"><span class="underline">http://zzxszy.people.cn/n1/2026/0828/c458759-40788089.html</span></a></td></tr><tr class="odd"><td>7</td><td>阳山党建引领基层善治凭什么叫好</td><td>广东组织工作网</td><td><a href="https://www.gdzz.gov.cn/zzjs/jcdjc/content/post_26052.html"><span class="underline">https://www.gdzz.gov.cn/zzjs/jcdjc/content/post_26052.html</span></a></td></tr><tr class="even"><td>8</td><td>中央统战部：四方面发力 引导民营经济人士把握“十五五”发展大势</td><td>中央统战部、福建省委统战部</td><td><a href="http://fjmg.gov.cn/yw/202609/t20260918_7215039.htm"><span class="underline">http://fjmg.gov.cn/yw/202609/t20260918_7215039.htm</span></a></td></tr><tr class="odd"><td>9</td><td>2026民营经济创新发展大会在温州举办</td><td>人民政协网</td><td><a href="http://www.rmzxw.com.cn/c/2026-09-10/3973025.shtml"><span class="underline">http://www.rmzxw.com.cn/c/2026-09-10/3973025.shtml</span></a></td></tr><tr class="even"><td>10</td><td>税惠东风劲，粤企竞千帆</td><td>中华工商时报</td><td><a href="http://epaper.cbt.com.cn/epaper/uniflows/html/2026/09/21/01/01_65.htm"><span class="underline">http://epaper.cbt.com.cn/epaper/uniflows/html/2026/09/21/01/01_65.htm</span></a></td></tr><tr class="odd"><td>11</td><td>国务院关于推行常住地提供基本公共服务的实施意见</td><td>中国政府网</td><td><a href="https://www.gov.cn/zhengce/zhengceku/202605/content_7069961.htm"><span class="underline">https://www.gov.cn/zhengce/zhengceku/202605/content_7069961.htm</span></a></td></tr><tr class="even"><td>12</td><td>广东潮州开展“强新联新暖新”行动 变赶路人为合伙人</td><td>潮州市人民政府网</td><td><a href="https://www.chaozhou.gov.cn/slhwz/czxw/content/post_4005733.html"><span class="underline">https://www.chaozhou.gov.cn/slhwz/czxw/content/post_4005733.html</span></a></td></tr><tr class="odd"><td>13</td><td>韶关翁源：暖“新”服务聚人心 新就业群体融入基层治理</td><td>广东组织工作网</td><td><a href="https://www.gdzz.gov.cn/zgxc/gddt/content/post_25127.html"><span class="underline">https://www.gdzz.gov.cn/zgxc/gddt/content/post_25127.html</span></a></td></tr><tr class="even"><td>14</td><td>【光明时评】以制度创新重塑数据特区新优势</td><td>光明日报</td><td><a href="https://news.gmw.cn/2026-09/21/content_39011154.htm"><span class="underline">https://news.gmw.cn/2026-09/21/content_39011154.htm</span></a></td></tr><tr class="odd"><td>15</td><td>两大新基建打通深港、辐射亚太 前海率先跑通金融、医疗数据跨境</td><td>广东省人民政府网</td><td><a href="https://www.gd.gov.cn/gdywdt/zwzt/ygadwq/zdhzpt/qh/content/post_4958383.html"><span class="underline">https://www.gd.gov.cn/gdywdt/zwzt/ygadwq/zdhzpt/qh/content/post_4958383.html</span></a></td></tr><tr class="even"><td>16</td><td>聚合智能产业发展大会（2026）：推动AI时代三大产业加速融合</td><td>中国工业新闻网</td><td><a href="https://www.cinn.cn/qc/2026/09-10/514xe641.html"><span class="underline">https://www.cinn.cn/qc/2026/09-10/514xe641.html</span></a></td></tr><tr class="odd"><td>17</td><td>黄坤明在中央第四生态环境保护督察组督察广东省情况反馈会上作表态发言</td><td>广东组织工作网</td><td><a href="https://www.gdzz.gov.cn/zgxc/gdyw/content/post_26058.html"><span class="underline">https://www.gdzz.gov.cn/zgxc/gdyw/content/post_26058.html</span></a></td></tr><tr class="even"><td>18</td><td>广东卖“碳”十年完成高质量发展三次跳跃</td><td>中国林业网</td><td><a href="http://www.isenlin.cn/sf_C2C60B0B05524848BE8F5B4BD3EB0A68_209_44DC488F555.html"><span class="underline">http://www.isenlin.cn/sf_C2C60B0B05524848BE8F5B4BD3EB0A68_209_44DC488F555.html</span></a></td></tr><tr class="odd"><td>19</td><td>从岁岁丰收之景，看广东城乡蝶变之路</td><td>广东省农业农村厅、南方网</td><td><a href="https://dara.gd.gov.cn/ywdt/mtgz/content/post_4957893.html"><span class="underline">https://dara.gd.gov.cn/ywdt/mtgz/content/post_4957893.html</span></a></td></tr><tr class="even"><td>20</td><td>广东“百千万工程”激活县镇村发展新动能</td><td>广东省农业农村厅</td><td><a href="https://dara.gd.gov.cn/ywdt/mtgz/content/mpost_4952443.html"><span class="underline">https://dara.gd.gov.cn/ywdt/mtgz/content/mpost_4952443.html</span></a></td></tr><tr class="odd"><td>21</td><td>全省新一轮横向帮扶协作动员部署会在广州召开</td><td>广东省人民政府网</td><td><a href="https://www.gd.gov.cn/gdywdt/gdyw/content/post_4950560.html"><span class="underline">https://www.gd.gov.cn/gdywdt/gdyw/content/post_4950560.html</span></a></td></tr><tr class="even"><td>22</td><td>广东新丰县政协建言推动郊野经济带行稳致远</td><td>人民政协网</td><td><a href="http://www.rmzxw.com.cn/c/2026-09-17/3977034.shtml"><span class="underline">http://www.rmzxw.com.cn/c/2026-09-17/3977034.shtml</span></a></td></tr><tr class="odd"><td>23</td><td>深圳前海扩区五年GDP近翻番 制度创新指数实现全国“五连冠”</td><td>证券之星</td><td><a href="https://wap.stockstar.com/detail/IG2026090900010517"><span class="underline">https://wap.stockstar.com/detail/IG2026090900010517</span></a></td></tr><tr class="even"><td>24</td><td>第四届“人民·大公”湾区智汇政策圆桌会在深圳举行</td><td>大公文汇网</td><td><a href="https://epaper.tkww.hk/a/202609/20/AP6aaeecfce4b05bea5317ce67.html"><span class="underline">https://epaper.tkww.hk/a/202609/20/AP6aaeecfce4b05bea5317ce67.html</span></a></td></tr><tr class="odd"><td>25</td><td>广东发布《中国（广东）自由贸易试验区发展“十五五”规划（征求意见稿）》</td><td>广东省商务厅</td><td><a href="https://com.gd.gov.cn/hdjlpt/yjzj/answer/52048"><span class="underline">https://com.gd.gov.cn/hdjlpt/yjzj/answer/52048</span></a></td></tr></tbody></table>
+<p>注：以上链接均为2026年9月22日搜索时的原文地址，部分链接可能因网站更新而失效。</p>
+<p>主题方向：强基固本 · 为民造福——树立大抓基层的鲜明导向，持之以恒推进全面从严治党，以高质量党建引领高效能基层治理，把党的政治优势、组织优势转化为治理效能和发展动能</p>
+<p>对标广东省考县级卷（县级及以上）</p>
+<p>总得分：85.5/100</p></div></div></div>
+<script>
+function togglePart(h){
+  var p = h.parentNode; if(!p) return;
+  p.classList.toggle("closed");
+}
+document.addEventListener("DOMContentLoaded", function(){
+  var parts = document.querySelectorAll(".part");
+  for(var i=1;i<parts.length;i++){ parts[i].classList.add("closed"); }
+});
+</script></article>
+</main>
+<footer class="foot">
+  <a class="home" href="index.html">返回日期索引</a> ·
+  广东省考申论每日自动化工作流 · 仅供学习参考
+</footer>
+<script>
+var DATES = ["2026-07-27","2026-07-28","2026-07-30","2026-07-31","2026-08-02","2026-08-03","2026-08-04","2026-08-05","2026-08-06","2026-08-07","2026-08-08","2026-08-09","2026-08-10","2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-15","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-22","2026-08-23","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-08-29","2026-08-30","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-05","2026-09-06","2026-09-07","2026-09-08","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-19","2026-09-20","2026-09-21","2026-09-22"];
+var cur = "2026-09-22";
+function goDate(d){ if(d) location.href = d + '.html'; }
+function goRel(n){
+  var i = DATES.indexOf(cur);
+  if(i < 0) return;
+  var j = Math.min(Math.max(i + n, 0), DATES.length - 1);
+  if(j !== i) location.href = DATES[j] + '.html';
+}
+document.getElementById('dateSel').value = cur;
+</script>
+</body>
+</html>
