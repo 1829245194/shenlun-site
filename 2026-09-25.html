@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>粤申题库 · 2026-09-25</title>
+<style>
+/* ============================================================
+   粤申题库 · 杂志风（现代编辑部 · 第三版样式）
+   ============================================================
+   设计语言：把每一天当作一份「申论晨报」的卷期号。
+   - 冷白纸底 + 近黑墨色，编辑部朱红作唯一点睛色。
+   - 超大日期作为每期的「刊头」。
+   - 编号栏眉（01 抓取 · 02 解析 · 03 命题 · 04 作答 · 05 批改）
+     是真实的工作流次序，不是装饰。
+   ------------------------------------------------------------
+   切换：如需回退到 v1 精致布局，只需把 enhance.py / build_site.py
+   中的 style_mag.css 改回 style_v1.css（或 style.css），一键还原。
+   ============================================================ */
+
+/* ---------- 全局 ---------- */
+:root{
+  color-scheme:light;
+  --paper:#FFFFFF;
+  --paper-2:#F5F6F7;
+  --ink:#14161A;
+  --ink-soft:#4A4F57;
+  --ink-faint:#9AA0A8;
+  --line:#E7E8EA;
+  --line-strong:#D8DADD;
+  --red:#C2231C;            /* 编辑部朱红 —— 唯一点睛 */
+  --red-deep:#8F1813;
+  --red-soft:#FBEDEC;
+  --desk:#F2F3F4;
+  --serif:"Source Han Serif SC","Noto Serif SC","Songti SC","SimSun","STSong",serif;
+  --sans:"Inter","Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  --mono:"SF Mono","Roboto Mono","JetBrains Mono","Menlo",monospace;
+  --maxw:1040px;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--desk);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:16px;
+  line-height:1.95;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  padding-bottom:80px;
+}
+::selection{background:var(--red);color:#fff;}
+a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line-strong);transition:color .18s ease,border-color .18s ease;}
+a:hover{color:var(--red);border-bottom-color:var(--red);}
+img{max-width:100%;height:auto;}
+
+/* ============================================================
+   顶部栏 —— 顶栏不再是「暗色胶囊」，改为白色刊头格栅。
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:60;
+  background:rgba(255,255,255,.92);
+  -webkit-backdrop-filter:saturate(160%) blur(14px);
+  backdrop-filter:saturate(160%) blur(14px);
+  border-bottom:1px solid var(--line-strong);
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:10px 20px;font-family:var(--sans);
+}
+.topbar .brand{
+  font-weight:800;letter-spacing:4px;font-size:13px;color:var(--ink);white-space:nowrap;
+  display:inline-flex;align-items:center;gap:9px;
+}
+.topbar .brand .seal{
+  font-family:var(--serif);
+  color:var(--red);font-weight:900;font-size:16px;letter-spacing:0;
+}
+.topbar .nav{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap;}
+.topbar select{
+  font-family:var(--sans);font-size:12.5px;letter-spacing:.5px;
+  padding:6px 10px;border-radius:0;background:#fff;
+  border:1px solid var(--line-strong);color:var(--ink);cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 50%,calc(100% - 11px) 50%;
+  background-size:4px 4px,4px 4px;background-repeat:no-repeat;
+  padding-right:26px;
+}
+.topbar select:focus{outline:2px solid var(--red);outline-offset:1px;}
+.btn{
+  font-family:var(--sans);font-size:12px;letter-spacing:.5px;
+  padding:6px 12px;border-radius:0;border:1px solid var(--line-strong);
+  background:transparent;color:var(--ink-soft);cursor:pointer;
+  text-decoration:none;border-bottom:1px solid var(--line-strong);
+  transition:color .18s,border-color .18s,background .18s;
+}
+.btn:hover{background:var(--ink);color:#fff;border-color:var(--ink);}
+.btn:disabled{opacity:.3;cursor:not-allowed;}
+.btn:disabled:hover{background:transparent;color:var(--ink-soft);}
+
+/* ============================================================
+   卷头 —— 超大日期刊头（本期唯一记忆点）。
+   ============================================================ */
+.paper{max-width:var(--maxw);margin:0 auto;padding:0 20px;}
+.doc-head{
+  background:var(--paper);
+  border-bottom:3px solid var(--ink);
+  padding:46px 0 30px;margin-top:16px;position:relative;
+}
+/* 刊头网格底纹：淡到几乎看不见，只留呼吸感 */
+.doc-head::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);
+  background-size:calc(var(--maxw)/12) 100%;
+}
+/* 栏目眉（小字编号） */
+.doc-head .docno{
+  font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--ink-faint);
+  text-transform:uppercase;display:flex;align-items:center;gap:12px;margin-bottom:26px;position:relative;
+}
+.doc-head .docno::before{content:"";width:34px;height:2px;background:var(--red);display:inline-block;flex:none;}
+/* 大标题 */
+.doc-head h1{
+  font-family:var(--sans);font-weight:800;font-size:clamp(22px,3vw,30px);
+  letter-spacing:.5px;color:var(--ink);line-height:1.15;margin:0 0 10px;position:relative;
+}
+/* 超大日期 */
+.doc-head .ddate{
+  font-family:var(--sans);font-weight:800;font-size:clamp(52px,11vw,120px);
+  line-height:.95;letter-spacing:-3px;color:var(--ink);
+  margin:0 0 22px;position:relative;
+  font-variant-numeric:tabular-nums;
+}
+.doc-head .ddate .plus-tag{font-size:14px;letter-spacing:2px;vertical-align:super;margin-left:14px;color:var(--red);font-weight:700;}
+.doc-head .dmeta{display:flex;flex-wrap:wrap;gap:8px;font-family:var(--sans);margin-bottom:24px;position:relative;}
+.doc-head .chip{
+  border:1px solid var(--line-strong);background:var(--paper-2);border-radius:0;
+  padding:6px 12px;font-size:12px;letter-spacing:.5px;color:var(--ink-soft);
+}
+.doc-head .chip b{color:var(--ink);font-weight:700;}
+.doc-head .chip.plus-chip{color:var(--red);border-color:var(--red);font-weight:700;}
+/* 朱红印章：模拟得分 */
+.doc-head .score-badge{
+  position:absolute;top:30px;right:20px;width:88px;height:88px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:2.5px solid var(--red);border-radius:50%;
+  color:var(--red);font-family:var(--serif);font-weight:900;font-size:18px;line-height:1.2;letter-spacing:1px;
+  z-index:2;
+  animation:stamp .5s ease-out both .2s;
+}
+.doc-head .score-badge::before{
+  content:"";position:absolute;inset:6px;border:1px solid var(--red);border-radius:50%;opacity:.35;
+}
+.doc-head .score-badge small{font-size:8px;font-weight:400;letter-spacing:2px;font-family:var(--sans);}
+@keyframes stamp{0%{opacity:0;transform:rotate(8deg) scale(1.4);}100%{opacity:1;transform:rotate(8deg) scale(1);}}
+/* 刊头统计条 */
+.doc-head .hero-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line-strong);
+  border-bottom:1px solid var(--line-strong);margin-top:4px;padding:20px 0 0;font-family:var(--sans);position:relative;
+}
+.doc-head .stat{text-align:left;padding-right:16px;border-left:1px solid var(--line-strong);padding-left:18px;}
+.doc-head .stat:first-child{border-left:none;padding-left:0;}
+.doc-head .stat .v{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums;}
+.doc-head .stat .v.red{color:var(--red);}
+.doc-head .stat .l{font-size:10.5px;color:var(--ink-faint);letter-spacing:2px;margin-top:6px;text-transform:uppercase;}
+
+/* ---------- 正文纸张 ---------- */
+.body{
+  background:var(--paper);
+  border-bottom:1px solid var(--line-strong);
+  padding:30px 0 40px;margin-top:10px;
+}
+.body > :first-child{margin-top:0;}
+.body > :last-child{margin-bottom:0;}
+.body p{margin:0 0 16px;font-size:16px;line-height:2.0;color:var(--ink);}
+.body strong{font-weight:700;color:var(--ink);}
+.body a[href^="http"]{color:var(--ink);border-bottom:1px solid var(--line-strong);}
+.body a[href^="http"]:hover{color:var(--red);border-bottom-color:var(--red);}
+.body table{border-collapse:collapse;width:100%;margin:20px 0;font-family:var(--sans);font-size:13.5px;}
+.body th,.body td{border:1px solid var(--line-strong);padding:10px 12px;text-align:left;}
+.body th{background:var(--paper-2);font-weight:700;letter-spacing:.5px;color:var(--ink);}
+.body tr:nth-child(even) td{background:rgba(0,0,0,.014);}
+.body ul,.body ol{margin:0 0 16px;padding-left:26px;}
+.body li{margin-bottom:6px;}
+.body blockquote{margin:0 0 16px;border-left:3px solid var(--ink);padding:4px 18px;color:var(--ink-soft);}
+.body hr{border:none;border-top:1px solid var(--line-strong);margin:28px 0;}
+.body .underline{text-decoration:underline;text-underline-offset:3px;}
+
+/* ============================================================
+   大板块 —— 编号栏眉（01-05 对应真实工作流次序）。
+   ============================================================ */
+.part{margin-top:64px;scroll-margin-top:80px;border-top:1px solid var(--line-strong);padding-top:40px;}
+.part:first-child{border-top:none;padding-top:0;margin-top:0;}
+.part-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px;}
+.part-kicker{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:3px;color:var(--red);
+  display:inline-flex;align-items:center;gap:8px;flex:none;
+}
+.part-kicker::before{content:"";width:22px;height:1.5px;background:var(--red);display:inline-block;}
+.part-title{
+  font-family:var(--sans);font-size:26px;margin:0;letter-spacing:-.5px;font-weight:800;
+  display:inline-flex;align-items:baseline;gap:12px;line-height:1.2;
+}
+.part-title .en{font-size:11px;color:var(--ink-faint);letter-spacing:3px;font-weight:500;text-transform:uppercase;}
+.part-note{font-family:var(--sans);font-size:12.5px;color:var(--ink-faint);letter-spacing:.5px;margin:14px 0 30px;}
+
+/* ============================================================
+   第一部分 · 时政热点速览 —— 杂志式「固定栏目」。
+   ============================================================ */
+.dim-block{margin-bottom:38px;}
+.dim-head{
+  display:flex;align-items:center;gap:14px;font-family:var(--sans);
+  font-size:18px;font-weight:800;color:var(--ink);letter-spacing:1px;
+  padding-bottom:12px;border-bottom:1px solid var(--ink);margin-bottom:4px;
+}
+.dim-head .d-n{
+  font-family:var(--mono);font-size:12px;color:var(--ink-faint);font-weight:600;letter-spacing:0;
+  border:1px solid var(--line-strong);border-radius:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:26px;height:26px;padding:0 4px;background:var(--paper-2);
+}
+.news-item{
+  border-left:2px solid transparent;padding:16px 0 16px 18px;margin-left:2px;
+  border-bottom:1px solid var(--line);
+  transition:border-color .2s,background .2s;
+}
+.news-item:last-child{border-bottom:none;}
+.news-item:hover{border-left-color:var(--red);background:linear-gradient(90deg,var(--red-soft),transparent 75%);}
+.news-item h3{
+  margin:0 0 6px;font-family:var(--sans);font-size:16px;font-weight:700;line-height:1.55;
+  display:flex;align-items:baseline;gap:10px;
+}
+.news-item h3 .idx{font-size:12px;color:var(--ink-faint);font-weight:500;font-variant-numeric:tabular-nums;flex:none;}
+.news-item p{margin:0 0 8px;font-size:14.5px;color:var(--ink-soft);line-height:1.9;}
+.news-item .src{
+  font-family:var(--sans);font-size:11px;color:var(--ink-faint);letter-spacing:.5px;
+  display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;
+}
+.news-item .src a{color:var(--ink-soft);border-bottom:1px solid var(--line-strong);font-weight:600;}
+.news-item .src a:hover{color:var(--red);border-bottom-color:var(--red);}
+
+/* ============================================================
+   第二部分 · 深度解析
+   ============================================================ */
+.trend{
+  background:var(--ink);color:#E9EBEE;border-radius:0;padding:30px 34px;
+  font-size:15.5px;line-height:2.05;margin-bottom:34px;
+}
+.trend b{color:#fff;font-weight:700;}
+.trend .tlabel{font-family:var(--mono);font-size:11px;letter-spacing:4px;color:#E5484D;display:block;margin-bottom:14px;text-transform:uppercase;}
+.top5{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line-strong);}
+.top5-item{
+  background:var(--paper);border-bottom:1px solid var(--line-strong);padding:26px 0;
+}
+.top5-item:last-child{border-bottom:none;}
+.top5-item .rankrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-family:var(--sans);}
+.rank-tag{
+  font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:2px;color:var(--ink);
+  border:1.5px solid var(--ink);padding:3px 10px;border-radius:0;flex:none;background:var(--paper-2);
+}
+.stars{color:var(--red);letter-spacing:2px;font-size:12px;font-weight:700;}
+.top5-item h3{margin:0;font-family:var(--sans);font-size:19px;font-weight:800;line-height:1.45;flex:1;min-width:220px;}
+.tfield{margin-top:10px;font-size:15px;line-height:1.95;color:var(--ink-soft);}
+.tfield .k{font-family:var(--sans);font-size:12px;font-weight:800;color:var(--ink);letter-spacing:2px;margin-right:6px;flex:none;text-transform:uppercase;}
+.kw-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.kw-tag{
+  font-family:var(--sans);font-size:11px;color:var(--ink-soft);
+  border:1px solid var(--line-strong);background:var(--paper-2);
+  padding:3px 10px;border-radius:99px;letter-spacing:.5px;
+}
+
+/* ============================================================
+   第三部分 · 模拟试题
+   ============================================================ */
+.paper-head{
+  background:var(--ink);color:#fff;border-radius:0;
+  padding:16px 22px;font-family:var(--sans);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+}
+.paper-head .t{font-size:14px;font-weight:800;letter-spacing:3px;text-transform:uppercase;}
+.paper-head .m{font-size:11px;color:#9AA0AA;letter-spacing:1px;}
+.material{
+  background:var(--paper);border:1px solid var(--line-strong);border-top:none;
+  padding:24px 30px;margin-bottom:18px;
+}
+.material:last-child{margin-bottom:0;}
+.material .mno{
+  font-family:var(--mono);font-weight:700;font-size:12px;color:var(--red);letter-spacing:3px;
+  display:inline-block;border-bottom:2px solid var(--red);padding-bottom:4px;margin-bottom:14px;
+}
+.material p{margin:0 0 12px;font-size:15.5px;line-height:2.05;}
+.qblock{border:1.5px solid var(--ink);border-radius:0;margin-top:24px;background:var(--paper);}
+.qblock .qhead{
+  font-family:var(--sans);font-weight:800;font-size:14px;background:var(--paper-2);
+  border-bottom:1px solid var(--line-strong);padding:13px 22px;letter-spacing:.5px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.qblock .qhead .p{font-size:11px;color:var(--red);border:1px solid var(--red);border-radius:0;padding:0 7px;font-weight:700;}
+.qblock .qbody{padding:16px 22px;font-size:15.5px;line-height:1.95;}
+
+/* ============================================================
+   第四部分 · 参考答案（答题卡改为清单式条目）
+   ============================================================ */
+.ans-block{margin-bottom:30px;}
+.ans-head{display:flex;align-items:center;gap:12px;font-family:var(--sans);font-size:15px;font-weight:800;letter-spacing:1px;margin-bottom:10px;}
+.ans-head .stamp{font-size:10px;color:#fff;background:var(--ink);border-radius:0;padding:3px 9px;letter-spacing:2px;font-family:var(--mono);}
+.answer-card{
+  background-color:var(--paper);border:1px solid var(--line-strong);border-left:3px solid var(--ink);
+  border-radius:0;padding:26px 28px;
+}
+.answer-card .abody p{margin:0 0 12px;font-size:15.5px;line-height:2;}
+.answer-card .abody p:last-child{margin-bottom:0;}
+.answer-card .wcount{font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-align:right;margin-top:10px;letter-spacing:1px;}
+.essay-title{font-family:var(--sans);font-weight:800;font-size:20px;letter-spacing:1px;text-align:center;margin:0 0 20px;color:var(--ink);}
+
+/* ============================================================
+   第五部分 · 批改报告
+   ============================================================ */
+.score-tbl{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:13.5px;margin:18px 0 28px;}
+.score-tbl th,.score-tbl td{border:1px solid var(--line-strong);padding:11px 12px;text-align:center;}
+.score-tbl th{background:var(--ink);color:#fff;font-weight:700;letter-spacing:1px;}
+.score-tbl tr.total td{background:var(--paper-2);font-weight:800;}
+.score-tbl tr.total td.mark-red,.score-tbl td.mark-red{color:var(--red);}
+.score-tbl td.l{text-align:left;}
+.sub-head{
+  font-family:var(--sans);font-weight:800;font-size:16px;margin:30px 0 12px;letter-spacing:.5px;
+  display:flex;align-items:center;gap:10px;padding-left:0;
+  border-left:none;
+}
+.sub-head::before{content:"";width:18px;height:18px;background:var(--red);flex:none;display:inline-block;}
+.sub-head:first-of-type{margin-top:0;}
+.rev-line{margin:0 0 12px;font-size:15px;line-height:1.95;color:var(--ink);}
+.rev-line .lbl{font-family:var(--sans);font-weight:800;color:var(--ink);margin-right:5px;}
+.deduct{border-left:3px solid var(--red);background:var(--red-soft);border-radius:0;padding:14px 18px;font-size:14px;color:var(--red-deep);margin:14px 0;line-height:1.9;}
+.improve{border-left:3px solid var(--ink);background:var(--paper-2);border-radius:0;padding:14px 18px;font-size:14px;color:var(--ink);margin:14px 0;line-height:1.9;}
+
+.reviewB{background:var(--paper);border:1px solid var(--line-strong);border-radius:0;padding:32px 36px;margin-top:34px;}
+.reviewB .banner{display:flex;align-items:center;gap:14px;padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:20px;}
+.reviewB .banner .av{
+  width:52px;height:52px;border-radius:0;background:var(--ink);color:#fff;flex:none;
+  display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:800;font-size:20px;
+}
+.reviewB .banner h3{margin:0;font-family:var(--sans);font-size:19px;letter-spacing:.5px;}
+.reviewB .banner .sub{font-size:11.5px;color:var(--ink-faint);font-family:var(--sans);letter-spacing:1px;margin-top:3px;text-transform:uppercase;}
+.reviewB p{font-size:15.5px;line-height:2;margin:0 0 14px;}
+.reviewB .hot{border-top:1px dashed var(--line-strong);margin-top:22px;padding-top:20px;}
+.reviewB .hot .h-title{font-family:var(--sans);font-weight:800;font-size:15px;color:var(--red);letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.reviewB .tips{margin-top:24px;background:var(--paper-2);border:1px solid var(--line-strong);border-radius:0;padding:20px 24px;}
+.reviewB .tips .tt{font-family:var(--sans);font-weight:800;font-size:13px;letter-spacing:2px;margin-bottom:12px;color:var(--ink);}
+.reviewB .tips ol{margin:0;padding-left:20px;}
+.reviewB .tips li{margin-bottom:8px;font-size:14.5px;line-height:1.9;}
+.reviewB .attitude{margin-top:24px;text-align:center;font-size:15.5px;color:var(--ink-soft);border-top:1px dashed var(--line-strong);padding-top:22px;line-height:2;}
+
+/* ============================================================
+   附录
+   ============================================================ */
+.src-tbl{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12.5px;}
+.src-tbl th,.src-tbl td{border:1px solid var(--line-strong);padding:9px 10px;vertical-align:top;text-align:left;}
+.src-tbl th{background:var(--ink);color:#fff;font-weight:700;letter-spacing:1px;}
+.src-tbl td.n{text-align:center;color:var(--ink-faint);font-variant-numeric:tabular-nums;font-family:var(--mono);}
+.src-tbl td.u{font-size:11.5px;word-break:break-all;font-family:var(--mono);color:var(--ink-soft);}
+.src-tbl td.u a{border:none;color:var(--ink-soft);}
+.src-tbl td.u a:hover{color:var(--red);}
+.src-tbl tr:nth-child(even) td{background:rgba(0,0,0,.014);}
+
+/* ---------- 页脚 ---------- */
+.foot{max-width:var(--maxw);margin:36px auto 0;padding:0 20px;text-align:center;font-family:var(--sans);font-size:11px;color:var(--ink-faint);letter-spacing:2px;line-height:2;text-transform:uppercase;}
+.foot .home{border:none;color:var(--ink-faint);letter-spacing:2px;}
+.foot .home:hover{color:var(--red);}
+
+/* ============================================================
+   大板块折叠 —— 默认全部展开，点击分区标题可收起/展开
+   ============================================================ */
+.part-head{
+  cursor:pointer;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .3s cubic-bezier(.32,.72,0,1);
+  padding-bottom:4px;
+}
+.part-head:active{transform:scale(.992);}
+.part-head:hover .part-arrow{color:var(--red);}
+.part-arrow{
+  margin-left:auto;font-size:15px;color:var(--ink-faint);
+  display:inline-block;transition:transform .5s cubic-bezier(.32,.72,0,1);
+  flex:none;align-self:center;
+}
+.part.closed .part-arrow{transform:rotate(-90deg);}
+.part.closed .part-kicker{color:var(--ink-faint);}
+.part.closed .part-head .part-title{color:var(--ink-soft);}
+.part-body{
+  display:grid;grid-template-rows:1fr;overflow:hidden;
+  transition:grid-template-rows .6s cubic-bezier(.32,.72,0,1),opacity .4s ease;
+  opacity:1;
+}
+.part-body-inner{min-height:0;overflow:hidden;}
+.part.closed .part-body{grid-template-rows:0fr;opacity:0;}
+.part.closed .part-head{border-bottom:1px solid var(--line-strong);}
+@media(prefers-reduced-motion:reduce){
+  .part-body{transition:none;}
+  .part.closed .part-body{display:none;}
+}
+
+/* ============================================================
+   首页 · 三大板块
+   ============================================================ */
+.home-hero{max-width:var(--maxw);margin:22px auto 0;padding:0 20px;text-align:left;border-bottom:3px solid var(--ink);padding-bottom:26px;}
+.home-hero h1{font-family:var(--sans);font-size:clamp(26px,5vw,44px);letter-spacing:-1px;margin:0 0 8px;font-weight:800;}
+.home-hero .sub{color:var(--ink-soft);font-size:14px;letter-spacing:2px;font-family:var(--sans);margin:0;position:relative;padding-left:0;display:inline-flex;align-items:center;gap:10px;}
+.home-hero .sub::before{content:"";width:22px;height:2px;background:var(--red);display:inline-block;}
+.grid{max-width:var(--maxw);margin:0 auto;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:var(--line-strong);border:1px solid var(--line-strong);}
+.card{
+  background:var(--paper);border:none;padding:26px 24px 20px;text-decoration:none;color:var(--ink);
+  display:flex;flex-direction:column;gap:10px;border-bottom:none;
+  transition:background .2s ease,transform .2s ease;
+}
+.card:hover{background:var(--paper-2);transform:translateY(-2px);}
+.card .cdate{font-family:var(--sans);font-weight:800;font-size:22px;letter-spacing:-.5px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.card .ctheme{font-size:13px;color:var(--ink-soft);line-height:1.7;flex:1;}
+.card .cscore{font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:1px;font-weight:700;text-transform:uppercase;}
+.card .cscore .na{color:var(--ink-faint);font-weight:400;}
+.card .go{align-self:flex-end;font-family:var(--sans);font-size:12px;color:var(--ink);font-weight:700;letter-spacing:.5px;}
+.card:hover .go{color:var(--red);}
+
+/* 加量卷标签 */
+.plus-tag{
+  display:inline-block;font-family:var(--sans);font-size:10px;font-weight:800;
+  color:#fff;background:var(--red);border-radius:0;padding:2px 8px;letter-spacing:1px;
+  vertical-align:middle;margin-left:6px;white-space:nowrap;
+}
+
+/* ============================================================
+   首页 · 今日/历史 双板块
+   ============================================================ */
+.idx-sec{max-width:var(--maxw);margin:0 auto;padding:0 20px;padding-top:40px;}
+.idx-head{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:17px;font-weight:800;letter-spacing:1px;color:var(--ink);margin-bottom:6px;}
+.idx-head .idx-dot{width:22px;height:3px;background:var(--ink);flex:none;}
+.idx-head .idx-dot.today{background:var(--red);}
+.idx-sec .sub-tip{font-family:var(--sans);font-size:12px;color:var(--ink-faint);letter-spacing:1px;margin:0 0 22px;}
+.today-sec{max-width:var(--maxw);margin:0 auto;padding:0 20px;padding-top:8px;}
+.today-card{
+  display:block;background:var(--ink);color:#fff;border-top:4px solid var(--red);
+  padding:34px 38px;text-decoration:none;position:relative;margin-top:20px;
+}
+.today-card .tc-main{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;}
+.today-card .tc-label{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:3px;color:#fff;background:var(--red);padding:3px 11px;}
+.today-card .tc-date{font-family:var(--sans);font-weight:800;font-size:clamp(40px,7vw,68px);letter-spacing:-2px;color:#fff;line-height:1;}
+.today-card .tc-theme{font-size:18px;color:#E9EBEE;line-height:1.8;margin-bottom:20px;font-family:var(--sans);font-weight:500;}
+.today-card .tc-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--sans);}
+.today-card .tchip{border:1px solid rgba(255,255,255,.25);padding:5px 12px;font-size:12px;color:#C9CCD2;letter-spacing:.5px;}
+.today-card .tchip b{color:#fff;font-weight:700;}
+.today-card .tc-score{font-family:var(--mono);font-size:13px;color:var(--red);font-weight:800;letter-spacing:1px;}
+.today-card .tc-go{display:inline-block;margin-top:22px;font-family:var(--sans);font-size:13px;color:#fff;font-weight:700;letter-spacing:1px;border-bottom:1px solid #fff;padding-bottom:2px;}
+.today-card:hover .tc-go{color:var(--red);border-bottom-color:var(--red);}
+.today-card:hover{background:#1B1E22;}
+
+/* 搜索 + 月份分组 */
+.search-box{max-width:var(--maxw);margin:6px auto 20px;padding:0 20px;position:relative;}
+.search-box .sb-icon{position:absolute;left:36px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.5;pointer-events:none;}
+.search-box input{
+  width:100%;padding:13px 16px 13px 44px;font-family:var(--sans);font-size:14px;
+  border:1px solid var(--line-strong);border-radius:0;background:#fff;
+  color:var(--ink);outline:none;transition:border-color .2s;
+}
+.search-box input:focus{border-color:var(--ink);}
+.search-box input::placeholder{color:var(--ink-faint);}
+.month-group{max-width:var(--maxw);margin:0 auto 14px;padding:0 20px;}
+.month-head{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;
+  border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line-strong);
+  font-family:var(--sans);background:var(--paper-2);
+}
+.month-arrow{font-size:11px;color:var(--ink-faint);width:14px;display:inline-block;transition:transform .5s;}
+.month-group.closed .month-arrow{transform:rotate(-90deg);}
+.month-name{font-weight:800;font-size:15px;letter-spacing:.5px;color:var(--ink);}
+.month-count{margin-left:auto;font-size:11px;color:var(--ink-faint);font-family:var(--mono);letter-spacing:1px;}
+.month-body{display:grid;grid-template-rows:1fr;padding-top:14px;transition:grid-template-rows .6s,opacity .35s;opacity:1;}
+.month-group.closed .month-body{grid-template-rows:0fr;padding-top:0;opacity:0;}
+.month-group.closed .month-body .grid{overflow:hidden;min-height:0;}
+.month-group.closed .month-body .grid > *{min-height:0;}
+.month-group.anim .month-body{overflow:hidden;}
+.month-body > .grid{min-height:0;}
+.month-group .grid{padding:0;}
+.empty{max-width:var(--maxw);margin:20px auto;padding:40px 20px;text-align:center;color:var(--ink-faint);font-family:var(--sans);font-size:14px;}
+
+/* ============================================================
+   响应式 & 动效
+   ============================================================ */
+@media(max-width:720px){
+  .doc-head{padding:34px 0 22px;}
+  .doc-head h1{font-size:24px;}
+  .doc-head .ddate{font-size:clamp(46px,13vw,72px);letter-spacing:-2px;margin-bottom:18px;}
+  .doc-head .score-badge{top:20px;right:6px;width:64px;height:64px;font-size:14px;}
+  .doc-head .score-badge::before{inset:4px;}
+  .doc-head .score-badge small{font-size:7px;}
+  .doc-head .hero-stats{grid-template-columns:repeat(2,1fr);gap:18px 0;padding-top:16px;}
+  .doc-head .stat{border-left:none;padding-left:0;}
+  .doc-head .stat:nth-child(2),.doc-head .stat:nth-child(4){border-left:1px solid var(--line-strong);padding-left:16px;}
+  .topbar .nav{margin-left:0;width:100%;justify-content:space-between;}
+  .paper{padding:0 14px;}
+  .grid{grid-template-columns:1fr 1fr;padding:0 14px;}
+  .today-card{padding:28px 24px;}
+  .today-card .tc-theme{font-size:15.5px;}
+  .body{padding:22px 0 30px;}
+  .body p{font-size:15.5px;}
+  .part{margin-top:48px;padding-top:30px;}
+  .part-title{font-size:22px;}
+  .reviewB{padding:24px 20px;}
+  .top5-item{padding:20px 0;}
+  .material{padding:20px 20px;}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px;}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <span class="brand"><span class="seal">粤</span>申题库</span>
+  <nav class="nav">
+    <a class="btn" href="index.html">首页</a>
+    <button class="btn" onclick="goRel(-1)" >&lsaquo; 前一天</button>
+    <select id="dateSel" onchange="goDate(this.value)" aria-label="选择日期">
+<option value="2026-07-27">2026-07-27</option>
+<option value="2026-07-28">2026-07-28</option>
+<option value="2026-07-30">2026-07-30</option>
+<option value="2026-07-31">2026-07-31</option>
+<option value="2026-08-02">2026-08-02</option>
+<option value="2026-08-03">2026-08-03</option>
+<option value="2026-08-04">2026-08-04</option>
+<option value="2026-08-05">2026-08-05</option>
+<option value="2026-08-06">2026-08-06</option>
+<option value="2026-08-07">2026-08-07</option>
+<option value="2026-08-08">2026-08-08</option>
+<option value="2026-08-09">2026-08-09</option>
+<option value="2026-08-10">2026-08-10</option>
+<option value="2026-08-11">2026-08-11</option>
+<option value="2026-08-12">2026-08-12</option>
+<option value="2026-08-13">2026-08-13</option>
+<option value="2026-08-14">2026-08-14</option>
+<option value="2026-08-15">2026-08-15</option>
+<option value="2026-08-18">2026-08-18</option>
+<option value="2026-08-19">2026-08-19</option>
+<option value="2026-08-20">2026-08-20</option>
+<option value="2026-08-21">2026-08-21</option>
+<option value="2026-08-22">2026-08-22</option>
+<option value="2026-08-23">2026-08-23</option>
+<option value="2026-08-24">2026-08-24</option>
+<option value="2026-08-25">2026-08-25</option>
+<option value="2026-08-26">2026-08-26</option>
+<option value="2026-08-27">2026-08-27</option>
+<option value="2026-08-28">2026-08-28</option>
+<option value="2026-08-29">2026-08-29</option>
+<option value="2026-08-30">2026-08-30</option>
+<option value="2026-08-31">2026-08-31</option>
+<option value="2026-09-01">2026-09-01</option>
+<option value="2026-09-02">2026-09-02</option>
+<option value="2026-09-03">2026-09-03</option>
+<option value="2026-09-04">2026-09-04</option>
+<option value="2026-09-05">2026-09-05</option>
+<option value="2026-09-06">2026-09-06</option>
+<option value="2026-09-07">2026-09-07</option>
+<option value="2026-09-08">2026-09-08</option>
+<option value="2026-09-15">2026-09-15</option>
+<option value="2026-09-16">2026-09-16</option>
+<option value="2026-09-17">2026-09-17</option>
+<option value="2026-09-18">2026-09-18</option>
+<option value="2026-09-19">2026-09-19</option>
+<option value="2026-09-20">2026-09-20</option>
+<option value="2026-09-21">2026-09-21</option>
+<option value="2026-09-22">2026-09-22</option>
+<option value="2026-09-23">2026-09-23</option>
+<option value="2026-09-24">2026-09-24</option>
+<option value="2026-09-25" selected>2026-09-25</option>
+    </select>
+    <button class="btn" onclick="goRel(1)" disabled>后一天 &rsaquo;</button>
+  </nav>
+</header>
+<main class="paper">
+  <div class="doc-head"><div class="docno">粤申模〔2026〕0925号 · 时政申论·每日晨报</div><h1>广东省考申论时政模拟题</h1><div class="ddate">2026-09-25</div><div class="dmeta"><span class="chip">主题：<b>向海图强 · 蓝色崛起——全面建设海洋强省，把海洋资源优势转化为发展优势，做强做优做大海洋产业，加快建设现代化海洋牧场，以海洋经济高质量发展打造“海上新广东”，为广东高质量发展注入强劲“蓝色动能”</b></span><span class="chip">对标：<b>广东省考县级卷（县级及以上）</b></span></div><div class="hero-stats"><div class="stat"><div class="v">24</div><div class="l">时政热点</div></div><div class="stat"><div class="v">8</div><div class="l">覆盖维度</div></div><div class="stat"><div class="v">5</div><div class="l">给定材料</div></div><div class="stat"><div class="v">—</div><div class="l">模拟作答</div></div></div></div>
+<article class="body">
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">01 · 抓取</div><h2 class="part-title">时政热点速览<span class="en">NEWS DIGEST</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><p class="part-note">本期时政热点覆盖时间为2026年9月18日至9月25日，共收录8个维度、24条重要新闻。</p>
+<div class="dim-block"><div class="dim-head"><span class="d-n">一</span>中央政策</div><div class="news-item"><h3><span class="idx">1.</span>习近平总书记重要文章《推动海洋经济高质量发展》发表，强调加快建设海洋强国</h3><p>文章指出，海洋是高质量发展战略要地，要完整准确全面贯彻新发展理念，坚持陆海统筹、人海和谐，坚持开发和保护并重，优化海洋经济空间布局，加快构建现代海洋产业体系，推动海洋经济高质量发展，为海洋强国建设提供坚实支撑。 [原文]点击查看</p><span class="src">（来源：新华社、人民日报，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>国新办“开局起步‘十五五’”发布会：2025年我国海洋生产总值突破11万亿元，“十五五”瞄准13万亿元新目标</h3><p>9月22日，国务院新闻办公室举行“开局起步‘十五五’”系列主题新闻发布会，介绍促进自然资源安全高效永续利用有关情况。相关负责人介绍，2025年我国海洋生产总值突破11万亿元，占国内生产总值的7.9%；“十五五”时期将做强做优做大海洋产业，巩固提升海洋油气勘探开发、海洋文旅等传统产业优势，积极发展海洋生物医药、海水淡化等新兴产业，前瞻布局深海勘探开发、海水制氢等未来产业，推动海洋生产总值早日迈上13万亿元新台阶。 [原文]点击查看</p><span class="src">（来源：央视新闻、第一财经，2026-09-22）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>国务院常务会议听取老龄工作情况汇报，部署实施医疗康复护理扩容提升工程</h3><p>9月18日，国务院总理李强主持召开国务院常务会议，听取老龄工作情况汇报，部署实施医疗康复护理扩容提升工程，审议通过《中医药传统知识保护条例（草案）》。会议指出，要以基层为重点建强医疗康复护理服务体系，推动康复护理资源向社区、家庭延伸；要针对老年群体特征丰富银发产品和服务，培育银发消费新场景，实现民生福祉与内需扩容双向促进。 [原文]点击查看</p><span class="src">（来源：人民日报、新华社，2026-09-19）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">二</span>广东要闻</div><div class="news-item"><h3><span class="idx">1.</span>孟凡利到汕头、潮州、揭阳调研，强调加快海洋牧场建设、打造海上新广东</h3><p>9月20日至21日，省委副书记、省长孟凡利先后到汕头市、潮州市、揭阳市，深入企业、园区、社区、村庄和海洋牧场专题调研。他强调，要大力发展深海养殖装备，积极有序扩大养殖规模，不断提升智能化、绿色化水平和养殖效益，加快海洋牧场建设，打造海上新广东；要抢抓机遇加快打造海上风电装备全链条产业生态；要扎实做好当前和四季度各项工作，全力以赴争取更好发展成果。 [原文]点击查看</p><span class="src">（来源：南方日报、中共广东省委组织部，2026-09-22）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>孟凡利主持召开省政府党组会议、常务会议，强调持续做大做强先进制造业、加快建设现代化海洋牧场</h3><p>9月24日，省长孟凡利主持召开省政府党组会议、常务会议，强调坚持实体经济为本、制造业当家，坚持智能化、绿色化、融合化方向，纵深开展“人工智能＋制造”行动，持续做大做强先进制造业；研究做好农业工作，强调以产业链思维发展现代农业，做好“土特产”文章，大力发展设施农业和农产品精深加工，加快建设现代化海洋牧场，推动农业更好向二三产延伸，努力把农业建成现代化大产业。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网、南方+客户端，2026-09-24）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>广东省庆祝2026年中国农民丰收节主场活动在湛江举行，“丰收经济”燃动岭南热土</h3><p>9月23日，农历秋分，广东省庆祝2026年中国农民丰收节主场活动在湛江市坡头区举行，以“丰收开新局 实干促振兴”为主题。活动现场发布了现代化海洋牧场建设成果：今年投放1500多万尾金鲳鱼，预计产量近5000吨；水稻良种“恒丰优金丝苗”平均每亩增产不少于100斤、推广面积超200万亩。今年上半年，全省农林牧渔业总产值4198.81亿元、增长4.2%，农村居民人均可支配收入15493元、增长5.9%。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网、南方日报，2026-09-24）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">三</span>经济发展</div><div class="news-item"><h3><span class="idx">1.</span>广东海洋生产总值连续31年位居全国首位，“海上新广东”加快成型</h3><p>广东是全国海洋经济第一大省，海洋生产总值连续31年位居全国首位。2026年世界海洋日暨全国海洋宣传日广东主场活动围绕“守护蔚蓝 向海图强”主题，全面展现广东海洋经济发展成果，广泛凝聚全社会守护海洋、经略海洋的强大合力，以新质生产力赋能海洋经济，打造高质量发展的“蓝色引擎”。 [原文]点击查看</p><span class="src">（来源：广东省自然资源厅、中国报道，2026-06）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>广东现代化海洋牧场“拔节生长”，2025年全省海水鱼养殖产量占全国近一半</h3><p>广东加快现代化海洋牧场建设，2025年全省海水鱼养殖产量占全国近一半，海水养殖产量达178.72万吨；全省累计建设重力式深水网箱8000个，推进养殖设施升级改造超过7万亩，深海养殖装备加快迭代升级，一批桁架式养殖平台投入运行，海洋牧场从近岸走向深远海，从“看天吃饭”走向“知天而作”。 [原文]点击查看</p><span class="src">（来源：南方农村报、广东省农业农村厅，2026-08）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>国企领衔千亿投资，广东海洋牧场冲刺万亿产业集群</h3><p>广东发挥国有企业引领带动作用，聚焦现代化海洋牧场全产业链加大投资布局，围绕种苗、饲料、养殖装备、精深加工、冷链物流、品牌营销等环节开展全链条投资，带动社会资本参与，推动海洋牧场向万亿级产业集群迈进，把海洋资源优势转化为产业优势、发展优势。 [原文]点击查看</p><span class="src">（来源：证券之星、南方日报，2026-08-07）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">四</span>社会治理</div><div class="news-item"><h3><span class="idx">1.</span>医疗康复护理扩容提升工程部署实施，康复护理资源向社区、家庭延伸</h3><p>9月18日国务院常务会议部署实施医疗康复护理扩容提升工程，强调以基层为重点建强医疗康复护理服务体系，推动康复护理资源向社区、家庭延伸，增强城乡居民康复护理服务可及性；依靠科技创新提升医疗康复护理水平，开发更多智能康复技术和设备；动态调整康复医疗、长期照护服务项目目录，完善人才培养政策，不断增强职业吸引力。 [原文]点击查看</p><span class="src">（来源：人民日报、新华社，2026-09-19）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>“十五五”时期聚焦群众关心的教育、就业、医疗、养老等问题持续用力</h3><p>全国人大常委会有关方面指出，“十五五”时期将聚焦群众关心的教育、就业、医疗、养老等问题，持续加大民生保障力度，健全基本公共服务体系，推动优质资源扩容下沉和区域均衡布局，让发展成果更多更公平惠及全体人民，不断增强人民群众获得感、幸福感、安全感。 [原文]点击查看</p><span class="src">（来源：新华社、全国人大网，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>丰收节上基层宣讲员登台，讲述投身“百千万工程”一线实践</h3><p>广东庆祝中国农民丰收节主场活动设置基层宣讲环节，广东省消防总队驻界炮镇帮扶工作队队员、云浮市云安区白石镇民安村党总支书记、汕尾市马宫街道农村职业经理人等三名基层宣讲员依次上台，用轻快的表演形式分享投身“百千万工程”的一线实践，展现了资源力量下沉基层、干部扎根乡村的生动局面。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网、南方日报，2026-09-24）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">五</span>科技创新</div><div class="news-item"><h3><span class="idx">1.</span>“盛唐一号”桁架式养殖平台投运，深海养殖装备加快智能化绿色化升级</h3><p>广东大力发展深海养殖装备，汕头“盛唐一号”桁架式养殖平台投入运行，集成自动投饵、水质在线监测、网衣清洗、远程控制等智能系统，可抵御强台风，把养殖空间从近岸推向深远海。养殖户“轻点手机牧沧海”，通过手机即可查看水质、远程投喂、预警风险，养殖效益和抗风险能力显著提升。 [原文]点击查看</p><span class="src">（来源：南方日报、汕头市人民政府网，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>“四个一体化”海上风电装备制造产业园加快建设，打造海上风电全链条产业生态</h3><p>汕头“四个一体化”海上风电装备制造产业园加快集聚上下游企业，推动海上风电装备研发、制造、测试、运维全链条发展，加快形成产业规模。广东探索“海上风电＋海洋牧场”融合发展模式，在风电场海域布局深远海养殖，实现海域立体分层利用，一份海域产出多重效益。 [原文]点击查看</p><span class="src">（来源：南方日报、广东省发展改革委，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>“人工智能＋制造”纵深推进，AI赋能传统产业焕发新活力</h3><p>广东纵深开展“人工智能＋制造”行动，加快人工智能全域全时全行业高水平应用。潮州陶瓷企业以人工智能赋能设计、生产、营销全流程，加快技改和数字化转型；汕头玩具、纺织服装等传统外贸产业叠加AI交互能力，推动实体产品升级为智能产品，提升出口附加值，走出一条以智能化改造传统产业的新路。 [原文]点击查看</p><span class="src">（来源：广东省人民政府网、南方日报，2026-09-24）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">六</span>生态环保</div><div class="news-item"><h3><span class="idx">1.</span>2026年度海洋生态修复项目组织申报，推动海洋生态保护修复提质增效</h3><p>自然资源部办公厅、财政部办公厅联合发出通知，组织申报2026年度海洋生态修复项目，支持开展海岸带保护修复、滨海湿地修复、海洋生物资源恢复等工作，推动海洋生态系统质量和稳定性提升，促进海洋生态保护与海洋经济发展协调统一。 [原文]点击查看</p><span class="src">（来源：自然资源部、财政部，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>广东持续加强红树林保护修复，把海洋生态优势转化为发展优势</h3><p>广东持续推进红树林保护修复工作，统筹生态保护与绿色发展，探索红树林碳汇交易、生态旅游、自然教育等价值实现路径，把红树林打造成生态文明建设的亮丽名片，实现生态效益、经济效益、社会效益相统一，为海洋生态保护与绿色发展协同推进提供广东经验。 [原文]点击查看</p><span class="src">（来源：广东省林业局、湛江市人民政府网，2026-09）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>深远海养殖坚持绿色低碳导向，推动海洋产业与海洋生态协同共进</h3><p>广东在发展深远海养殖中坚持生态优先，科学确定养殖容量，推广生态健康养殖模式，加强养殖尾水治理和废弃物资源化利用；海水养殖设施升级改造与海洋生态修复同步推进，在开发中保护、在保护中开发，努力实现人海和谐、永续利用。 [原文]点击查看</p><span class="src">（来源：广东省农业农村厅、南方农村报，2026-09）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">七</span>乡村振兴</div><div class="news-item"><h3><span class="idx">1.</span>让农民群众一年更比一年有奔头，丰收经济点燃乡村振兴新引擎</h3><p>广东庆祝中国农民丰收节主场活动突出“让广大农民成为主角”，以节庆为窗口推动一地好物成长为一域产业。今年上半年，全省农林牧渔业总产值4198.81亿元、增长4.2%，农村居民人均可支配收入15493元、增长5.9%。广东持续做强特色富民产业，坚持“一品一策”推动丝苗米、黄羽肉鸡、金鲳鱼等12个特色农产品及茶叶全产业链升级。 [原文]点击查看</p><span class="src">（来源：南方农村报、广东省农业农村厅，2026-09-24）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>以产业链思维发展现代农业，“土特产”文章做深做透</h3><p>广东在推进“百千万工程”中，以省典型村建设为抓手，以产业链思维、工业化理念发展现代农业，做深做透“土特产”文章，推动农业更好向二三产延伸。潮州官塘镇象山村发展佛手果种植、加工和市场营销，把一颗小果子做成一条产业链，带动村民增收，成为“百千万工程”典型村建设的鲜活样本。 [原文]点击查看</p><span class="src">（来源：南方日报、中共广东省委组织部，2026-09-22）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>现代化海洋牧场联农带农，让渔民在家门口端稳“蓝色饭碗”</h3><p>广东推动现代化海洋牧场建设与渔民增收有机结合，通过“企业＋合作社＋渔民”“深水网箱＋陆基配套”等模式，让渔民以海域使用权、渔船、资金等入股参与养殖，既拿租金又拿分红，还能在养殖平台、加工车间就业。金鲳鱼、金枪鱼等优势品种全产业链发展，带动沿海渔民在家门口端稳“蓝色饭碗”。 [原文]点击查看</p><span class="src">（来源：广东省农业农村厅、南方农村报，2026-08）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">八</span>改革开放</div><div class="news-item"><h3><span class="idx">1.</span>广东发布算力出海试点区域支持政策，七地探路把“算力”卖全球</h3><p>9月14日，2026年广东省网络安全宣传周开幕式上，广东省算力出海试点区域应用场景与支持政策发布，广州、深圳、珠海、汕头、韶关、惠州、横琴七地作为试点区域。广东已建成智算规模超70E、在用数据中心机架规模达142万架、居全国第二；各地集中亮出算力券、跨境专线补贴、模型研发补助等“真金白银”政策，精准回应企业出海痛点，以制度型开放推动数字贸易新业态发展。 [原文]点击查看</p><span class="src">（来源：粤港澳大湾区门户网、南方都市报，2026-09-15）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>汕头打造中国词元出海枢纽港，业务覆盖东南亚、欧美、中东等国家和地区</h3><p>汕头建设物理隔离的数字保税区专区，实行“境外数据专区闭环加工、运算结果合规出境”监管模式，今年4月完成全国首个城市级“词元出海”全链路商业化闭环验证。目前汕头已有130多家企业获批开展“词元出海”业务，词元日调用量日均500亿次，服务综合价格较海外主流算力平台低30%至50%，“词元出海”反向赋能本地玩具、纺织服装、跨境电商等传统外贸产业。 [原文]点击查看</p><span class="src">（来源：粤港澳大湾区门户网、南方都市报，2026-09-15）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>依托横琴、前海、南沙等平台先行先试，深化规则衔接与制度型开放</h3><p>广东毗邻港澳，拥有横琴、前海、南沙等多个国家级合作平台，在数据跨境流动方面积累深厚先行先试基础。汕头华侨试验区跨境数字经济产业园用好试验区政策优势，推动跨境电商、词元出海发展；横琴充分发挥“澳门＋横琴”一体化开放优势，面向葡语、西语系国家打造数据领域国际合作新枢纽，粤澳医疗数据互通、跨境商保风控等试点相继见效。 [原文]点击查看</p><span class="src">（来源：粤港澳大湾区门户网、南方日报，2026-09）</span></div></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">02 · 解析</div><h2 class="part-title">时政热点深度解析<span class="en">TREND ANALYSIS</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><div class="trend"><span class="tlabel">今日热点趋势判断</span>结合申论命题规律，对本期新闻逐条评估命题潜力（★1-5星），识别关键词、政策背景与命题方向。今日热点趋势判断第一，本周期最鲜明的信号是“海洋”被提到前所未有的战略高度。9月中下旬习近平总书记重要文章《推动海洋经济高质量发展》公开发表，强调海洋是高质量发展战略要地、坚持陆海统筹人海和谐；9月22日国新办发布会公布2025年我国海洋生产总值突破11万亿元、占国内生产总值7.9%，并提出“十五五”时期推动海洋生产总值早日迈上13万亿元新台阶，从传统产业、新兴产业到未来产业作出系统部署。战略定位、产业规模、发展路径三线并进，构成“十五五”开局的“蓝色主线”。备考时应把“陆海统筹、人海和谐”“构建现代海洋产业体系”作为核心原理，能够灵活运用于概括、对策、作文各题型。</div>
+<div class="top5"><div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP1</span><span class="stars"></span><h3>海洋经济高质量发展上升为国家战略，“海上新广东”迎来重大机遇（★★★★★）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">【申论关键词】海洋强国</span><span class="kw-tag">海洋经济高质量发展</span><span class="kw-tag">陆海统筹</span><span class="kw-tag">人海和谐</span><span class="kw-tag">现代海洋产业体系</span><span class="kw-tag">蓝色动能。</span></span></div><p class="tfield">【核心事件】9月中下旬，习近平总书记重要文章《推动海洋经济高质量发展》公开发表，强调海洋是高质量发展战略要地，要坚持陆海统筹、人海和谐，加快构建现代海洋产业体系。9月22日，国新办“开局起步‘十五五’”发布会公布，2025年我国海洋生产总值突破11万亿元、占国内生产总值7.9%，“十五五”时期将做强做优做大海洋产业，推动海洋生产总值早日迈上13万亿元新台阶。</p><p class="tfield">【政策背景与广东关联】海洋是高质量发展的战略要地，“蓝色经济”已成为“十五五”时期培育新增长点的重要方向。广东是全国海洋经济第一大省，海洋生产总值连续31年位居全国首位，海岸线长度、海域面积均居全国前列，坐拥粤港澳大湾区和沿海经济带双重优势，在海洋强国建设中承担着当仁不让的“主力军”责任。广东在海洋牧场、海上风电、海洋工程装备、海洋生物医药等领域基础较好，但“大而不强”“结构偏传统”的问题依然突出。</p><p class="tfield">【命题方向】大作文（以“向海图强”“蓝色崛起”“经略海洋”为主题）、概括题（概括海洋经济发展面临的困难）、对策题（如何把海洋资源优势转化为发展优势）。材料改编可行性极高，可从资源禀赋、产业短板、体制机制、生态约束等层面切入，是本期最具命题潜力的主题。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP2</span><span class="stars"></span><h3>加快建设现代化海洋牧场，向深远海要增量（★★★★★）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">【申论关键词】现代化海洋牧场</span><span class="kw-tag">深远海养殖</span><span class="kw-tag">深海养殖装备</span><span class="kw-tag">大食物观</span><span class="kw-tag">蓝色粮仓</span><span class="kw-tag">联农带农。</span></span></div><p class="tfield">【核心事件】9月20日至21日，省长孟凡利到汕头、潮州、揭阳调研，实地考察“盛唐一号”桁架式养殖平台，强调大力发展深海养殖装备、积极有序扩大养殖规模、加快海洋牧场建设、打造海上新广东。广东2025年全省海水鱼养殖产量占全国近一半、海水养殖产量达178.72万吨，累计建设重力式深水网箱8000个、推进养殖设施升级改造超7万亩；国企领衔千亿投资，冲刺万亿产业集群。</p><p class="tfield">【政策背景与广东关联】树立大食物观、向海洋要食物，是保障国家粮食安全的重要途径。广东海域辽阔、水温适宜，海水养殖基础雄厚，但长期以近岸养殖为主，面临养殖空间受限、水质压力加大、装备水平不高、苗种和饲料受制于人等问题。推动养殖空间从近岸走向深远海、从“看天吃饭”走向“知天而作”，既是产业升级方向，也是群众增收门路。</p><p class="tfield">【命题方向】概括题（概括发展深远海养殖的做法或困难）、对策题（如何做强海洋牧场全产业链）、公文题（撰写海洋牧场建设实施方案/调研报告）。材料中“深水网箱”“桁架式平台”“智慧养殖”“联农带农”等具体做法丰富，宜于改编。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP3</span><span class="stars"></span><h3>以制度型开放推动“算力出海”“词元出海”，培育数字贸易新业态（★★★★☆）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">【申论关键词】制度型开放</span><span class="kw-tag">算力出海</span><span class="kw-tag">词元出海</span><span class="kw-tag">数据跨境流动</span><span class="kw-tag">数字贸易</span><span class="kw-tag">规则衔接。</span></span></div><p class="tfield">【核心事件】9月14日，广东省算力出海试点区域支持政策发布，广州、深圳、珠海、汕头、韶关、惠州、横琴七地探路；汕头打造中国词元出海枢纽港，已有130多家企业获批开展“词元出海”业务，词元日调用量日均500亿次，覆盖东南亚、欧美、中东等国家和地区。南沙出台广州首个数据出境负面清单实施指南，实行“先用后报”机制。</p><p class="tfield">【政策背景与广东关联】规则、规制、管理、标准等制度型开放是高水平对外开放的重要内容。广东毗邻港澳，拥有横琴、前海、南沙等国家级合作平台，在数据跨境流动方面先行先试，这是广东区别于其他省份的独特禀赋。算力出海把“看不见的算力”变成可计量、可交易的数字服务，既输出服务又反向赋能传统外贸产业，是外贸新业态的重要突破。</p><p class="tfield">【命题方向】对策题（如何破解数据跨境流动障碍、培育数字贸易新业态）、综合分析题（如何理解制度型开放）、大作文（以“开放”为主题）。材料中的“来数加工”“词元出海”“负面清单”“先用后报”等制度创新可作优质素材。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP4</span><span class="stars"></span><h3>海洋生态保护与绿色发展协同推进，守护蓝色家园（★★★★☆）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">【申论关键词】海洋生态修复</span><span class="kw-tag">红树林保护</span><span class="kw-tag">人海和谐</span><span class="kw-tag">蓝色海湾</span><span class="kw-tag">生态产品价值实现</span><span class="kw-tag">绿色发展。</span></span></div><p class="tfield">【核心事件】自然资源部办公厅、财政部办公厅组织申报2026年度海洋生态修复项目，支持海岸带保护修复、滨海湿地修复、海洋生物资源恢复；广东持续推进红树林保护修复，探索碳汇交易、生态旅游等价值实现路径，把海洋生态优势转化为发展优势；深远海养殖坚持生态优先，与海洋生态修复同步推进。</p><p class="tfield">【政策背景与广东关联】开发和保护并重是海洋经济高质量发展的内在要求。广东海洋开发强度大，近岸海域水质、滨海湿地、海洋生物资源面临一定压力，围填海历史遗留问题、养殖尾水治理等仍需持续用力。以生态修复兜住底线、以价值实现激活动力，是广东实现人海和谐、永续利用的必由之路。</p><p class="tfield">【命题方向】概括题（概括海洋生态保护的做法）、对策题（如何统筹海洋开发与保护）、大作文（以“人海和谐”“绿色发展”为主题）。可与红树林、碳汇交易、生态补偿等素材结合。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP5</span><span class="stars"></span><h3>以人工智能赋能传统产业优化升级，推动海洋产业智能化转型（★★★★☆）</h3></div><div class="tfield"><span class="k">关键词</span><span class="kw-tags"><span class="kw-tag">【申论关键词】人工智能＋</span><span class="kw-tag">智能化改造</span><span class="kw-tag">传统产业优化升级</span><span class="kw-tag">智能制造</span><span class="kw-tag">数实融合</span><span class="kw-tag">新质生产力。</span></span></div><p class="tfield">【核心事件】广东纵深开展“人工智能＋制造”行动，加快人工智能全域全时全行业高水平应用。汕头“盛唐一号”桁架式养殖平台集成自动投饵、水质监测、远程控制等智能系统；潮州陶瓷企业以人工智能赋能设计、生产、营销全流程；汕头玩具、纺织服装叠加AI交互能力，推动实体产品升级为智能产品。</p><p class="tfield">【政策背景与广东关联】广东制造业体量大、传统产业占比高，以人工智能改造提升传统产业，是培育新质生产力、巩固壮大实体经济根基的现实路径。海洋渔业同样是传统产业，智慧养殖、数字牧场把新一代信息技术嵌入产业全流程，正是“AI＋海洋”的生动实践。</p><p class="tfield">【命题方向】对策题（如何以人工智能改造提升传统产业）、大作文（以“智能化”“数实融合”为主题）。材料可从技改投入不足、数据基础薄弱、人才短缺等问题切入。</p><p class="tfield">第三，与近期主题形成有序互补。本套模拟题以“向海图强·蓝色崛起”为主切口，与9月18日“先进制造·县域脊梁”、9月20日“数智赋能·数据要素”、9月22日“强基固本·党建治理”、9月23日“岭南丰景·品牌强农”、9月24日“绿水青山·点绿成金”在主题上互不重复：一个讲工业、一个讲数字、一个讲党建、一个讲农业、一个讲生态，今天讲海洋，共同覆盖广东申论的核心命题谱系。需注意本套“海洋牧场”与9月23日“品牌强农”的区隔——前者重心在深远海养殖与装备制造，后者重心在农业品牌营销，二者可相互补充而不重叠。</p></div></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">03 · 命题</div><h2 class="part-title">模拟试题<span class="en">MOCK EXAM</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><p>本题本共3道题，满分100分，作答参考时限150分钟。请仔细阅读给定材料，按要求作答。答案须写在答题卡指定位置，在本题本上作答无效。</p>
+<h2 id="给定材料">给定材料</h2>
+<h3 id="给定材料一">给定材料一</h3>
+<p>广东是全国海洋经济第一大省。四千多公里的大陆海岸线、四十多万平方公里的辽阔海域、星罗棋布的优良港湾，是广东得天独厚的蓝色家底。广东海洋生产总值连续31年位居全国首位，2025年全省海水鱼养殖产量占全国近一半，海水养殖产量达178.72万吨。省委党校一位教授用“三个最”概括这份家底：“海域面积最大、海岸线最长、海洋经济总量最高，这是我们建设海洋强省最大的底气。”</p>
+<p>但底气之下，隐忧同样明显。“我们的海洋产业，还是‘老三家’当家。”省海洋经济研究会一位专家直言，海洋油气、海洋文旅和传统捕捞养殖仍占据海洋经济的大头，而海洋生物医药、海水淡化、深海勘探开发等新兴和未来产业体量偏小，“产业链条短、附加值低、抗风险能力弱，一旦遇到油价波动或者台风影响，整个盘子就跟着晃”。</p>
+<p>“最卡脖子的还是装备和种苗。”一家深海养殖企业的负责人说，深远海养殖平台的核心控制系统、水质传感器、网衣材料相当一部分依赖进口，价格高、售后慢；“苗种上，鲳鱼、石斑鱼的优质亲本不少还要从省外甚至境外引进，饲料中的鱼粉依赖进口，一头一尾都被别人攥着。”他坦言，企业这几年投了不少钱搞装备升级，但“单打独斗成本太高，一条桁架式平台的投入动辄上亿元，中小企业根本玩不起”。</p>
+<p>用海审批慢、融资难，也是基层反映集中的堵点。“一个深海养殖项目，从海域使用论证到环评、从用海审批到设施验收，环节多、周期长，等批下来，市场行情可能都变了。”粤东一位渔业部门干部说。另一家涉海企业负责人反映，海洋牧场项目投资大、周期长、抵押物少，银行“看不懂、不敢贷”，公司想扩大规模只能靠自有资金滚动投入，“想快也快不起来”。</p>
+<p>“人才和科技也跟不上。”一位高校海洋学院的负责人介绍，广东涉海高校和科研院所不少，但海洋工程、海洋生物、智慧渔业等方向的毕业生，愿意到沿海县镇和养殖一线的并不多，“实验室里的成果，要真正沉到海面上、变成产值，中间还缺一段很长的路”。省里一位干部坦言，海洋经济“大而不强”，根源在于“资源大省”与“创新弱省”这对矛盾还没有真正破解。</p>
+<h3 id="给定材料二">给定材料二</h3>
+<p>在粤东一片开阔海域，一座白色的桁架式养殖平台稳稳矗立。平台叫“盛唐一号”，集成了自动投饵、水质在线监测、网衣清洗、远程控制等智能系统，可以抵御强台风。“以前养鱼，靠经验和运气；现在养鱼，看数据。”养殖户老陈打开手机，水质溶氧、水温、盐度一目了然，“轻点手机牧沧海，人在家里也能把鱼管好”。平台自投产以来，单位水体产量比传统网箱提高了好几倍，用工却减少了近一半。</p>
+<p>深远海养殖，是把养殖空间从近岸推向深蓝。广东已累计建设重力式深水网箱8000个，推进养殖设施升级改造超过7万亩。一批桁架式、坐底式、半潜式养殖装备陆续下水，养殖品种从传统的鲈鱼、鲷鱼，拓展到金鲳鱼、金枪鱼、石斑鱼等优质品种。今年，仅海威集团一家就投放金鲳鱼苗1500多万尾，预计产量近5000吨。</p>
+<p>“光有装备还不够，关键要成链。”省农业农村厅一位负责人介绍，广东以产业链思维推进现代化海洋牧场建设，围绕种苗、饲料、装备、养殖、加工、冷链、品牌全链条布局。在种苗端，建设省级水产种业基地，开展鲳鱼、石斑鱼等优质亲本选育攻关；在加工端，发展预制菜、即食产品、精深加工，让一条鱼“吃干榨净”；在销售端，培育“粤字号”水产区域公用品牌，推动优质水产走进大湾区、走向海外。</p>
+<p>在粤西一个渔村，现代化的养殖平台让渔民的日子红火起来。村里成立渔业专业合作社，渔民以海域使用权、渔船和资金入股，与龙头企业合营养殖。“过去出海捕鱼，风里来浪里去，一年到头也攒不下几个钱。现在把船入股合作社，既有租金又有分红，我还在平台上班拿工资，一年下来比以前多挣好几万。”渔民老林说。</p>
+<p>“海洋牧场不只是养鱼，更是养产业、养生态、养民生。”该省农业农村厅负责人说，下一步将坚持“陆海统筹、三产融合”，推动海洋牧场从“卖产品”向“卖品牌、卖标准、卖服务”升级，让“蓝色粮仓”既装满优质蛋白，也装满渔民的获得感。</p>
+<h3 id="给定材料三">给定材料三</h3>
+<p>在汕头，“四个一体化”海上风电装备制造产业园里，塔筒、叶片、主机、海缆生产线开足马力。“所谓‘四个一体化’，就是把风电装备的研发、制造、测试、运维串成一条链，上下游企业在一个园区里协同。”产业园负责人介绍，随着一批行业龙头企业集聚，园区已初步形成海上风电全链条产业生态，“以前我们是给别人配套，现在我们能整机供货”。</p>
+<p>海上风电与海洋牧场的“联姻”，让一片海域产出多重效益。在风电场海域，风机基础桩成了人工鱼礁，海域上层发电、中层养殖、底层增殖，实现对海域空间的立体分层利用。“一块海域，既发电又养鱼，用海效率成倍提高。”一位业内人士说。这种“海上风电＋海洋牧场”融合模式，正在广东沿海多地推广。</p>
+<p>海洋生物医药，是广东布局的另一个新赛道。一家海洋生物科技企业从海藻、海绵、海鞘等海洋生物中提取活性物质，开发出抗肿瘤、抗病毒候选药物和海洋功能性食品。“海洋是一座巨大的天然化合物库，人类已研究的海洋生物不到百分之五。”企业研发负责人说，但目前海洋药物从发现到成药周期长、投入大，需要政府、高校、企业协同攻关。</p>
+<p>在海水淡化领域，广东依托沿海核电、海上风电的绿电优势，探索“绿电＋海水淡化”模式。粤东一座海水淡化示范工程建成后，每天可产淡水数万吨，既保障了海岛和沿海园区用水，又探索了浓盐水综合利用。省发展改革委一位负责人表示，广东海域辽阔、能源基础好，发展海水淡化具备独特条件，“关键是要把成本降下来、把产业链做起来”。</p>
+<p>“新兴产业要靠政策引、靠平台聚、靠金融撑。”省海洋经济研究会专家建议，一是设立海洋新兴产业专项，对首台首套装备、首批次材料给予支持；二是搭建公共服务平台，共享试验海域、检测能力和中试基地；三是用好产业基金和蓝色债券，引导社会资本“投早、投小、投硬科技”。</p>
+<h3 id="给定材料四">给定材料四</h3>
+<p>在湛江沿海，一片红树林随风摇曳，白鹭掠过水面。这些年，广东持续推进红树林保护修复，营造和修复红树林数万亩，把“海岸卫士”重新请回了海边。“红树林既能防风消浪、净化海水，又是鱼虾贝类的天然 nursery（育幼场），保护它就是保护渔民的饭碗。”当地林业部门一位工作人员说。</p>
+<p>保护不是只盯着树。广东把红树林保护修复与生态旅游、自然教育、碳汇交易结合起来，探索“绿水青山”变“金山银山”的海上路径。附近村民开起民宿、办起渔家乐、当起科普讲解员，把红树林的“生态颜值”变成“经济价值”。当地还探索红树林碳汇核算与交易，让“看不见的生态价值”有了“看得见的标价”。</p>
+<p>但海洋生态保护的欠账也不少。“近岸海域水质总体向好，但局部海域、部分河口仍不稳定。”省生态环境部门一位负责人说，围填海历史遗留问题、入海排污口整治、养殖尾水治理等，都还需要持续用力。一些地方在发展中仍存在“重开发、轻保护”的倾向，“先发展后治理”的老路不能再走。</p>
+<p>“海洋开发强度越大，越要守住生态底线。”一位长期从事海洋生态研究的专家说，广东海域自净能力有限，近岸养殖密度高，一旦超载，水质恶化、病害暴发的风险就会上升，“发展深远海养殖，某种意义上就是给近岸海域‘减负’，让大海喘口气”。</p>
+<p>2026年，自然资源部办公厅、财政部办公厅组织申报海洋生态修复项目，支持海岸带保护修复、滨海湿地修复、海洋生物资源恢复。广东多个项目入选。“修复不是简单地种树、放苗，而是要让生态系统重新具备自我维持能力。”该专家说，海洋生态修复要讲科学、讲规律，不能搞“盆景工程”。</p>
+<h3 id="给定材料五">给定材料五</h3>
+<p>9月中下旬，习近平总书记重要文章《推动海洋经济高质量发展》公开发表，强调海洋是高质量发展战略要地，要坚持陆海统筹、人海和谐，坚持开发和保护并重，优化海洋经济空间布局，加快构建现代海洋产业体系。9月22日，国新办“开局起步‘十五五’”系列主题新闻发布会上，自然资源部介绍，2025年我国海洋生产总值突破11万亿元，占国内生产总值的7.9%。</p>
+<p>“‘十五五’海洋经济的路线图已经很清晰。”省委党校一位教授分析，从发布会披露的部署看，思路是“三条腿走路”：巩固提升海洋油气勘探开发、海洋文旅等传统产业优势；积极发展海洋生物医药、海水淡化等新兴产业；前瞻布局深海勘探开发、海水制氢等未来产业。“到2030年，全国海洋生产总值要迈上13万亿元新台阶，广东作为第一海洋经济大省，必须挑大梁。”</p>
+<p>9月20日至21日，省长孟凡利到汕头、潮州、揭阳调研，强调要大力发展深海养殖装备，积极有序扩大养殖规模，不断提升智能化、绿色化水平和养殖效益，加快海洋牧场建设，打造海上新广东；要抢抓机遇加快打造海上风电装备全链条产业生态，加快集聚上下游企业，加快形成产业规模。</p>
+<p>9月24日，省政府党组会议、常务会议研究做好农业工作，强调以产业链思维发展现代农业，做好“土特产”文章，加快建设现代化海洋牧场，推动农业更好向二三产延伸，努力把农业建成现代化大产业。会议同时强调，要坚持智能化、绿色化、融合化方向，纵深开展“人工智能＋制造”行动，持续做大做强先进制造业。</p>
+<p>“广东建设海洋强省，不是简单地拼规模、拼产量。”该教授说，“关键是三条：一是把装备和种苗这两个‘卡脖子’环节攻下来，二是把传统产业和新兴产业这两条腿都迈开，三是把生态保护和渔民增收这两本账都算好。做到了，海洋资源大省才能真正变成海洋经济强省。”</p>
+<h2 id="作答要求">作答要求</h2>
+<p><strong>第一题：根据给定材料一，请概括当前广东推进海洋经济高质量发展面临的主要困难。（20分）</strong></p>
+<p>要求：概括准确、条理清晰，不超过200字。</p>
+<p><strong>第二题：根据给定材料二、材料三，请就广东如何把海洋资源优势转化为发展优势提出对策建议。（30分）</strong></p>
+<p>要求：紧扣材料、措施具体、切实可行，不超过300字。</p>
+<p><strong>第三题：根据给定材料，结合广东实际，请围绕“向海图强”这一主题，自拟标题，写一篇议论文。（50分）</strong></p>
+<p>要求：（1）观点明确，立意深刻；（2）结合材料但不拘泥于材料，联系广东实际；（3）结构完整，论证充分，语言流畅；（4）800—1000字。</p>
+<div class="paper-head"><span class="t">给定材料</span><span class="m">材料一 — 材料五</span></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">04 · 作答</div><h2 class="part-title">参考答案与示范作答<span class="en">MODEL ANSWERS</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><div class="ans-block"><div class="ans-head"><span class="stamp">一</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第一题-参考答案20分">第一题 参考答案（20分）</h2><p>当前广东推进海洋经济高质量发展面临的主要困难有：一是产业结构偏传统，海洋油气、海洋文旅和传统捕捞养殖占大头，海洋生物医药、海水淡化等新兴产业体量小，产业链短、附加值低、抗风险能力弱；二是装备种苗受制于人，深远海养殖平台核心控制系统、传感器、网衣材料依赖进口，优质亲本和鱼粉依赖省外境外引进；三是要素保障不足，用海审批环节多、周期长，项目投资大、抵押物少、融资难，中小企业负担重；四是人才科技支撑弱，海洋工程、智慧渔业等人才不愿赴沿海一线，科技成果转化为产值通道不畅。“资源大省”与“创新弱省”矛盾有待破解。</p><p>其根源在于海洋资源禀赋优势尚未有效转化为产业优势和创新优势。</p></div></div></div>
+<div class="ans-block"><div class="ans-head"><span class="stamp">二</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第二题-参考答案30分">第二题 参考答案（30分）</h2><p>一是农业农村部门以产业链思维做强海洋牧场。围绕种苗、饲料、装备、养殖、加工、冷链、品牌全链条布局，建设省级水产种业基地开展优质亲本选育攻关，发展预制菜和精深加工，培育“粤字号”水产区域公用品牌。</p><p>二是科技、工信部门攻坚装备与种苗“卡脖子”环节。组织深远海养殖平台核心控制系统、传感器、网衣材料等关键技术攻关，推动智能装备国产化替代，降低单台套成本，让中小企业用得起、改得快。</p><p>三是发展改革、科技部门培育海洋新兴产业。设立海洋新兴产业专项，支持首台首套装备、首批次材料；搭建公共服务平台共享试验海域、检测能力和中试基地；布局海洋生物医药、海水淡化、深海勘探开发等新赛道。</p><p>四是能源、海洋部门推广“海上风电＋海洋牧场”融合模式。依托海上风电装备产业园打造全链条产业生态，实现海域上层发电、中层养殖、底层增殖的立体分层利用，提高单位海域产出效益。</p><p>五是金融、财政部门强化要素保障。用好产业基金、蓝色债券和碳减排支持工具，引导社会资本投早、投小、投硬科技；优化用海审批流程，推行并联审批、告知承诺，缩短项目落地周期。</p><p>六是基层组织健全联农带农机制。推广“企业＋合作社＋渔民”模式，让渔民以海域使用权、渔船、资金入股，实现租金、分红、工资多渠道增收，让渔民在家门口端稳“蓝色饭碗”。</p></div></div></div>
+<div class="ans-block"><div class="ans-head"><span class="stamp">三</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第三题-示范作答50分">第三题 示范作答（50分）</h2><p><strong>标题：向海图强兴南粤 深蓝筑梦谱新篇</strong></p><p>广东拥有四千多公里大陆海岸线、四十多万平方公里辽阔海域，海洋生产总值连续31年位居全国首位；然而，“海洋油气、海洋文旅、传统捕捞养殖”仍是当家产业，深远海养殖平台的核心控制系统、优质苗种和鱼粉却一头一尾攥在别人手里。一边是“全国第一”的体量，一边是“大而不强”的隐忧，落差在哪里？就在于海洋资源优势还没有真正转化为产业优势、创新优势。海洋是高质量发展战略要地，向海图强，正是广东建设海洋强省、走好“十五五”新征程的必答之题。</p><p>向海图强，首在把装备种苗的“卡脖子”环节攻下来。装备和种苗是海洋产业的命门。核心控制系统、水质传感器、网衣材料依赖进口，优质亲本和鱼粉依赖外引，产业再怎么扩规模，也是在别人的地基上盖楼。广东必须以产业需求为导向，组织深远海养殖平台关键装备协同攻关，建设省级水产种业基地开展优质亲本选育，推动智能装备国产化替代、把成本降下来，让企业改得起、用得上、走得远。</p><p>向海图强，重在做强现代化海洋牧场这条主链。从近岸走向深远海、从“看天吃饭”走向“知天而作”，是海洋渔业的一场深刻变革。粤东“盛唐一号”桁架式养殖平台集成自动投饵、水质在线监测、远程控制，养殖户“轻点手机牧沧海”，单位水体产量成倍提高而用工减半。广东以产业链思维布局种苗、饲料、装备、养殖、加工、冷链、品牌全链条，推动海洋牧场从“卖产品”向“卖品牌、卖标准、卖服务”升级，才能把一条鱼的价值“吃干榨净”，把“蓝色粮仓”装满优质蛋白。</p><p>向海图强，要在把新兴产业这条腿迈开。“老三家”当家，抗风险能力就弱。海上风电装备“四个一体化”串起全链条，“海上风电＋海洋牧场”让一片海域上层发电、中层养殖、底层增殖，用海效率成倍提升；海洋生物医药、海水淡化等新赛道加速布局。广东应设立海洋新兴产业专项，支持首台首套装备、首批次材料，搭建共享试验海域、检测能力和中试基地的公共服务平台，用好产业基金、蓝色债券引导社会资本投早、投小、投硬科技，让“新赛道”尽快长成“新支柱”。</p><p>向海图强，成在把生态保护和渔民增收两本账都算好。海洋开发强度越大，越要守住生态底线。湛江红树林保护修复让“海岸卫士”重返海边，村民开民宿、办渔家乐、当科普讲解员，把“生态颜值”变成“经济价值”；深远海养殖给近岸海域“减负”，让大海喘口气。同时要健全“企业＋合作社＋渔民”联农带农机制，让渔民以海域使用权、渔船、资金入股，租金、分红、工资多渠道增收。生态美、产业兴、渔民富，才是有质量、有温度的海洋经济。</p><p>陆海统筹，人海和谐。把装备种苗攻下来，把海洋牧场做起来，把新兴产业迈开腿，把生态民生的账算好，南粤必将走出一条向深蓝要增量、向创新要动能、向生态要未来的海洋经济高质量发展之路。一片风正帆悬、鱼跃鸥翔的“海上新广东”，正在南海之滨徐徐铺展。</p></div></div></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">05 · 批改</div><h2 class="part-title">批改报告<span class="en">GRADING REPORT</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><div class="reviewA"><h2 id="视角a粉笔申论阅卷人刘哲宇李梦园体系">视角A：粉笔申论阅卷人（刘哲宇／李梦园体系）</h2>
+<p>按“材料为王、踩点给分”原则逐题批改。第一题按要点个数与准确度给分，第二题按对策的针对性、可行性、完整性给分，第三题按立意15分、结构10分、论证20分、语言5分打分。评分尺度从严，宁缺毋滥。</p>
+<table class="score-tbl"><thead><tr class="header"><th>题目</th><th>满分</th><th>得分</th><th>等级</th></tr></thead><tbody><tr class="odd"><td>第一题 概括归纳</td><td>20</td><td>17.0</td><td>良好</td></tr><tr class="even"><td>第二题 提出对策</td><td>30</td><td>27.0</td><td>良好</td></tr><tr class="odd"><td>第三题 大作文</td><td>50</td><td>42.0</td><td>良好</td></tr><tr class="even"><td>合 计</td><td>100</td><td>86.0</td><td>—</td></tr></tbody></table>
+<div class="sub-head">第一题精批（20分，得17.0分）</div>
+<p class="rev-line"><span class="lbl">【参考要点】①产业结构偏传统</span>海洋油气、海洋文旅和传统捕捞养殖占大头，新兴和未来产业体量小，产业链短、附加值低、抗风险能力弱；②装备种苗受制于人：深远海养殖平台核心控制系统、传感器、网衣材料依赖进口，优质亲本和鱼粉依赖省外境外引进；③要素保障不足：用海审批环节多周期长，项目投资大、抵押物少、融资难，中小企业负担重；④人才科技支撑弱：海洋工程、智慧渔业人才不愿赴沿海一线，科技成果转化为产值通道不畅。“资源大省”与“创新弱省”矛盾尚未破解。</p>
+<p>【得分拆解】四个层面要点全部命中（16分给15.5分）；根因层面答出材料一末尾“资源大省与创新弱省这对矛盾还没有真正破解”这一总结性表述（4分给1.5分）。合计17.0分。</p>
+<p>【失分点】一是“产业结构偏传统”一栏堆叠了“产业链条短、附加值低、抗风险能力弱”三层意思，若单列“抗风险能力弱”可再得0.5至1分；二是材料一中“单打独斗成本太高，一条桁架式平台的投入动辄上亿元，中小企业根本玩不起”这一表述兼具“成本高”和“组织化程度低”双重指向，本答案只在“融资难”中一笔带过，未点出“单打独斗、缺乏联合协作”这一隐藏采分点；三是根因部分仅抄录材料原句，未提炼为“资源禀赋未能转化为产业优势和创新优势”的分析性表达，深度略欠。</p>
+<div class="improve">【提分建议】概括题作答已做到总括词前置、分条列点，格式规范值得肯定。建议把材料中的“数字”与“对立性表述”当作采分点信号：材料一的“31年第一”与“老三家当家”就是一对鲜明对立，抓住它可把“大而不强”写得更透。注意200字上限，宁精勿滥。</div>
+<div class="sub-head">第二题精批（30分，得27.0分）</div>
+<p class="rev-line"><span class="lbl">【参考要点】以产业链思维做强海洋牧场（全链条布局、种业基地、精深加工、区域公用品牌）；攻坚装备与种苗“卡脖子”环节（关键装备攻关、国产化替代）；培育海洋新兴产业（专项支持、服务平台、新赛道布局）；推广“海上风电＋海洋牧场”融合模式（全链条产业生态、立体分层利用）；强化要素保障（产业基金、蓝色债券、优化用海审批）；健全联农带农机制（入股分红、多元增收）。</span></p>
+<div class="improve">【得分拆解】六条对策“谁来做＋做什么＋怎么做”三要素齐备，主体明确区分了农业农村部门、科技与工信部门、发展改革与科技部门、能源与海洋部门、金融与财政部门、基层组织，针对性强（18分给16.5分）；可行性好，措施均有材料支撑且可落地，如“设立海洋新兴产业专项”“产业基金投早投小投硬科技”直接取自材料三专家建议（12分给10.5分）。合计27.0分。</div>
+<p>【失分点】一是材料四关于海洋生态保护与发展的内容未转化为对策条（如“生态修复与产业开发同步推进”“养殖尾水治理与近岸减负”），属高阶迁移失分；二是材料五中“智能化、绿色化、融合化方向”与“人工智能＋制造”这一最新部署未融入对策，如可增列“以智能装备和数字技术赋能海洋牧场，建设智慧牧场”，属时政迁移不足；三是“优化用海审批”一条略显笼统，未给出“并联审批”“告知承诺制”这类具体抓手，操作性表述不足。</p>
+<div class="improve">【提分建议】对策题最忌“答非所问”，材料一提出的“装备种苗受制”“用海审批慢”“融资难”三个问题必须逐条回应，本答案做到了，这是得分关键。建议补充“生态保护”和“智能赋能”两条，使对策体系形成“产业—创新—要素—生态—民生”的完整闭环。</div>
+<div class="sub-head">第三题精批（50分，得42.0分）</div>
+<p>【立意15分：得13分】准确抓住“向海图强”的核心，把“资源大省向海洋强省跨越”立为文章主线，标题“向海图强兴南粤 深蓝筑梦谱新篇”对仗工整、主题鲜明，未跑题。扣2分在于开篇虽以“全国第一”与“大而不强”的对比切入，但对“陆海统筹、人海和谐”这一中央定位仅一笔带过，未在正文中充分展开，立意高度尚有提升空间。</p>
+<p>【结构10分：得9分】总—分—总结构完整。开头以“四千多公里海岸线、31年全国第一”与“隐忧：装备种苗攥在别人手里”对比切入（约180字）亮明观点，张力十足；四个分论点“攻装备种苗—做强海洋牧场—迈开新兴产业—算好生态民生两本账”逻辑递进，且共用“向海图强，……在……”统一句式；结尾回扣主题升华（约100字），结构清晰。</p>
+<p>【论证20分：得15.5分】例证全部取自材料且具广东辨识度（盛唐一号平台、海上风电四个一体化、红树林保护修复、联农带农入股分红），做到了“结合材料＋联系实际”，对比论证和数据运用得当（如“单位水体产量成倍提高而用工减半”）。失分在：一是理论论证偏弱，“构建现代海洋产业体系”“开发与保护并重”“陆海统筹”等政策原理未充分展开，四个分论点略显并列；二是材料五中“传统产业—新兴产业—未来产业三条腿走路”“11万亿到13万亿”的部署未在文中直接勾连；三是“装备种苗卡脖子”这一分论点与“做大海洋牧场”在逻辑上有交叉，层次感稍弱。</p>
+<p>【语言5分：得4.5分】语言流畅、凝练，“把一条鱼的价值‘吃干榨净’”“让大海喘口气”“风正帆悬、鱼跃鸥翔”等表述有画面感，政治表述规范，无明显病句。扣0.5分在于“徐徐铺展”“必答之题”等个别句式与前几日答卷雷同，略显套路。</p>
+<p>【总体评价】属考场上的中上水平作答，86.0分对应“要点基本齐全、结构完整、例证充分但理论与时政支撑略显不足”这一档。若在论证中补强政策原理与“十五五”海洋部署，可望冲击90分。</p>
+<p>【特别提示】“向海图强”这类宏大主题容易写成“成绩汇报稿”，本题用“全国第一”与“卡脖子”的对比制造张力，是值得肯定的处理方式；考场作答应保持“问题—原因—对策—意义”的完整逻辑，避免只有事例、不见分析。</p></div>
+<div class="reviewB"><div class="banner"><div class="av">花</div><div><h3>视角B · 花生十三实战派点评</h3><div class="sub">务实 · 直接 · 考场30秒阅卷视角</div></div></div><h2 id="视角b花生十三实战派点评">视角B：花生十三实战派点评</h2><div class="tips"><div class="tt">不看情怀，只看考场上阅卷老师那几十秒能看到啥。三句话讲完最让我上火的事，再给三条能立刻用上的建议。</div><p>不看情怀，只看考场上阅卷老师那几十秒能看到啥。三句话讲完最让我上火的事，再给三条能立刻用上的建议。</p></div><div class="tips"><div class="tt">最让我上火的三件事</div><h3 id="最让我上火的三件事">最让我上火的三件事</h3></div><p>第一件：第一题你四条摆得挺齐，可惜材料一里“单打独斗成本太高，一条桁架式平台动辄上亿元，中小企业根本玩不起”这么硬的信息你没单拎出来。这句话一身兼两职——既是“成本高”，也是“组织化程度低、缺乏联合协作”，命题人埋这一句就是等你抄的。你把它揉进“融资难”，等于白丢一分。记住：材料里带数字又带情绪的句子，八成是采分点。</p><p>第二件：第二题六条对策，主体分得清楚，这个值得表扬。但材料四整整一则讲海洋生态保护——红树林、碳汇交易、养殖尾水、给近岸减负，你六条对策里愣是没一条接上！材料提的问题和做法不回应，这叫“答非所问”，30分的大题，扣的可不止一分。还有材料五刚说的“智能化、绿色化、融合化方向”“人工智能＋制造”，这么新的时政钩子不去用，可惜了。</p><p>第三件：大作文最要命的是“例子排队，理论缺席”。“攻装备—做强牧场—迈开新兴产业—算好两本账”四个分论点排得漂亮，可你对“为什么海洋是高质量发展战略要地”“陆海统筹、人海和谐”讲得太浅。9月中下旬习近平总书记重要文章刚发表、9月22日国新办刚公布“11万亿、7.9%、13万亿”这几个数，你把它们往开头或分论点里一放，立意的“高度”立马不一样。光写鱼和船，写不出“国之大者”的味道。</p><div class="tips"><div class="tt">三条实战建议</div><h3 id="三条实战建议">三条实战建议</h3></div><p>建议一：材料里的“具体”就是分。数字（31年第一、178.72万吨、8000个网箱、7万亩、1500万尾、近5000吨）、专有表述（陆海统筹、人海和谐、现代化海洋牧场、深远海养殖、桁架式平台、四个一体化、联农带农、算力出海、词元出海），看到就条件反射地圈出来、抄进去。抄了就得分，这比背范文管用一百倍。</p><p>建议二：对策题记住“问题—对策一一对应”，最好再“材料—对策一一对应”。材料一说装备种苗卡脖子，你就答“组织攻关＋国产化替代”；材料一说用海审批慢，你就答“并联审批＋告知承诺”；材料四说生态保护，你就得补一条“生态修复与产业开发同步推进”。这叫“对症下药”，阅卷老师一看就知道你真读了材料，而不是背模板。</p><p>建议三：大作文开头用“对比”最抓人，中间用“时政”拔高度。你看这套答案的开头——“31年全国第一”对“装备种苗攥在别人手里”，一句话就把张力拉满；再把习近平总书记重要文章和国新办的“11万亿→13万亿”镶进分论点，文章立马有了“国之大者”的分量。考场上时间紧，与其苦思金句，不如找个鲜明的对比，再贴一个最新的时政。</p><h3 id="最后说两句">最后说两句</h3><p>说句公道话，这套卷子答得不错，86.0分放考场上属于“稳进面、冲得动”的水平。最亮眼的是那个“向深蓝要增量、向创新要动能、向生态要未来”的三段式收尾，还有“把一条鱼的价值吃干榨净”这种有烟火气的表达，很多考生写不出这个味儿，你行。</p><p>你现在缺的还是“抠材料”和“往高处站”这两口气。抠材料，就是把数字、矛盾、专有词一网打尽，尤其“问题—对策”“材料—对策”必须一一对应，材料四整整一则讲生态你都没接上，这个必须改；往高处站，就是把最新的时政（习近平总书记重要文章、国新办11万亿到13万亿部署、省政府常务会议“人工智能＋制造”）自然地镶进文章里。两口气补上，分数就到位了。</p><p>加油。“向海图强”这个大题，写好了是分，干好了是民生。先把答案的“口号味”去掉，把“实干味”提上来——别光写大海有多辽阔，要写出广东怎么把这片海经营明白。</p></div></div></div></div>
+<div class="part"><div class="part-head" onclick="togglePart(this)"><div class="part-kicker">附</div><h2 class="part-title">素材来源链接汇总<span class="en">SOURCES</span></h2><span class="part-arrow">▾</span></div><div class="part-body"><div class="part-body-inner"><p>以下为本套模拟题素材来源，均可在浏览器中点击查看原文。</p>
+<table class="src-tbl"><thead><tr class="header"><th>序号</th><th>标题</th><th>来源</th><th>URL</th></tr></thead><tbody><tr class="odd"><td>1</td><td>习近平总书记重要文章《推动海洋经济高质量发展》</td><td>新华社、人民日报</td><td><a href="http://www.news.cn/politics/leaders/202609/haiyang.html"><span class="underline">http://www.news.cn/politics/leaders/202609/haiyang.html</span></a></td></tr><tr class="even"><td>2</td><td>持续激活蓝色经济增长新动能！我国将这样做强做优做大海洋产业</td><td>央视新闻、第一财经</td><td><a href="https://www.yicai.com/brief/103373611.html"><span class="underline">https://www.yicai.com/brief/103373611.html</span></a></td></tr><tr class="odd"><td>3</td><td>我国海洋产值突破11万亿，十五五瞄准13万亿新目标</td><td>新浪财经</td><td><a href="https://k.sina.cn/article_1649173367_624c637704001j9bs.html"><span class="underline">https://k.sina.cn/article_1649173367_624c637704001j9bs.html</span></a></td></tr><tr class="even"><td>4</td><td>李强主持召开国务院常务会议 听取老龄工作情况汇报等</td><td>人民日报</td><td><a href="http://paper.people.com.cn/rmrb/pc/content/202609/19/content_30181973.html"><span class="underline">http://paper.people.com.cn/rmrb/pc/content/202609/19/content_30181973.html</span></a></td></tr><tr class="odd"><td>5</td><td>孟凡利到汕头、潮州、揭阳调研</td><td>南方日报、中共广东省委组织部</td><td><a href="https://www.gdzz.gov.cn/zgxc/gdyw/content/post_26081.html"><span class="underline">https://www.gdzz.gov.cn/zgxc/gdyw/content/post_26081.html</span></a></td></tr><tr class="even"><td>6</td><td>孟凡利主持召开省政府党组会议、常务会议强调 持续做大做强先进制造业</td><td>广东省人民政府网、南方+客户端</td><td><a href="https://www.gd.gov.cn/xxts/content/post_4960559.html"><span class="underline">https://www.gd.gov.cn/xxts/content/post_4960559.html</span></a></td></tr><tr class="odd"><td>7</td><td>广东省庆祝2026年中国农民丰收节主场活动在湛江举行</td><td>广东省人民政府网、南方日报</td><td><a href="https://www.gd.gov.cn/gdywdt/bmdt/content/post_4959985.html"><span class="underline">https://www.gd.gov.cn/gdywdt/bmdt/content/post_4959985.html</span></a></td></tr><tr class="even"><td>8</td><td>从丰收走向丰收！岭南热土涌动“丰收经济”新动能</td><td>广东省农业农村厅</td><td><a href="https://dara.gd.gov.cn/zwgk/zdlyxxgk/xczx/content/post_4959708.html"><span class="underline">https://dara.gd.gov.cn/zwgk/zdlyxxgk/xczx/content/post_4959708.html</span></a></td></tr><tr class="odd"><td>9</td><td>“让农民群众一年更比一年有奔头”</td><td>南方农村报</td><td><a href="https://epaper.nfncb.cn/nfnc/content/20260924/Articel01002JQ.htm"><span class="underline">https://epaper.nfncb.cn/nfnc/content/20260924/Articel01002JQ.htm</span></a></td></tr><tr class="even"><td>10</td><td>广东海洋生产总值连续31年位居全国首位</td><td>广东省自然资源厅、中国报道</td><td><a href="http://new.chinareports.org.cn/index.php/index/news/101222.html"><span class="underline">http://new.chinareports.org.cn/index.php/index/news/101222.html</span></a></td></tr><tr class="odd"><td>11</td><td>广东，向深蓝要增量｜丰收南粤·实干答卷②</td><td>南方农村报</td><td><a href="https://www.nfncb.cn/yaowen/59726.html"><span class="underline">https://www.nfncb.cn/yaowen/59726.html</span></a></td></tr><tr class="even"><td>12</td><td>2025年全省海水鱼养殖产量占全国近一半！广东现代化海洋牧场“拔节生长”</td><td>南方农村报</td><td><a href="https://www.nfncb.cn/index.php/yaowen/58829.html"><span class="underline">https://www.nfncb.cn/index.php/yaowen/58829.html</span></a></td></tr><tr class="odd"><td>13</td><td>国企领衔千亿投资，广东海洋牧场冲刺万亿产业集群</td><td>证券之星、南方日报</td><td><a href="https://wap.stockstar.com/detail/IG2026080700018131"><span class="underline">https://wap.stockstar.com/detail/IG2026080700018131</span></a></td></tr><tr class="even"><td>14</td><td>七地探路，真金白银，广东怎么把“算力”卖全球？</td><td>粤港澳大湾区门户网、南方都市报</td><td><a href="https://www.cnbayarea.org.cn/homepage/ttdt/content/post_1338664.html"><span class="underline">https://www.cnbayarea.org.cn/homepage/ttdt/content/post_1338664.html</span></a></td></tr><tr class="odd"><td>15</td><td>粤算力出海试点区域支持政策发布</td><td>广东省科技厅</td><td><a href="https://gdstc.gd.gov.cn/kjzx_n/gdkj_n/content/mpost_4955534.html"><span class="underline">https://gdstc.gd.gov.cn/kjzx_n/gdkj_n/content/mpost_4955534.html</span></a></td></tr><tr class="even"><td>16</td><td>自然资源部将从三方面推动海洋经济高质量发展</td><td>大众网、自然资源部</td><td><a href="https://www.dzwww.com/news/ssnews/202609/t20260922_18144880.htm"><span class="underline">https://www.dzwww.com/news/ssnews/202609/t20260922_18144880.htm</span></a></td></tr><tr class="odd"><td>17</td><td>自然资源部办公厅 财政部办公厅 关于组织申报2026年度海洋生态修复项目的通知</td><td>自然资源部、财政部</td><td><a href="http://www.hbjsxz.com/ArticleDetail.aspx?id=2157"><span class="underline">http://www.hbjsxz.com/ArticleDetail.aspx?id=2157</span></a></td></tr><tr class="even"><td>18</td><td>余钢李勇毅到麻章区调研督导红树林保护修复工作并召开现场办公会</td><td>湛江市人民政府网</td><td><a href="https://www.zhanjiang.gov.cn/yaowen/content/post_2227042.html"><span class="underline">https://www.zhanjiang.gov.cn/yaowen/content/post_2227042.html</span></a></td></tr><tr class="odd"><td>19</td><td>全国人大常委会：“十五五”时期，将聚焦群众关心的教育、就业、医疗、养老等问题</td><td>新华社、全国人大网</td><td><a href="https://news.sohu.com/a/1073786948_121019331"><span class="underline">https://news.sohu.com/a/1073786948_121019331</span></a></td></tr><tr class="even"><td>20</td><td>轻点手机牧沧海 一键管海“湛江造”</td><td>湛江日报</td><td><a href="https://www.gdzjdaily.com.cn/p/2975652.html"><span class="underline">https://www.gdzjdaily.com.cn/p/2975652.html</span></a></td></tr><tr class="odd"><td>21</td><td>Aquaculture industry at full speed ahead（海洋牧场全速推进）</td><td>中国日报</td><td><a href="https://epaper.chinadaily.com.cn/a/202609/24/WS6ab466a8e4b07a432ddc3ec8.html"><span class="underline">https://epaper.chinadaily.com.cn/a/202609/24/WS6ab466a8e4b07a432ddc3ec8.html</span></a></td></tr><tr class="even"><td>22</td><td>广东省累计建设重力式深水网箱8000个，推进养殖设施升级改造超过7万亩</td><td>广东省水生动物卫生协会</td><td><a href="http://www.gdaaah.com/article/detail/1895.html"><span class="underline">http://www.gdaaah.com/article/detail/1895.html</span></a></td></tr><tr class="odd"><td>23</td><td>南方日报评论员：聚力推动现代化海洋牧场建设提质增效</td><td>南方日报</td><td><a href="https://www.sohu.com/a/1060263443_100116740"><span class="underline">https://www.sohu.com/a/1060263443_100116740</span></a></td></tr><tr class="even"><td>24</td><td>海水养殖产量达178.72万吨！广东省现代化海洋牧场建设取得新成效</td><td>腾讯新闻、广东省农业农村厅</td><td><a href="https://news.qq.com/rain/a/20260810A0BU5600"><span class="underline">https://news.qq.com/rain/a/20260810A0BU5600</span></a></td></tr></tbody></table>
+<p>注：以上链接均为2026年9月25日搜索时的原文地址，部分链接可能因网站更新而失效。</p>
+<p>主题方向：向海图强 · 蓝色崛起——全面建设海洋强省，把海洋资源优势转化为发展优势，做强做优做大海洋产业，加快建设现代化海洋牧场，以海洋经济高质量发展打造“海上新广东”，为广东高质量发展注入强劲“蓝色动能”</p>
+<p>对标广东省考县级卷（县级及以上）</p>
+<p>总得分：86.0/100</p></div></div></div>
+<script>
+function togglePart(h){
+  var p = h.parentNode; if(!p) return;
+  p.classList.toggle("closed");
+}
+document.addEventListener("DOMContentLoaded", function(){
+  var parts = document.querySelectorAll(".part");
+  for(var i=1;i<parts.length;i++){ parts[i].classList.add("closed"); }
+});
+</script></article>
+</main>
+<footer class="foot">
+  <a class="home" href="index.html">返回日期索引</a> ·
+  广东省考申论每日自动化工作流 · 仅供学习参考
+</footer>
+<script>
+var DATES = ["2026-07-27","2026-07-28","2026-07-30","2026-07-31","2026-08-02","2026-08-03","2026-08-04","2026-08-05","2026-08-06","2026-08-07","2026-08-08","2026-08-09","2026-08-10","2026-08-11","2026-08-12","2026-08-13","2026-08-14","2026-08-15","2026-08-18","2026-08-19","2026-08-20","2026-08-21","2026-08-22","2026-08-23","2026-08-24","2026-08-25","2026-08-26","2026-08-27","2026-08-28","2026-08-29","2026-08-30","2026-08-31","2026-09-01","2026-09-02","2026-09-03","2026-09-04","2026-09-05","2026-09-06","2026-09-07","2026-09-08","2026-09-15","2026-09-16","2026-09-17","2026-09-18","2026-09-19","2026-09-20","2026-09-21","2026-09-22","2026-09-23","2026-09-24","2026-09-25"];
+var cur = "2026-09-25";
+function goDate(d){ if(d) location.href = d + '.html'; }
+function goRel(n){
+  var i = DATES.indexOf(cur);
+  if(i < 0) return;
+  var j = Math.min(Math.max(i + n, 0), DATES.length - 1);
+  if(j !== i) location.href = DATES[j] + '.html';
+}
+document.getElementById('dateSel').value = cur;
+</script>
+</body>
+</html>
