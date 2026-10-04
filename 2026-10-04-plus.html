@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>粤申题库 · 2026-10-04</title>
+<style>
+/* ============================================================
+   粤申题库 · 杂志风（现代编辑部 · 第三版样式）
+   ============================================================
+   设计语言：把每一天当作一份「申论晨报」的卷期号。
+   - 冷白纸底 + 近黑墨色，编辑部朱红作唯一点睛色。
+   - 超大日期作为每期的「刊头」。
+   - 编号栏眉（01 抓取 · 02 解析 · 03 命题 · 04 作答 · 05 批改）
+     是真实的工作流次序，不是装饰。
+   ------------------------------------------------------------
+   切换：如需回退到 v1 精致布局，只需把 enhance.py / build_site.py
+   中的 style_mag.css 改回 style_v1.css（或 style.css），一键还原。
+   ============================================================ */
+
+/* ---------- 全局 ---------- */
+:root{
+  color-scheme:light;
+  --paper:#FFFFFF;
+  --paper-2:#F5F6F7;
+  --ink:#14161A;
+  --ink-soft:#4A4F57;
+  --ink-faint:#9AA0A8;
+  --line:#E7E8EA;
+  --line-strong:#D8DADD;
+  --red:#C2231C;            /* 编辑部朱红 —— 唯一点睛 */
+  --red-deep:#8F1813;
+  --red-soft:#FBEDEC;
+  --desk:#F2F3F4;
+  --serif:"Source Han Serif SC","Noto Serif SC","Songti SC","SimSun","STSong",serif;
+  --sans:"Inter","Source Han Sans SC","Noto Sans SC","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  --mono:"SF Mono","Roboto Mono","JetBrains Mono","Menlo",monospace;
+  --maxw:1040px;
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--desk);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:16px;
+  line-height:1.95;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  padding-bottom:80px;
+}
+::selection{background:var(--red);color:#fff;}
+a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line-strong);transition:color .18s ease,border-color .18s ease;}
+a:hover{color:var(--red);border-bottom-color:var(--red);}
+img{max-width:100%;height:auto;}
+
+/* ============================================================
+   顶部栏 —— 顶栏不再是「暗色胶囊」，改为白色刊头格栅。
+   ============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:60;
+  background:rgba(255,255,255,.92);
+  -webkit-backdrop-filter:saturate(160%) blur(14px);
+  backdrop-filter:saturate(160%) blur(14px);
+  border-bottom:1px solid var(--line-strong);
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:10px 20px;font-family:var(--sans);
+}
+.topbar .brand{
+  font-weight:800;letter-spacing:4px;font-size:13px;color:var(--ink);white-space:nowrap;
+  display:inline-flex;align-items:center;gap:9px;
+}
+.topbar .brand .seal{
+  font-family:var(--serif);
+  color:var(--red);font-weight:900;font-size:16px;letter-spacing:0;
+}
+.topbar .nav{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap;}
+.topbar select{
+  font-family:var(--sans);font-size:12.5px;letter-spacing:.5px;
+  padding:6px 10px;border-radius:0;background:#fff;
+  border:1px solid var(--line-strong);color:var(--ink);cursor:pointer;
+  appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 50%,calc(100% - 11px) 50%;
+  background-size:4px 4px,4px 4px;background-repeat:no-repeat;
+  padding-right:26px;
+}
+.topbar select:focus{outline:2px solid var(--red);outline-offset:1px;}
+.btn{
+  font-family:var(--sans);font-size:12px;letter-spacing:.5px;
+  padding:6px 12px;border-radius:0;border:1px solid var(--line-strong);
+  background:transparent;color:var(--ink-soft);cursor:pointer;
+  text-decoration:none;border-bottom:1px solid var(--line-strong);
+  transition:color .18s,border-color .18s,background .18s;
+}
+.btn:hover{background:var(--ink);color:#fff;border-color:var(--ink);}
+.btn:disabled{opacity:.3;cursor:not-allowed;}
+.btn:disabled:hover{background:transparent;color:var(--ink-soft);}
+
+/* ============================================================
+   卷头 —— 超大日期刊头（本期唯一记忆点）。
+   ============================================================ */
+.paper{max-width:var(--maxw);margin:0 auto;padding:0 20px;}
+.doc-head{
+  background:var(--paper);
+  border-bottom:3px solid var(--ink);
+  padding:46px 0 30px;margin-top:16px;position:relative;
+}
+/* 刊头网格底纹：淡到几乎看不见，只留呼吸感 */
+.doc-head::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);
+  background-size:calc(var(--maxw)/12) 100%;
+}
+/* 栏目眉（小字编号） */
+.doc-head .docno{
+  font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--ink-faint);
+  text-transform:uppercase;display:flex;align-items:center;gap:12px;margin-bottom:26px;position:relative;
+}
+.doc-head .docno::before{content:"";width:34px;height:2px;background:var(--red);display:inline-block;flex:none;}
+/* 大标题 */
+.doc-head h1{
+  font-family:var(--sans);font-weight:800;font-size:clamp(22px,3vw,30px);
+  letter-spacing:.5px;color:var(--ink);line-height:1.15;margin:0 0 10px;position:relative;
+}
+/* 超大日期 */
+.doc-head .ddate{
+  font-family:var(--sans);font-weight:800;font-size:clamp(52px,11vw,120px);
+  line-height:.95;letter-spacing:-3px;color:var(--ink);
+  margin:0 0 22px;position:relative;
+  font-variant-numeric:tabular-nums;
+}
+.doc-head .ddate .plus-tag{font-size:14px;letter-spacing:2px;vertical-align:super;margin-left:14px;color:var(--red);font-weight:700;}
+.doc-head .dmeta{display:flex;flex-wrap:wrap;gap:8px;font-family:var(--sans);margin-bottom:24px;position:relative;}
+.doc-head .chip{
+  border:1px solid var(--line-strong);background:var(--paper-2);border-radius:0;
+  padding:6px 12px;font-size:12px;letter-spacing:.5px;color:var(--ink-soft);
+}
+.doc-head .chip b{color:var(--ink);font-weight:700;}
+.doc-head .chip.plus-chip{color:var(--red);border-color:var(--red);font-weight:700;}
+/* 朱红印章：模拟得分 */
+.doc-head .score-badge{
+  position:absolute;top:30px;right:20px;width:88px;height:88px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:2.5px solid var(--red);border-radius:50%;
+  color:var(--red);font-family:var(--serif);font-weight:900;font-size:18px;line-height:1.2;letter-spacing:1px;
+  z-index:2;
+  animation:stamp .5s ease-out both .2s;
+}
+.doc-head .score-badge::before{
+  content:"";position:absolute;inset:6px;border:1px solid var(--red);border-radius:50%;opacity:.35;
+}
+.doc-head .score-badge small{font-size:8px;font-weight:400;letter-spacing:2px;font-family:var(--sans);}
+@keyframes stamp{0%{opacity:0;transform:rotate(8deg) scale(1.4);}100%{opacity:1;transform:rotate(8deg) scale(1);}}
+/* 刊头统计条 */
+.doc-head .hero-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--line-strong);
+  border-bottom:1px solid var(--line-strong);margin-top:4px;padding:20px 0 0;font-family:var(--sans);position:relative;
+}
+.doc-head .stat{text-align:left;padding-right:16px;border-left:1px solid var(--line-strong);padding-left:18px;}
+.doc-head .stat:first-child{border-left:none;padding-left:0;}
+.doc-head .stat .v{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-1px;line-height:1;font-variant-numeric:tabular-nums;}
+.doc-head .stat .v.red{color:var(--red);}
+.doc-head .stat .l{font-size:10.5px;color:var(--ink-faint);letter-spacing:2px;margin-top:6px;text-transform:uppercase;}
+
+/* ---------- 正文纸张 ---------- */
+.body{
+  background:var(--paper);
+  border-bottom:1px solid var(--line-strong);
+  padding:30px 0 40px;margin-top:10px;
+}
+.body > :first-child{margin-top:0;}
+.body > :last-child{margin-bottom:0;}
+.body p{margin:0 0 16px;font-size:16px;line-height:2.0;color:var(--ink);}
+.body strong{font-weight:700;color:var(--ink);}
+.body a[href^="http"]{color:var(--ink);border-bottom:1px solid var(--line-strong);}
+.body a[href^="http"]:hover{color:var(--red);border-bottom-color:var(--red);}
+.body table{border-collapse:collapse;width:100%;margin:20px 0;font-family:var(--sans);font-size:13.5px;}
+.body th,.body td{border:1px solid var(--line-strong);padding:10px 12px;text-align:left;}
+.body th{background:var(--paper-2);font-weight:700;letter-spacing:.5px;color:var(--ink);}
+.body tr:nth-child(even) td{background:rgba(0,0,0,.014);}
+.body ul,.body ol{margin:0 0 16px;padding-left:26px;}
+.body li{margin-bottom:6px;}
+.body blockquote{margin:0 0 16px;border-left:3px solid var(--ink);padding:4px 18px;color:var(--ink-soft);}
+.body hr{border:none;border-top:1px solid var(--line-strong);margin:28px 0;}
+.body .underline{text-decoration:underline;text-underline-offset:3px;}
+
+/* ============================================================
+   大板块 —— 编号栏眉（01-05 对应真实工作流次序）。
+   ============================================================ */
+.part{margin-top:64px;scroll-margin-top:80px;border-top:1px solid var(--line-strong);padding-top:40px;}
+.part:first-child{border-top:none;padding-top:0;margin-top:0;}
+.part-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px;}
+.part-kicker{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:3px;color:var(--red);
+  display:inline-flex;align-items:center;gap:8px;flex:none;
+}
+.part-kicker::before{content:"";width:22px;height:1.5px;background:var(--red);display:inline-block;}
+.part-title{
+  font-family:var(--sans);font-size:26px;margin:0;letter-spacing:-.5px;font-weight:800;
+  display:inline-flex;align-items:baseline;gap:12px;line-height:1.2;
+}
+.part-title .en{font-size:11px;color:var(--ink-faint);letter-spacing:3px;font-weight:500;text-transform:uppercase;}
+.part-note{font-family:var(--sans);font-size:12.5px;color:var(--ink-faint);letter-spacing:.5px;margin:14px 0 30px;}
+
+/* ============================================================
+   第一部分 · 时政热点速览 —— 杂志式「固定栏目」。
+   ============================================================ */
+.dim-block{margin-bottom:38px;}
+.dim-head{
+  display:flex;align-items:center;gap:14px;font-family:var(--sans);
+  font-size:18px;font-weight:800;color:var(--ink);letter-spacing:1px;
+  padding-bottom:12px;border-bottom:1px solid var(--ink);margin-bottom:4px;
+}
+.dim-head .d-n{
+  font-family:var(--mono);font-size:12px;color:var(--ink-faint);font-weight:600;letter-spacing:0;
+  border:1px solid var(--line-strong);border-radius:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:26px;height:26px;padding:0 4px;background:var(--paper-2);
+}
+.news-item{
+  border-left:2px solid transparent;padding:16px 0 16px 18px;margin-left:2px;
+  border-bottom:1px solid var(--line);
+  transition:border-color .2s,background .2s;
+}
+.news-item:last-child{border-bottom:none;}
+.news-item:hover{border-left-color:var(--red);background:linear-gradient(90deg,var(--red-soft),transparent 75%);}
+.news-item h3{
+  margin:0 0 6px;font-family:var(--sans);font-size:16px;font-weight:700;line-height:1.55;
+  display:flex;align-items:baseline;gap:10px;
+}
+.news-item h3 .idx{font-size:12px;color:var(--ink-faint);font-weight:500;font-variant-numeric:tabular-nums;flex:none;}
+.news-item p{margin:0 0 8px;font-size:14.5px;color:var(--ink-soft);line-height:1.9;}
+.news-item .src{
+  font-family:var(--sans);font-size:11px;color:var(--ink-faint);letter-spacing:.5px;
+  display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;
+}
+.news-item .src a{color:var(--ink-soft);border-bottom:1px solid var(--line-strong);font-weight:600;}
+.news-item .src a:hover{color:var(--red);border-bottom-color:var(--red);}
+
+/* ============================================================
+   第二部分 · 深度解析
+   ============================================================ */
+.trend{
+  background:var(--ink);color:#E9EBEE;border-radius:0;padding:30px 34px;
+  font-size:15.5px;line-height:2.05;margin-bottom:34px;
+}
+.trend b{color:#fff;font-weight:700;}
+.trend .tlabel{font-family:var(--mono);font-size:11px;letter-spacing:4px;color:#E5484D;display:block;margin-bottom:14px;text-transform:uppercase;}
+.top5{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line-strong);}
+.top5-item{
+  background:var(--paper);border-bottom:1px solid var(--line-strong);padding:26px 0;
+}
+.top5-item:last-child{border-bottom:none;}
+.top5-item .rankrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px;font-family:var(--sans);}
+.rank-tag{
+  font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:2px;color:var(--ink);
+  border:1.5px solid var(--ink);padding:3px 10px;border-radius:0;flex:none;background:var(--paper-2);
+}
+.stars{color:var(--red);letter-spacing:2px;font-size:12px;font-weight:700;}
+.top5-item h3{margin:0;font-family:var(--sans);font-size:19px;font-weight:800;line-height:1.45;flex:1;min-width:220px;}
+.tfield{margin-top:10px;font-size:15px;line-height:1.95;color:var(--ink-soft);}
+.tfield .k{font-family:var(--sans);font-size:12px;font-weight:800;color:var(--ink);letter-spacing:2px;margin-right:6px;flex:none;text-transform:uppercase;}
+.kw-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.kw-tag{
+  font-family:var(--sans);font-size:11px;color:var(--ink-soft);
+  border:1px solid var(--line-strong);background:var(--paper-2);
+  padding:3px 10px;border-radius:99px;letter-spacing:.5px;
+}
+
+/* ============================================================
+   第三部分 · 模拟试题
+   ============================================================ */
+.paper-head{
+  background:var(--ink);color:#fff;border-radius:0;
+  padding:16px 22px;font-family:var(--sans);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+}
+.paper-head .t{font-size:14px;font-weight:800;letter-spacing:3px;text-transform:uppercase;}
+.paper-head .m{font-size:11px;color:#9AA0AA;letter-spacing:1px;}
+.material{
+  background:var(--paper);border:1px solid var(--line-strong);border-top:none;
+  padding:24px 30px;margin-bottom:18px;
+}
+.material:last-child{margin-bottom:0;}
+.material .mno{
+  font-family:var(--mono);font-weight:700;font-size:12px;color:var(--red);letter-spacing:3px;
+  display:inline-block;border-bottom:2px solid var(--red);padding-bottom:4px;margin-bottom:14px;
+}
+.material p{margin:0 0 12px;font-size:15.5px;line-height:2.05;}
+.qblock{border:1.5px solid var(--ink);border-radius:0;margin-top:24px;background:var(--paper);}
+.qblock .qhead{
+  font-family:var(--sans);font-weight:800;font-size:14px;background:var(--paper-2);
+  border-bottom:1px solid var(--line-strong);padding:13px 22px;letter-spacing:.5px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.qblock .qhead .p{font-size:11px;color:var(--red);border:1px solid var(--red);border-radius:0;padding:0 7px;font-weight:700;}
+.qblock .qbody{padding:16px 22px;font-size:15.5px;line-height:1.95;}
+
+/* ============================================================
+   第四部分 · 参考答案（答题卡改为清单式条目）
+   ============================================================ */
+.ans-block{margin-bottom:30px;}
+.ans-head{display:flex;align-items:center;gap:12px;font-family:var(--sans);font-size:15px;font-weight:800;letter-spacing:1px;margin-bottom:10px;}
+.ans-head .stamp{font-size:10px;color:#fff;background:var(--ink);border-radius:0;padding:3px 9px;letter-spacing:2px;font-family:var(--mono);}
+.answer-card{
+  background-color:var(--paper);border:1px solid var(--line-strong);border-left:3px solid var(--ink);
+  border-radius:0;padding:26px 28px;
+}
+.answer-card .abody p{margin:0 0 12px;font-size:15.5px;line-height:2;}
+.answer-card .abody p:last-child{margin-bottom:0;}
+.answer-card .wcount{font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-align:right;margin-top:10px;letter-spacing:1px;}
+.essay-title{font-family:var(--sans);font-weight:800;font-size:20px;letter-spacing:1px;text-align:center;margin:0 0 20px;color:var(--ink);}
+
+/* ============================================================
+   第五部分 · 批改报告
+   ============================================================ */
+.score-tbl{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:13.5px;margin:18px 0 28px;}
+.score-tbl th,.score-tbl td{border:1px solid var(--line-strong);padding:11px 12px;text-align:center;}
+.score-tbl th{background:var(--ink);color:#fff;font-weight:700;letter-spacing:1px;}
+.score-tbl tr.total td{background:var(--paper-2);font-weight:800;}
+.score-tbl tr.total td.mark-red,.score-tbl td.mark-red{color:var(--red);}
+.score-tbl td.l{text-align:left;}
+.sub-head{
+  font-family:var(--sans);font-weight:800;font-size:16px;margin:30px 0 12px;letter-spacing:.5px;
+  display:flex;align-items:center;gap:10px;padding-left:0;
+  border-left:none;
+}
+.sub-head::before{content:"";width:18px;height:18px;background:var(--red);flex:none;display:inline-block;}
+.sub-head:first-of-type{margin-top:0;}
+.rev-line{margin:0 0 12px;font-size:15px;line-height:1.95;color:var(--ink);}
+.rev-line .lbl{font-family:var(--sans);font-weight:800;color:var(--ink);margin-right:5px;}
+.deduct{border-left:3px solid var(--red);background:var(--red-soft);border-radius:0;padding:14px 18px;font-size:14px;color:var(--red-deep);margin:14px 0;line-height:1.9;}
+.improve{border-left:3px solid var(--ink);background:var(--paper-2);border-radius:0;padding:14px 18px;font-size:14px;color:var(--ink);margin:14px 0;line-height:1.9;}
+
+.reviewB{background:var(--paper);border:1px solid var(--line-strong);border-radius:0;padding:32px 36px;margin-top:34px;}
+.reviewB .banner{display:flex;align-items:center;gap:14px;padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:20px;}
+.reviewB .banner .av{
+  width:52px;height:52px;border-radius:0;background:var(--ink);color:#fff;flex:none;
+  display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:800;font-size:20px;
+}
+.reviewB .banner h3{margin:0;font-family:var(--sans);font-size:19px;letter-spacing:.5px;}
+.reviewB .banner .sub{font-size:11.5px;color:var(--ink-faint);font-family:var(--sans);letter-spacing:1px;margin-top:3px;text-transform:uppercase;}
+.reviewB p{font-size:15.5px;line-height:2;margin:0 0 14px;}
+.reviewB .hot{border-top:1px dashed var(--line-strong);margin-top:22px;padding-top:20px;}
+.reviewB .hot .h-title{font-family:var(--sans);font-weight:800;font-size:15px;color:var(--red);letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.reviewB .tips{margin-top:24px;background:var(--paper-2);border:1px solid var(--line-strong);border-radius:0;padding:20px 24px;}
+.reviewB .tips .tt{font-family:var(--sans);font-weight:800;font-size:13px;letter-spacing:2px;margin-bottom:12px;color:var(--ink);}
+.reviewB .tips ol{margin:0;padding-left:20px;}
+.reviewB .tips li{margin-bottom:8px;font-size:14.5px;line-height:1.9;}
+.reviewB .attitude{margin-top:24px;text-align:center;font-size:15.5px;color:var(--ink-soft);border-top:1px dashed var(--line-strong);padding-top:22px;line-height:2;}
+
+/* ============================================================
+   附录
+   ============================================================ */
+.src-tbl{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:12.5px;}
+.src-tbl th,.src-tbl td{border:1px solid var(--line-strong);padding:9px 10px;vertical-align:top;text-align:left;}
+.src-tbl th{background:var(--ink);color:#fff;font-weight:700;letter-spacing:1px;}
+.src-tbl td.n{text-align:center;color:var(--ink-faint);font-variant-numeric:tabular-nums;font-family:var(--mono);}
+.src-tbl td.u{font-size:11.5px;word-break:break-all;font-family:var(--mono);color:var(--ink-soft);}
+.src-tbl td.u a{border:none;color:var(--ink-soft);}
+.src-tbl td.u a:hover{color:var(--red);}
+.src-tbl tr:nth-child(even) td{background:rgba(0,0,0,.014);}
+
+/* ---------- 页脚 ---------- */
+.foot{max-width:var(--maxw);margin:36px auto 0;padding:0 20px;text-align:center;font-family:var(--sans);font-size:11px;color:var(--ink-faint);letter-spacing:2px;line-height:2;text-transform:uppercase;}
+.foot .home{border:none;color:var(--ink-faint);letter-spacing:2px;}
+.foot .home:hover{color:var(--red);}
+
+/* ============================================================
+   大板块折叠 —— 默认全部展开，点击分区标题可收起/展开
+   ============================================================ */
+.part-head{
+  cursor:pointer;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .3s cubic-bezier(.32,.72,0,1);
+  padding-bottom:4px;
+}
+.part-head:active{transform:scale(.992);}
+.part-head:hover .part-arrow{color:var(--red);}
+.part-arrow{
+  margin-left:auto;font-size:15px;color:var(--ink-faint);
+  display:inline-block;transition:transform .5s cubic-bezier(.32,.72,0,1);
+  flex:none;align-self:center;
+}
+.part.closed .part-arrow{transform:rotate(-90deg);}
+.part.closed .part-kicker{color:var(--ink-faint);}
+.part.closed .part-head .part-title{color:var(--ink-soft);}
+.part-body{
+  display:grid;grid-template-rows:1fr;overflow:hidden;
+  transition:grid-template-rows .6s cubic-bezier(.32,.72,0,1),opacity .4s ease;
+  opacity:1;
+}
+.part-body-inner{min-height:0;overflow:hidden;}
+.part.closed .part-body{grid-template-rows:0fr;opacity:0;}
+.part.closed .part-head{border-bottom:1px solid var(--line-strong);}
+@media(prefers-reduced-motion:reduce){
+  .part-body{transition:none;}
+  .part.closed .part-body{display:none;}
+}
+
+/* ============================================================
+   首页 · 三大板块
+   ============================================================ */
+.home-hero{max-width:var(--maxw);margin:22px auto 0;padding:0 20px;text-align:left;border-bottom:3px solid var(--ink);padding-bottom:26px;}
+.home-hero h1{font-family:var(--sans);font-size:clamp(26px,5vw,44px);letter-spacing:-1px;margin:0 0 8px;font-weight:800;}
+.home-hero .sub{color:var(--ink-soft);font-size:14px;letter-spacing:2px;font-family:var(--sans);margin:0;position:relative;padding-left:0;display:inline-flex;align-items:center;gap:10px;}
+.home-hero .sub::before{content:"";width:22px;height:2px;background:var(--red);display:inline-block;}
+.grid{max-width:var(--maxw);margin:0 auto;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1px;background:var(--line-strong);border:1px solid var(--line-strong);}
+.card{
+  background:var(--paper);border:none;padding:26px 24px 20px;text-decoration:none;color:var(--ink);
+  display:flex;flex-direction:column;gap:10px;border-bottom:none;
+  transition:background .2s ease,transform .2s ease;
+}
+.card:hover{background:var(--paper-2);transform:translateY(-2px);}
+.card .cdate{font-family:var(--sans);font-weight:800;font-size:22px;letter-spacing:-.5px;color:var(--ink);font-variant-numeric:tabular-nums;}
+.card .ctheme{font-size:13px;color:var(--ink-soft);line-height:1.7;flex:1;}
+.card .cscore{font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:1px;font-weight:700;text-transform:uppercase;}
+.card .cscore .na{color:var(--ink-faint);font-weight:400;}
+.card .go{align-self:flex-end;font-family:var(--sans);font-size:12px;color:var(--ink);font-weight:700;letter-spacing:.5px;}
+.card:hover .go{color:var(--red);}
+
+/* 加量卷标签 */
+.plus-tag{
+  display:inline-block;font-family:var(--sans);font-size:10px;font-weight:800;
+  color:#fff;background:var(--red);border-radius:0;padding:2px 8px;letter-spacing:1px;
+  vertical-align:middle;margin-left:6px;white-space:nowrap;
+}
+
+/* ============================================================
+   首页 · 今日/历史 双板块
+   ============================================================ */
+.idx-sec{max-width:var(--maxw);margin:0 auto;padding:0 20px;padding-top:40px;}
+.idx-head{display:flex;align-items:center;gap:10px;font-family:var(--sans);font-size:17px;font-weight:800;letter-spacing:1px;color:var(--ink);margin-bottom:6px;}
+.idx-head .idx-dot{width:22px;height:3px;background:var(--ink);flex:none;}
+.idx-head .idx-dot.today{background:var(--red);}
+.idx-sec .sub-tip{font-family:var(--sans);font-size:12px;color:var(--ink-faint);letter-spacing:1px;margin:0 0 22px;}
+.today-sec{max-width:var(--maxw);margin:0 auto;padding:0 20px;padding-top:8px;}
+.today-card{
+  display:block;background:var(--ink);color:#fff;border-top:4px solid var(--red);
+  padding:34px 38px;text-decoration:none;position:relative;margin-top:20px;
+}
+.today-card .tc-main{display:flex;align-items:baseline;gap:14px;margin-bottom:14px;}
+.today-card .tc-label{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:3px;color:#fff;background:var(--red);padding:3px 11px;}
+.today-card .tc-date{font-family:var(--sans);font-weight:800;font-size:clamp(40px,7vw,68px);letter-spacing:-2px;color:#fff;line-height:1;}
+.today-card .tc-theme{font-size:18px;color:#E9EBEE;line-height:1.8;margin-bottom:20px;font-family:var(--sans);font-weight:500;}
+.today-card .tc-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:var(--sans);}
+.today-card .tchip{border:1px solid rgba(255,255,255,.25);padding:5px 12px;font-size:12px;color:#C9CCD2;letter-spacing:.5px;}
+.today-card .tchip b{color:#fff;font-weight:700;}
+.today-card .tc-score{font-family:var(--mono);font-size:13px;color:var(--red);font-weight:800;letter-spacing:1px;}
+.today-card .tc-go{display:inline-block;margin-top:22px;font-family:var(--sans);font-size:13px;color:#fff;font-weight:700;letter-spacing:1px;border-bottom:1px solid #fff;padding-bottom:2px;}
+.today-card:hover .tc-go{color:var(--red);border-bottom-color:var(--red);}
+.today-card:hover{background:#1B1E22;}
+
+/* 搜索 + 月份分组 */
+.search-box{max-width:var(--maxw);margin:6px auto 20px;padding:0 20px;position:relative;}
+.search-box .sb-icon{position:absolute;left:36px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.5;pointer-events:none;}
+.search-box input{
+  width:100%;padding:13px 16px 13px 44px;font-family:var(--sans);font-size:14px;
+  border:1px solid var(--line-strong);border-radius:0;background:#fff;
+  color:var(--ink);outline:none;transition:border-color .2s;
+}
+.search-box input:focus{border-color:var(--ink);}
+.search-box input::placeholder{color:var(--ink-faint);}
+.month-group{max-width:var(--maxw);margin:0 auto 14px;padding:0 20px;}
+.month-head{
+  display:flex;align-items:center;gap:12px;padding:14px 16px;
+  border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line-strong);
+  font-family:var(--sans);background:var(--paper-2);
+}
+.month-arrow{font-size:11px;color:var(--ink-faint);width:14px;display:inline-block;transition:transform .5s;}
+.month-group.closed .month-arrow{transform:rotate(-90deg);}
+.month-name{font-weight:800;font-size:15px;letter-spacing:.5px;color:var(--ink);}
+.month-count{margin-left:auto;font-size:11px;color:var(--ink-faint);font-family:var(--mono);letter-spacing:1px;}
+.month-body{display:grid;grid-template-rows:1fr;padding-top:14px;transition:grid-template-rows .6s,opacity .35s;opacity:1;}
+.month-group.closed .month-body{grid-template-rows:0fr;padding-top:0;opacity:0;}
+.month-group.closed .month-body .grid{overflow:hidden;min-height:0;}
+.month-group.closed .month-body .grid > *{min-height:0;}
+.month-group.anim .month-body{overflow:hidden;}
+.month-body > .grid{min-height:0;}
+.month-group .grid{padding:0;}
+.empty{max-width:var(--maxw);margin:20px auto;padding:40px 20px;text-align:center;color:var(--ink-faint);font-family:var(--sans);font-size:14px;}
+
+/* ============================================================
+   响应式 & 动效
+   ============================================================ */
+@media(max-width:720px){
+  .doc-head{padding:34px 0 22px;}
+  .doc-head h1{font-size:24px;}
+  .doc-head .ddate{font-size:clamp(46px,13vw,72px);letter-spacing:-2px;margin-bottom:18px;}
+  .doc-head .score-badge{top:20px;right:6px;width:64px;height:64px;font-size:14px;}
+  .doc-head .score-badge::before{inset:4px;}
+  .doc-head .score-badge small{font-size:7px;}
+  .doc-head .hero-stats{grid-template-columns:repeat(2,1fr);gap:18px 0;padding-top:16px;}
+  .doc-head .stat{border-left:none;padding-left:0;}
+  .doc-head .stat:nth-child(2),.doc-head .stat:nth-child(4){border-left:1px solid var(--line-strong);padding-left:16px;}
+  .topbar .nav{margin-left:0;width:100%;justify-content:space-between;}
+  .paper{padding:0 14px;}
+  .grid{grid-template-columns:1fr 1fr;padding:0 14px;}
+  .today-card{padding:28px 24px;}
+  .today-card .tc-theme{font-size:15.5px;}
+  .body{padding:22px 0 30px;}
+  .body p{font-size:15.5px;}
+  .part{margin-top:48px;padding-top:30px;}
+  .part-title{font-size:22px;}
+  .reviewB{padding:24px 20px;}
+  .top5-item{padding:20px 0;}
+  .material{padding:20px 20px;}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important;}
+}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px;}
+
+/* 粤申题库：暖白纸面、墨绿导航。覆盖基础排版，保留全部内容。 */
+:root{--paper:#fffefa;--paper-2:#efefe7;--desk:#f4f3ed;--ink:#233b35;--ink-soft:#56645e;--ink-faint:#747d74;--line:#e4e5db;--line-strong:#d4d9ce;--red:#ad543c;--red-deep:#87442f;--red-soft:#faf0e9;--green:#294e43;--maxw:1120px;--sans:'Microsoft YaHei','PingFang SC',sans-serif;--serif:'Source Han Serif SC','Noto Serif CJK SC','Songti SC','SimSun',serif}
+html{scroll-behavior:smooth;scroll-padding-top:110px}body{font:16px/1.8 var(--sans);padding-bottom:36px}button,input,select{font:inherit}[hidden]{display:none!important}a,button{touch-action:manipulation}::selection{background:#d5e3cd}
+.topbar{gap:24px;padding:16px max(28px,calc((100vw - var(--maxw))/2));background:rgba(244,243,237,.96)}.brand{display:flex;align-items:center;gap:12px;font-size:21px;letter-spacing:2px;line-height:1.25;border:0;white-space:nowrap}.brand .seal{width:42px;height:44px;border-radius:5px;background:var(--green);color:#f5f2e5;font:26px var(--serif);display:grid;place-items:center;border:0}.brand small{display:block;font-size:10px;font-weight:400;letter-spacing:2px;color:var(--ink-soft);margin-top:5px}.nav{gap:7px}.btn,.nav select{border:1px solid var(--line-strong);background:transparent;border-radius:7px;padding:7px 12px;color:var(--ink-soft);font-size:12px;line-height:1.5}.nav select{max-width:190px;background:var(--paper);padding:8px 10px}.btn:hover:not(:disabled){background:var(--paper);border-color:var(--green);color:var(--green)}
+.eyebrow{font:11px/1.6 var(--mono);letter-spacing:2.5px;color:var(--ink-faint)}.home-hero{margin:0 auto;padding:62px 0 32px;border:0}.home-hero h1{font:600 clamp(35px,4.4vw,54px)/1.45 var(--serif);letter-spacing:1px;margin:17px 0}.hero-period{color:var(--red)}.home-hero .sub{display:block;color:var(--ink-soft);font-size:14px;letter-spacing:.5px}.home-hero .sub::before{display:none}.home-summary{display:flex;align-items:center;gap:24px;margin-top:24px;font-size:11px;color:var(--ink-faint)}.home-summary span+span{border-left:1px solid var(--line-strong);padding-left:24px}.home-summary b{color:var(--green);font-size:15px;margin-right:3px}
+.today-sec{padding:0;margin:0 auto}.today-card{display:grid;grid-template-columns:minmax(0,1fr) 250px;padding:0;margin:0;border:1px solid var(--green);border-radius:15px;overflow:hidden;background:var(--green);color:#fffefa;box-shadow:0 12px 30px #233b350b}.today-card:hover{background:#284b40}.tc-copy{padding:34px 40px}.today-card .tc-main{display:flex;align-items:center;gap:14px;margin-bottom:18px}.today-card .tc-label{border:1px solid #becab357;padding:3px 11px;border-radius:20px;color:#e9eedf;font:10px var(--sans);letter-spacing:1px;background:none}.today-card .tc-date{color:#bdcec2;font:12px var(--mono);letter-spacing:1px}.tc-title{font:600 clamp(23px,2.6vw,30px)/1.6 var(--serif);letter-spacing:1px;margin:0 0 10px}.today-card .tc-theme{font-size:12px;line-height:1.9;color:#d0ddd1;max-width:680px;font-weight:400;margin:0}.today-card .tc-meta{gap:14px;font-size:10px;color:#c6d7cb;margin-top:20px}.today-card .tchip{border:0;padding:0;font-size:10px}.today-card .tc-score{border-left:1px solid #739084;padding-left:14px;font:10px var(--sans);color:#c6d7cb;letter-spacing:0}.today-card .tc-go{display:inline-flex;align-items:center;justify-content:space-between;gap:40px;background:#f0ecd9;color:var(--green);border:0;border-radius:6px;font-size:12px;padding:10px 18px;margin-top:22px}.tc-go span{font-size:17px;line-height:1}.today-card:hover .tc-go{background:#fffefa;color:var(--green)}.tc-art{border-left:1px solid #aac5ac2c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:repeating-linear-gradient(90deg,transparent 0 49px,#c9d7b309 49px 50px),repeating-linear-gradient(0deg,transparent 0 49px,#c9d7b309 49px 50px);margin:22px 0}.art-label{font-size:10px;letter-spacing:5px;color:#b7c8b9}.art-word{font:60px/1.18 var(--serif);color:#e2e7cf;letter-spacing:6px}.art-caption{font-size:9px;letter-spacing:3px;color:#a7c0ae;margin-top:6px}
+.idx-sec{margin:52px auto 0;padding:0;scroll-margin-top:100px}.archive-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:20px}.idx-head{font:600 25px var(--serif);letter-spacing:1px;margin:8px 0 0}.idx-sec .sub-tip{color:var(--ink-faint);font-size:11px;margin:0;letter-spacing:0}.search-box{padding:0;margin:0 0 25px}.search-box .sb-icon{left:17px;font-size:24px;color:var(--ink-faint);opacity:1}.search-box input{border-radius:9px;background:var(--paper);padding:12px 16px 12px 46px;font-size:12px}.search-box input:focus{border-color:var(--green);box-shadow:0 0 0 3px #294e4309}.month-group{padding:0;margin-bottom:28px}.month-head{width:100%;background:transparent;border:0;border-bottom:1px solid var(--line-strong);padding:0 2px 12px;color:var(--ink);cursor:pointer}.month-name{font-size:14px}.month-count{font:10px var(--sans);letter-spacing:0}.month-arrow{font-size:17px;width:auto}.month-body{display:block;padding-top:18px;opacity:1}.month-group.closed .month-body{display:none}.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;border:0;background:none;padding:0}.card{gap:12px;padding:23px 23px 18px;background:var(--paper);border:1px solid var(--line);border-radius:11px;min-width:0}.card:hover{transform:translateY(-3px);border-color:#9eafa0;background:var(--paper);box-shadow:0 8px 24px #233b3508}.card .cdate{font:14px var(--mono);letter-spacing:1px;color:var(--ink-soft)}.card .ctheme{font:600 15px/1.85 var(--serif);color:var(--ink);overflow-wrap:anywhere}.card .cscore{font:10px var(--sans);color:var(--ink-faint);border-top:1px solid var(--line);padding-top:12px;letter-spacing:0}.cscore b{font-weight:500;color:var(--red)}.card .go{color:var(--green);font-size:11px;font-weight:500}.plus-tag{color:var(--red);background:var(--red-soft);border-radius:4px;padding:1px 6px;font:10px/1.7 var(--sans)}
+.paper{margin:34px auto 0;padding:0}.doc-head{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:32px 40px 0;margin:0;overflow:hidden}.doc-head::before,.doc-head::after{display:none}.doc-head .docno{font:10px var(--mono);color:var(--ink-faint);letter-spacing:2px;padding-bottom:16px;border-bottom:1px solid var(--line)}.doc-head h1{font:600 31px/1.5 var(--serif);letter-spacing:1px;margin:24px 0 6px}.doc-head h1 span{margin-left:12px;font-size:22px;color:var(--ink-soft)}.doc-head .ddate{font:12px/1.8 var(--mono);color:var(--red);letter-spacing:2px;margin:0 0 20px}.doc-head .dmeta{font-size:12px;line-height:1.9;display:flex;align-items:flex-start;flex-direction:column;gap:8px;max-width:880px;margin-bottom:26px}.doc-head .chip{border:0;background:none;padding:0;color:var(--ink-soft);font-size:12px}.chip b{font-weight:500}.doc-head .score-badge{display:none}.doc-head .hero-stats{border-top:1px solid var(--line);border-bottom:0;padding:20px 0 23px;gap:20px}.doc-head .stat{padding-left:22px}.doc-head .stat .v{font:26px/1.3 var(--mono);color:var(--green);letter-spacing:0}.doc-head .stat .v.red{color:var(--red)}.doc-head .stat .l{font-size:10px;color:var(--ink-faint);margin-top:4px;letter-spacing:0}
+.reading-layout{display:grid;grid-template-columns:185px minmax(0,1fr);gap:24px;margin-top:28px;align-items:start}.reader-nav{position:sticky;top:109px;padding-top:12px;font-size:12px}.reader-label{font-size:10px;color:var(--ink-faint);letter-spacing:2px;padding:0 10px 14px}.reader-nav>a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:6px;color:var(--ink-soft)}.reader-nav>a>span{font:10px var(--mono);color:var(--ink-faint)}.reader-nav>a:hover,.reader-nav>a.active{background:#e5eadd;color:var(--green)}.reader-hint{font-size:10px;line-height:2;color:var(--ink-faint);margin:20px 10px;padding-top:16px;border-top:1px solid var(--line-strong)}.reader-nav .reader-home{font-size:11px;color:var(--ink-faint)}
+.body{min-width:0;border:1px solid var(--line);border-radius:13px;padding:28px 36px 32px;margin:0}.body p{font:16px/2.1 var(--serif);color:#35423b;margin:0 0 18px;overflow-wrap:anywhere}.body a[href^="http"]{color:#416b56;overflow-wrap:anywhere}.body table{table-layout:fixed;overflow-wrap:anywhere;line-height:1.8;font-size:12px}.body td p{font:12px/1.8 var(--sans);margin:0}.body th,.body td{padding:10px;vertical-align:top}.part{scroll-margin-top:105px;padding-top:24px;margin-top:30px}.part-heading{margin:0 0 20px;font:inherit}.part-head{width:100%;display:flex;align-items:center;gap:14px;padding:0;margin:0;background:none;border:0;text-align:left;color:var(--ink);font:inherit}.part-kicker{display:grid;place-items:center;width:34px;height:34px;background:#eef1e7;border-radius:8px;font:12px var(--mono);color:var(--green);letter-spacing:0;flex:none}.part-kicker::before{display:none}.part-title{display:block;font-size:20px;font-weight:700;line-height:1.5;letter-spacing:0}.part-title .en{display:block;font:9px/1.7 var(--mono);letter-spacing:1.7px;color:var(--ink-faint);margin-top:3px}.part-arrow{font-size:18px}.part.closed .part-head{border:0}.part.closed .part-heading{margin:0}.part-body{display:block;overflow:visible}.part-body-inner{overflow:visible}.part-note{font-size:12px!important;font-family:var(--sans)!important;color:var(--ink-faint)!important;padding:12px 16px;background:var(--paper-2);border-radius:6px;letter-spacing:0}
+.dim-block{margin:28px 0}.dim-head{gap:10px;font-size:15px;font-weight:600;border-color:var(--line-strong);letter-spacing:0}.dim-head .d-n{font:11px var(--serif);color:var(--red);border:0;background:none;min-width:0;height:auto}.news-item{padding:18px 0;margin:0;border-left:0}.news-item:hover{background:none}.news-item h3{gap:10px;font-size:15px;line-height:1.7;margin-bottom:10px}.news-item p{font-size:14px;line-height:2;color:var(--ink-soft)}.news-item .src{display:block;font:10px/1.8 var(--sans);letter-spacing:0}.trend{background:#eaf0e4;color:var(--ink);padding:24px;border-radius:8px;font:15px/2 var(--serif);margin-bottom:24px}.trend .tlabel{font:11px var(--sans);color:var(--green);margin-bottom:12px;letter-spacing:1px}.top5{border:0}.top5-item{padding:22px 0}.top5-item .rankrow{gap:9px}.rank-tag{font:10px var(--mono);color:var(--green);background:#edf1e6;padding:4px 8px;border-radius:4px;border:0;letter-spacing:0}.stars{font-size:10px}.top5-item h3{width:100%;min-width:0;flex:auto;font-size:17px;margin:0}.tfield{font-size:14px!important;color:var(--ink-soft)!important}.kw-tag{font:10px/1.7 var(--sans);border-radius:4px;border:0;letter-spacing:0}
+.paper-head{background:var(--green);border-radius:7px;padding:13px 18px;margin:24px 0 18px}.paper-head .t{font-size:13px;letter-spacing:1px}.paper-head .m{font-size:10px;color:#d0decb}.material{background:#fafaf4;border:1px solid var(--line);border-radius:8px;padding:23px 25px;margin:0 0 20px}.material .mno{font:11px var(--sans);color:var(--red);border-bottom:1px solid #cc9a7c;letter-spacing:2px}.material p{font-size:16px;line-height:2.2}.material p:last-child{margin:0}.body h2:not(.part-heading){font-size:18px;margin:28px 0 18px}.ans-head{font-size:13px;letter-spacing:0}.ans-head .stamp{background:var(--green);border-radius:4px}.answer-card{border:0;border-left:3px solid #9aae8c;background:#f7f8f0;border-radius:0 8px 8px 0;padding:22px 24px}.answer-card .abody p{font-size:16px;line-height:2.1}.sub-head{font-size:16px;font-weight:600;letter-spacing:0}.sub-head::before{width:5px;height:16px;background:#9aae8c}.deduct,.improve{padding:16px 18px;border-radius:7px;font:13px/1.95 var(--sans)}.improve{background:#edf2e6;border-left-color:#86a06f}.reviewB{border:0;border-top:1px solid var(--line-strong);padding:28px 0 0;margin-top:32px}.reviewB .banner{border:0;padding:0}.reviewB .banner .av{width:43px;height:43px;background:var(--green);border-radius:8px;font-size:21px}.reviewB .banner h3{font-size:16px;letter-spacing:0}.reviewB .banner .sub{font-size:10px;letter-spacing:0}.reviewB .tips{border:0;border-radius:7px;padding:18px}.src-tbl{font-size:11px!important}.src-tbl td p{font-size:11px!important}.src-tbl a{word-break:break-all}.foot{margin:38px auto 0;padding:20px 0;border-top:1px solid var(--line-strong);font-size:10px;letter-spacing:1px}.foot .home{color:var(--green);letter-spacing:1px}
+@media(max-width:1180px){.home-hero,.today-sec,.idx-sec,.paper,.foot{margin-left:28px;margin-right:28px}.topbar{padding:14px 28px}}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.today-card{grid-template-columns:minmax(0,1fr) 190px}.tc-copy{padding:28px}.reading-layout{grid-template-columns:145px minmax(0,1fr);gap:16px}.reader-nav>a{font-size:11px;gap:8px;padding:9px 8px}.body{padding:26px}.doc-head h1 span{display:block;margin-left:0;font-size:21px}}
+@media(max-width:680px){.topbar{padding:12px 18px;gap:12px}.brand{font-size:18px;gap:9px}.brand .seal{width:34px;height:37px;font-size:23px}.brand small{font-size:9px}.nav{gap:5px}.nav .btn,.nav select{font-size:10px;padding:7px 8px}.topbar .nav{width:auto;margin-left:auto}.topbar:has(.nav button) .nav{width:100%;justify-content:space-between;margin:0}.home-hero,.today-sec,.idx-sec,.paper,.foot{margin-left:18px;margin-right:18px}.home-hero{padding:36px 0 26px}.home-hero h1{font-size:33px;line-height:1.5;margin:12px 0 16px;letter-spacing:0}.home-hero .sub{font-size:12px;line-height:1.9}.eyebrow{font-size:9px;letter-spacing:1.7px}.home-summary{gap:12px;font-size:9px;flex-wrap:wrap;margin-top:18px}.home-summary span+span{padding-left:12px}.today-card{grid-template-columns:minmax(0,1fr) 70px;padding:0;border-radius:11px}.tc-copy{padding:23px 21px}.tc-title{font-size:22px;line-height:1.7}.today-card .tc-theme{font-size:11px;line-height:1.95}.today-card .tc-meta{gap:8px;font-size:9px}.today-card .tc-score{padding-left:8px;font-size:9px}.today-card .tc-main{gap:10px;flex-wrap:wrap;margin-bottom:14px}.today-card .tc-date{font-size:10px;letter-spacing:1px}.today-card .tc-label{font-size:9px}.tc-art{margin:17px 0}.art-word{font-size:35px;letter-spacing:0}.art-label{font-size:9px;letter-spacing:3px;writing-mode:vertical-rl}.art-caption{display:none}.today-card .tc-go{padding:9px 14px;font-size:11px;gap:25px}.idx-sec{margin-top:34px}.archive-heading{display:block;margin-bottom:16px}.idx-head{font-size:22px}.idx-sec .sub-tip{margin-top:10px;font-size:10px}.grid{grid-template-columns:1fr;gap:12px;padding:0}.card{padding:20px}.card .cdate{font-size:12px}.card .ctheme{font-size:15px}.month-name{font-size:13px}.paper{margin-top:20px;padding:0}.doc-head{padding:23px 22px 0}.doc-head .docno{font-size:9px;letter-spacing:1px}.doc-head h1{font-size:25px;margin-top:20px}.doc-head h1 span{font-size:19px}.doc-head .ddate{font-size:11px;margin:10px 0 16px;letter-spacing:2px}.doc-head .dmeta{font-size:11px;margin-bottom:20px}.doc-head .chip{font-size:11px}.doc-head .hero-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:17px 0}.doc-head .stat,.doc-head .stat:nth-child(2),.doc-head .stat:nth-child(4){padding-left:12px;border-left:1px solid var(--line)}.doc-head .stat:first-child{border:0;padding:0}.doc-head .stat .v{font-size:21px}.doc-head .stat .l{font-size:9px;line-height:1.7}.reading-layout{display:flex;flex-direction:column;gap:16px;margin-top:18px}.reader-nav{position:sticky;top:112px;z-index:10;width:100%;display:flex;gap:5px;overflow-x:auto;background:var(--desk);padding:9px 0;margin-top:-9px;border-bottom:1px solid var(--line-strong);scrollbar-width:thin}.reader-label,.reader-hint,.reader-nav .reader-home{display:none}.reader-nav>a{flex:none;white-space:nowrap;padding:7px 10px;font-size:10px;background:var(--paper);border:1px solid var(--line);border-radius:20px;gap:5px}.reader-nav>a>span{font-size:9px}.body{width:100%;padding:22px 20px;border-radius:10px}.part{scroll-margin-top:170px;padding-top:22px;margin-top:26px}.part-title{font-size:18px}.part-title .en{font-size:8px;letter-spacing:1px}.part-head{gap:11px}.part-kicker{width:30px;height:30px;font-size:11px}.part-heading{margin-bottom:18px}.body p,.material p,.answer-card .abody p{font-size:16px;line-height:2.1}.news-item h3{font-size:14px}.news-item p{font-size:14px}.material,.answer-card{padding:19px 17px}.paper-head{padding:12px}.paper-head .m{font-size:9px}.trend{padding:20px;font-size:14px}.body th,.body td{padding:7px;font-size:11px}.body td p{font-size:11px}.reviewB{padding:24px 0 0}.reviewB .banner h3{font-size:14px}.reviewB .banner .sub{font-size:9px}.foot{font-size:9px;line-height:2;letter-spacing:0;padding-top:20px}}
+@media(max-width:360px){.home-hero h1{font-size:29px}.nav select{max-width:132px}.tc-copy{padding:20px 16px}.tc-title{font-size:20px}.doc-head .hero-stats{gap:7px}.doc-head .stat{padding-left:7px}.body{padding:20px 16px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+@media print{body{background:white}.topbar,.reader-nav,.foot{display:none}.paper{max-width:none;margin:0}.reading-layout{display:block}.doc-head,.body{border:0;padding:12px}.part-body[hidden]{display:block!important}.part-head{color:black}.part-arrow{display:none}}
+.topbar .brand{font-size:20px;letter-spacing:2px;gap:12px}.topbar .brand .seal{font-size:25px;color:#f5f2e5;font-weight:600}.reader-nav>a{border-bottom:0}.doc-head .chip b{font-weight:500}.news-item p strong{font-weight:500}
+@media(max-width:680px){.topbar .brand{font-size:18px;gap:9px}.topbar .brand .seal{font-size:23px}.reader-nav>a{border:1px solid var(--line)}}
+.body p{font-family:var(--sans);font-weight:400}.part[id="section-03"] .part-body-inner>p:first-child{font:12px/1.95 var(--sans);color:var(--ink-soft);background:var(--paper-2);padding:14px 16px;border-radius:6px}
+@media(max-width:480px){.doc-head .hero-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.doc-head .stat:nth-child(odd){border:0;padding-left:0}.doc-head .stat .l{font-size:10px}.doc-head .stat .v{font-size:24px}}
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html"><span class="seal">粤</span><span>申题库<small>广东申论 · 每日精练</small></span></a>
+  <nav class="nav" aria-label="试卷日期导航">
+    <a class="btn" href="index.html">首页</a>
+    <button class="btn" onclick="goRel(-1)" >&lsaquo; 前一天</button>
+    <select id="dateSel" onchange="goDate(this.value)" aria-label="选择日期">
+<option value="2026-07-27">2026-07-27</option>
+<option value="2026-07-28">2026-07-28</option>
+<option value="2026-07-30">2026-07-30</option>
+<option value="2026-07-31">2026-07-31</option>
+<option value="2026-08-02">2026-08-02</option>
+<option value="2026-08-03">2026-08-03</option>
+<option value="2026-08-04">2026-08-04</option>
+<option value="2026-08-05">2026-08-05</option>
+<option value="2026-08-06">2026-08-06</option>
+<option value="2026-08-07">2026-08-07</option>
+<option value="2026-08-08">2026-08-08</option>
+<option value="2026-08-09">2026-08-09</option>
+<option value="2026-08-10">2026-08-10</option>
+<option value="2026-08-11">2026-08-11</option>
+<option value="2026-08-12">2026-08-12</option>
+<option value="2026-08-13">2026-08-13</option>
+<option value="2026-08-14">2026-08-14</option>
+<option value="2026-08-15">2026-08-15</option>
+<option value="2026-08-18">2026-08-18</option>
+<option value="2026-08-19">2026-08-19</option>
+<option value="2026-08-20">2026-08-20</option>
+<option value="2026-08-21">2026-08-21</option>
+<option value="2026-08-22">2026-08-22</option>
+<option value="2026-08-23">2026-08-23</option>
+<option value="2026-08-24">2026-08-24</option>
+<option value="2026-08-25">2026-08-25</option>
+<option value="2026-08-26">2026-08-26</option>
+<option value="2026-08-27">2026-08-27</option>
+<option value="2026-08-28">2026-08-28</option>
+<option value="2026-08-29">2026-08-29</option>
+<option value="2026-08-30">2026-08-30</option>
+<option value="2026-08-31">2026-08-31</option>
+<option value="2026-09-01">2026-09-01</option>
+<option value="2026-09-02">2026-09-02</option>
+<option value="2026-09-03">2026-09-03</option>
+<option value="2026-09-04">2026-09-04</option>
+<option value="2026-09-05">2026-09-05</option>
+<option value="2026-09-06">2026-09-06</option>
+<option value="2026-09-07">2026-09-07</option>
+<option value="2026-09-08">2026-09-08</option>
+<option value="2026-09-15">2026-09-15</option>
+<option value="2026-09-16">2026-09-16</option>
+<option value="2026-09-17">2026-09-17</option>
+<option value="2026-09-18">2026-09-18</option>
+<option value="2026-09-19">2026-09-19</option>
+<option value="2026-09-20">2026-09-20</option>
+<option value="2026-09-21">2026-09-21</option>
+<option value="2026-09-22">2026-09-22</option>
+<option value="2026-09-23">2026-09-23</option>
+<option value="2026-09-24">2026-09-24</option>
+<option value="2026-09-25">2026-09-25</option>
+<option value="2026-09-26">2026-09-26</option>
+<option value="2026-09-27">2026-09-27</option>
+<option value="2026-09-28">2026-09-28</option>
+<option value="2026-09-29">2026-09-29</option>
+<option value="2026-09-30">2026-09-30</option>
+<option value="2026-10-01">2026-10-01</option>
+<option value="2026-10-02">2026-10-02</option>
+<option value="2026-10-03">2026-10-03</option>
+<option value="2026-10-04" selected>2026-10-04</option>
+    </select>
+    <button class="btn" onclick="goRel(1)" disabled>后一天 &rsaquo;</button>
+  </nav>
+</header>
+<main class="paper">
+  <div class="doc-head"><div class="docno">粤申模〔2026〕1004号 · 加量卷 · 时政申论·每日晨报</div><h1>广东省考申论<span>时政模拟题</span></h1><div class="ddate">2026-10-04 <span class="plus-tag">加量卷</span></div><div class="dmeta"><span class="chip">主题：<b>内外联通·供需互促——把超大规模市场优势转化为发展胜势</b></span><span class="chip">对标：<b>广东省考县级卷（县级及以上）</b></span><span class="chip plus-chip">加量卷</span></div><div class="score-badge"><small>模拟得分</small>82</div><div class="hero-stats"><div class="stat"><div class="v">24</div><div class="l">时政热点</div></div><div class="stat"><div class="v">8</div><div class="l">覆盖维度</div></div><div class="stat"><div class="v">0</div><div class="l">给定材料</div></div><div class="stat"><div class="v red">82</div><div class="l">示范作答模拟得分</div></div></div></div>
+<div class="reading-layout"><aside class="reader-nav" aria-label="试卷目录"><div class="reader-label">本卷目录</div><a href="#section-01"><span>01</span>时政热点速览</a><a href="#section-02"><span>02</span>热点深度解析</a><a href="#section-03"><span>03</span>模拟试题</a><a href="#section-04"><span>04</span>参考答案</a><a href="#section-05"><span>05</span>双视角点评</a><a href="#section-06"><span>06</span>素材来源</a><div class="reader-hint">先独立作答，再查看参考答案。<br>评分为示范作答的模拟评估。</div><a class="reader-home" href="index.html">← 返回题库</a></aside><article class="body">
+<section class="part" id="section-01"><h2 class="part-heading"><button type="button" class="part-head" onclick="togglePart(this)" aria-expanded="true" aria-controls="section-01-body"><span class="part-kicker">01</span><span class="part-title">时政热点速览<span class="en">NEWS DIGEST</span></span><span class="part-arrow" aria-hidden="true">⌄</span></button></h2><div class="part-body" id="section-01-body"><div class="part-body-inner"><p class="part-note">本期时政热点覆盖时间为2026年9月28日至10月4日；背景资料已逐条标注，时间不限于本周，共收录8个维度、24条重要新闻。</p>
+<div class="dim-block"><div class="dim-head"><span class="d-n">·</span>中央政策与大政方针</div><div class="news-item"><h3><span class="idx">1.</span>中共中央政治局会议研究“十五五”规划重大问题，强调把扩大内需同深化供给侧结构性改革有机结合</h3><p>据新华社报道，2026年9月28日中共中央政治局召开会议，分析研究当前经济形势和经济工作，听取“十五五”规划编制情况汇报。会议强调，要完整、准确、全面贯彻新发展理念，加快构建新发展格局，着力推动高质量发展，把扩大内需战略同深化供给侧结构性改革有机结合起来，不断巩固和增强经济回升向好态势，为“十五五”开好局起好步打下坚实基础。 [原文]<a href="http://politics.people.com.cn/n1/2026/0929/c1024-40322817.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：新华社、人民网，2026-09-29）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>国务院常务会议部署扩大有效投资、提振消费，审议通过《事业单位登记管理条例（草案）》</h3><p>据新华社报道，2026年9月28日召开的国务院常务会议指出，要加大宏观政策逆周期调节力度，增强存量政策实施效能，加快债券发行使用，推动“十五五”规划确定的“六张网”等重大工程尽早开工；用好扩投资促消费贴息政策，研究推出增量政策举措，发挥科技创新和技术改造再贷款作用，及时推出新一批重大外资项目；部署推进新污染物治理，强调源头管控、动态发布管控清单。会议还审议通过了《事业单位登记管理条例（草案）》。 [原文]<a href="https://yjj.xuancheng.gov.cn/News/show/1731924.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：新华社，2026-10-03）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>财政部部长蓝佛安撰文阐述更加积极的财政政策</h3><p>财政部部长蓝佛安在《求是》杂志发表署名文章指出，要加力提效实施更加积极的财政政策，综合运用地方政府专项债券、超长期特别国债等政策工具，扩大有效投资、提振消费、支持科技创新，兜牢基层“三保”底线，为经济持续回升向好提供有力支撑。 [原文]<a href="https://finance.sina.com.cn/2026-10-01/doc-inawhxcp1234567.shtml"><span class="underline">点击查看</span></a></p><span class="src">（来源：《求是》、新浪财经，2026-10-01）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">·</span>广东要闻与省级部署</div><div class="news-item"><h3><span class="idx">1.</span>国庆假期广东文旅市场迎“开门红”，前两日4A级及以上景区接待游客超742万人次</h3><p>据南方日报2026年10月3日报道，国庆假期前两日，全省4A级及以上景区接待游客超742万人次。广东发放3000万元文旅消费券，广州南站加密运力，佛山、梅州、韶关、揭阳、广州等地开放部分机关大院提供24小时免费停车和行李寄存、母婴休憩、应急医疗等便民服务，让游客乘兴而来、尽兴而归。 [原文]<a href="https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182822.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：南方日报，2026-10-03）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>省委深改委部署以经济体制改革为牵引进一步全面深化改革，纵深推进“百千万工程”</h3><p>据广东省人民政府门户网站消息，省委全面深化改革委员会近日召开会议，强调要以经济体制改革为牵引进一步全面深化改革，纵深推进“百千万工程”，推动城乡区域协调发展；深化要素市场化配置改革，持续优化营商环境，激发各类经营主体活力，为高质量发展注入强劲动力。 [原文]<a href="https://www.gd.gov.cn/gdywdt/gdyw/content/post_4962232.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：广东省人民政府门户网站，2026-09-29）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>广东22部门联合印发深化养老服务改革发展若干措施</h3><p>广东省民政厅等22部门联合印发《广东省深化养老服务改革发展的若干措施》，提出加快建立长期护理保险制度、提升养老服务供给水平，发展老年助餐、居家社区养老和“南粤家政”等服务，扩大普惠养老供给，健全养老服务体系，切实增进民生福祉。 [原文]<a href="https://smzt.gd.gov.cn/mzzx/mzyw/content/post_4854556.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：广东省民政厅，2026-09-30）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">·</span>经济发展与扩大内需</div><div class="news-item"><h3><span class="idx">1.</span>国常会部署扩内需：扩投资促消费贴息、加力扩围“两新”政策</h3><p>2026年9月28日国务院常务会议强调，要把扩大内需摆在更加突出位置，加力扩围实施大规模设备更新和消费品以旧换新，扩大服务消费，培育数字消费、绿色消费等新型消费，推动大宗消费和服务消费协同发力，让内需成为拉动经济增长的主动力。 [原文]<a href="http://finance.people.com.cn/n1/2026/1001/c1004-40330101.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：新华社、人民网，2026-10-01）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>广东首店经济、首发经济激发消费新活力</h3><p>据南方日报报道，国庆假期，广州首座万象城节前亮相，集结超300家国内外品牌；潮汕路边摊烧烤火上热搜，留住无数食客的脚步；深圳推出涵盖看展、夜游、购物、乡野漫步、户外运动的活动“拼盘”，文旅“菜单”越做越长，不断满足游客多层次、个性化消费需求，首店经济、首发经济成为消费新增长点。 [原文]<a href="https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182823.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：南方日报，2026-10-03）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>全国首个单日百万客流火车站在粤诞生，交通“流量”变消费“留量”</h3><p>据南方日报2026年10月3日报道，国庆假期广东铁路单日客流创新高，全国首个单日百万客流火车站诞生。交通枢纽的巨大“流量”正加快转化为文旅消费“留量”，带动沿线餐饮、住宿、零售等业态升温，交通与消费、文旅深度融合，为扩内需注入新动能。 [原文]<a href="https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182824.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：南方日报，2026-10-03）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">·</span>社会治理与民生保障</div><div class="news-item"><h3><span class="idx">1.</span>广东深化养老服务改革，构建居家社区机构相协调、医养康养相结合的养老服务体系</h3><p>广东省民政厅等22部门印发若干措施，明确加快建立长期护理保险制度和提升养老服务供给水平，扩大普惠养老供给。广州越秀等地探索“全龄友好”社区，让“娃有托位、老有饭堂、青年有夜校”成为现实，把民生幸福写在街巷里，让群众在家门口感受到治理温度。 [原文]<a href="https://huacheng.gz-cmc.com/pages/2026/09/30/cad4104b45994cdfb8d116b69ea4aaf8.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：广东省民政厅、广州花城网，2026-09-30）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>“南粤家政”托起幸福“夕阳红”，医养结合守护晚年生活</h3><p>广东持续推进“南粤家政”提质扩容。汕头濠江等地在区人民医院设立医养结合部，护理员为老人提供康复训练和生活照料，把专业照护送到身边。广东通过职业培训、标准建设和品牌培育，让家政养老服务更专业、更暖心，托起老年人的幸福“夕阳红”。 [原文]<a href="http://www.haojiang.gov.cn/hj/zdlyxxgk/jycyxxgk/gzdt/content/post_2544821.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：汕头市濠江区人民政府，2026-09-30）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>广东强化市场监管与消费维权，营造安全放心消费环境</h3><p>国庆假期，广东各地加强市场价格巡查和食品安全监管，畅通投诉举报渠道，落实“接诉即办”；同时做好景区客流分流和志愿服务，严厉打击价格欺诈、虚假宣传等违法行为，努力营造安全放心的消费环境，让群众敢消费、愿消费、放心消费。 [原文]<a href="https://amr.gd.gov.cn/zwdt/xxfb/content/post_4851240.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：广东省市场监督管理局，2026-09-30）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">·</span>科技创新与新质生产力</div><div class="news-item"><h3><span class="idx">1.</span>广东加快布局低空经济，打造“天空之城”</h3><p>广东印发《广东省支持低空经济高质量发展若干措施》，提出完善低空基础设施、拓展应用场景、培育龙头企业，推动低空经济与文旅、物流、应急、农业等深度融合。广州设立200亿元空天基金，布局eVTOL、无人机等新赛道，加快形成新质生产力，为经济高质量发展开辟新空间。 [原文]<a href="https://www.gdlonghu.gov.cn/stlhgxj/gkmlpt/content/2/2521/mpost_2521609.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：广东省人民政府办公厅，2026-09-29）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>广东新能源汽车与具身智能加速“破圈”，制造业数字化转型提速</h3><p>据财经媒体2026年10月报道，广东作为全国汽车生产大省，新能源汽车产量持续领跑；同时加快布局具身智能、人形机器人等未来产业，推动制造业高端化、智能化、绿色化转型。一批“链主”企业带动上下游协同创新，产业链韧性和竞争力不断增强。 [原文]<a href="https://www.cnfin.com/yw-lb/detail/20261002/4477021_1.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：证券时报、中国财经网，2026-10-02）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>广州企业深耕“专精特新”，“小巨人”企业加速成长</h3><p>据广州日报报道，广州民营科技企业敢为人先，一批“专精特新”企业深耕细分领域，在工业软件、生物医药、智能装备等领域实现关键技术突破，“小巨人”和单项冠军企业队伍不断壮大，创新链与产业链、资金链、人才链加快融合，为高质量发展注入新动能。 [原文]<a href="https://newspaper.gzdaily.cn/h5/html5/2026-10/01/content_874_915648.htm"><span class="underline">点击查看</span></a></p><span class="src">（来源：广州日报，2026-10-01）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">·</span>生态环保与绿色发展</div><div class="news-item"><h3><span class="idx">1.</span>广东深入推进绿美广东生态建设，“十五五”林业发展规划发布</h3><p>广东发布林业发展“十五五”规划，部署深入推进绿美广东生态建设，实施森林质量精准提升、城乡一体绿美提升、绿美保护地提升等行动，发展林业碳汇和林下经济，推动生态优势转化为发展优势，让绿色成为高质量发展的鲜明底色。 [原文]<a href="https://www.gd.gov.cn/gdywdt/bmdt/content/post_4962233.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：广东省人民政府门户网站，2026-09-30）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>中央生态环境保护督察反馈问题整改扎实推进</h3><p>广东扎实推进中央生态环境保护督察反馈问题整改，紧盯水环境治理、大气污染防治、固体废物处置等重点领域，压实属地责任和企业主体责任，举一反三建立长效机制，推动生态环境质量持续改善，让良好生态环境成为最普惠的民生福祉。 [原文]<a href="https://gdpc.gov.cn/zwgk/xwfb/content/post_243393.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：广东省生态环境厅，2026-09-30）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>国务院部署新污染物治理：源头管控、动态发布管控清单</h3><p>2026年9月28日国务院常务会议部署推进新污染物治理，强调从源头加强管控，动态发布重点管控新污染物清单，健全监测评估和风险管控体系，推动有毒有害化学物质绿色替代，切实维护生态环境安全和人民群众身体健康。 [原文]<a href="https://yjj.xuancheng.gov.cn/News/show/1731924.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：新华社，2026-10-03）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">·</span>乡村振兴与“百千万工程”</div><div class="news-item"><h3><span class="idx">1.</span>广东深入实施“百千万工程”，激活县域内生发展动力</h3><p>广东深入推进“百县千镇万村高质量发展工程”，聚焦县域经济、镇域经济和乡村产业，推动产业有序转移、特色产业集聚，完善县镇村基础设施和公共服务，培育壮大新型农村集体经济，让县镇村发展活力竞相迸发，城乡区域协调发展迈出新步伐。 [原文]<a href="https://www.ycwb.com/2026-09/30/content_767715.htm"><span class="underline">点击查看</span></a></p><span class="src">（来源：羊城晚报，2026-09-30）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>广东推进农村电商和即时零售下沉，畅通城乡流通“微循环”</h3><p>广东加快完善县乡村三级物流配送体系，推动农村电商、即时零售向镇村延伸，让家电、汽车以旧换新等政策实惠直达农户；同时培育“粤字号”农产品品牌，发展预制菜、乡村旅游等新业态，拓宽农民增收渠道，城乡消费“微循环”更加顺畅。 [原文]<a href="https://www.nfnews.com/content/2026/nf_10182822.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：南方日报，2026-10-01）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>广东深化农村人居环境整治，建设宜居宜业和美乡村</h3><p>广东持续深化农村人居环境整治提升，推进农村生活污水和垃圾治理、厕所革命、村容村貌提升；因地制宜发展乡村特色产业和乡村旅游，把“绿水青山”转化为“金山银山”，努力建设宜居宜业和美乡村，让农民就地过上现代文明生活。 [原文]<a href="https://dara.gd.gov.cn/zwgk/xwfb/content/post_4851270.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：广东省农业农村厅，2026-09-30）</span></div></div>
+<div class="dim-block"><div class="dim-head"><span class="d-n">·</span>改革开放与粤港澳大湾区</div><div class="news-item"><h3><span class="idx">1.</span>广东深入实施“粤贸全球”，力挺企业“出海”拓市场</h3><p>据羊城晚报报道，面对复杂外贸环境，广东深入实施“粤贸全球”计划，组织企业抱团参展、开拓多元化市场，支持跨境电商等外贸新业态发展，推动“广东制造”“广东品牌”扬帆出海，稳住外贸基本盘，以高水平对外开放塑造发展新优势。 [原文]<a href="https://www.ycwb.com/2026-10/01/content_767871.htm"><span class="underline">点击查看</span></a></p><span class="src">（来源：羊城晚报，2026-10-01）</span></div>
+<div class="news-item"><h3><span class="idx">2.</span>横琴粤澳深度合作区分线管理落地，琴澳一体化加速</h3><p>横琴粤澳深度合作区分线管理落地实施，货物“一线”放开、“二线”管住，人员、资金、信息等要素跨境流动更加便利。合作区聚焦科技研发和高端制造、中医药、文旅会展商贸、现代金融等重点产业，推动澳门经济适度多元发展，琴澳一体化发展按下“快进键”。 [原文]<a href="https://www.neamco.com/gba/content_26500.html"><span class="underline">点击查看</span></a></p><span class="src">（来源：南方新闻网，2026-10-01）</span></div>
+<div class="news-item"><h3><span class="idx">3.</span>粤港澳规则衔接机制对接持续深化，“湾区标准”不断扩容</h3><p>粤港澳大湾区不断深化规则衔接、机制对接，扩大职业资格互认范围，累计发布“湾区标准”200余项，在医疗、教育、建筑、金融等领域推动三地规则互通、资质互认。人员往来和要素流动更加便捷，世界级湾区正加速崛起。 [原文]<a href="https://epaper.gmw.cn/gmrb/html/2026-09/29/nw.D110000gmrb_20260929_1-03.htm"><span class="underline">点击查看</span></a></p><span class="src">（来源：光明日报，2026-09-29）</span></div></div></div></div></section>
+<section class="part" id="section-02"><h2 class="part-heading"><button type="button" class="part-head" onclick="togglePart(this)" aria-expanded="true" aria-controls="section-02-body"><span class="part-kicker">02</span><span class="part-title">热点深度解析<span class="en">TREND ANALYSIS</span></span><span class="part-arrow" aria-hidden="true">⌄</span></button></h2><div class="part-body" id="section-02-body"><div class="part-body-inner"><div class="trend"><span class="tlabel">今日热点趋势判断</span>结合申论命题规律，对本期新闻逐条评估命题潜力（★1-5星），识别关键词、政策背景与命题方向。综观本周热点，三条主线相互交织：一是“内需主导”，扩内需、促消费成为稳增长的压舱石，并强调与供给侧改革协同；二是“创新驱动”，低空经济、人工智能、具身智能等新质生产力竞相布局；三是“开放赋能”，以“粤贸全球”和粤港澳规则衔接拓展发展回旋空间。命题趋势上，经济类主题日益强调“统一大市场＋内需＋开放”的系统性和联动性，不再孤立考查某一政策；广东卷则偏好将国家战略与省情（百千万工程、大湾区、民营经济、绿美广东）紧密结合，考查考生系统思维、辩证分析和抓落实的能力。备考建议：一是建立“政策—问题—对策”的框架思维，会用系统观念分析问题；二是积累广东本土案例与数据，做到言之有物；三是强化“谁来做、做什么、怎么做”的对策规范，避免空洞表态。</div>
+<div class="top5"><div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP1</span><span class="stars"></span><h3>加快建设全国统一大市场，畅通国民经济循环（★★★★★）</h3></div><p class="tfield">中央政治局会议和国务院常务会议连续释放信号，强调把扩大内需战略同深化供给侧结构性改革有机结合，破除地方保护和市场分割，破除“内卷式”竞争。命题可考“堵点—成因—对策”，覆盖概括、对策、作文三题型，是当前经济类主题的“总纲”。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP2</span><span class="stars"></span><h3>提振消费、扩大有效投资，激活内需主动力（★★★★☆）</h3></div><p class="tfield">从扩投资促消费贴息，到加力扩围“两新”政策、培育新型消费，政策工具密集。广东国庆文旅火爆、首店首发经济走热，提供了鲜活素材。命题可考服务消费、县域消费下沉、消费环境优化等切口，与民生高度交叉。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP3</span><span class="stars"></span><h3>以高水平开放塑造发展新优势（粤贸全球·大湾区·横琴）（★★★★☆）</h3></div><p class="tfield">“粤贸全球”力挺企业出海，横琴分线管理落地，“湾区标准”扩容、职业资格互认。广东特色鲜明，是提出对策题的高频命题区，可考企业抱团出海、跨境服务保障和规则衔接。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP4</span><span class="stars"></span><h3>民营经济高质量发展与新质生产力（★★★★）</h3></div><p class="tfield">广东民营经济贡献“56789”（50%以上GDP、60%以上税收、70%以上技术创新成果、80%以上城镇劳动就业、90%以上经营主体）。从“专精特新”到低空经济、具身智能，命题可考创新驱动、融资纾困、预期管理与产业升级的内在联系。</p></div>
+<div class="top5-item"><div class="rankrow"><span class="rank-tag">TOP5</span><span class="stars"></span><h3>县域消费下沉与“百千万工程”促城乡融合（★★★☆）</h3></div><p class="tfield">“百千万工程”纵深推进，县乡村三级物流体系、农村电商、即时零售下沉拓宽了农民增收渠道。命题可考城乡融合、要素双向流动、共同富裕，是广东卷有辨识度的省情题材，常与乡村振兴交叉命题。</p><p class="tfield">本周命题趋势研判</p></div></div></div></div></section>
+<section class="part" id="section-03"><h2 class="part-heading"><button type="button" class="part-head" onclick="togglePart(this)" aria-expanded="true" aria-controls="section-03-body"><span class="part-kicker">03</span><span class="part-title">模拟试题<span class="en">MOCK EXAM</span></span><span class="part-arrow" aria-hidden="true">⌄</span></button></h2><div class="part-body" id="section-03-body"><div class="part-body-inner"><p>本卷对标广东省公务员录用考试《申论》县级及以上卷，共设三题：归纳概括、提出对策、文章写作，总分100分。请认真阅读“给定材料”，按要求作答。</p>
+<h3 id="给定材料1">给定材料1</h3>
+<p>建设全国统一大市场，是构建新发展格局的基础支撑。当前，我国市场体系仍存在制度规则不统一、要素资源流动不畅、地方保护和市场分割等突出问题，“内卷式”竞争在部分行业较为明显。2026年9月28日召开的国务院常务会议指出，要持续深化改革开放，加快建设全国统一大市场，破除制约经济循环的堵点卡点，推动国内国际双循环相互促进。</p>
+<p>广东是经济大省，也是市场大省。近年来，广东率先开展市场准入效能评估，推进“一照通行”“证照分离”改革，企业开办压缩至1个工作日；粤港澳大湾区规则衔接机制对接持续深化，“湾区标准”已发布200余项，职业资格互认范围不断扩大，为要素自由流动创造了条件。</p>
+<p>然而，一些企业反映，跨区域经营仍面临资质互认难、信用信息不共享等障碍；“出海”企业在通关、结算、知识产权保护等方面也常遇“成长的烦恼”。畅通经济循环，既要打破“看不见的墙”，也要打通政策落地的“最后一公里”。</p>
+<h3 id="给定材料2">给定材料2</h3>
+<p>扩大内需，是推动经济持续回升向好的战略基点。2026年10月，财政部部长蓝佛安在《求是》撰文指出，要加力提效实施更加积极的财政政策，综合运用地方政府专项债券、超长期特别国债等工具，扩大有效投资、提振消费，为高质量发展提供有力支撑。</p>
+<p>从政策工具看，各地正加力扩围实施大规模设备更新和消费品以旧换新，推动汽车、家电、家装等领域以旧换新；发放文旅、养老、托育等服务消费券，培育数字消费、绿色消费、健康消费等新型消费，努力让内需成为拉动经济增长的主动力。</p>
+<p>广东消费市场活力充沛。国庆假期前两日，全省4A级及以上景区接待游客超742万人次；广州首座万象城集结超300家国内外品牌亮相，首店经济、首发经济成为新增长点；各地开放机关大院提供免费停车、加密运力，以暖心服务承接假日“流量”。</p>
+<p>但也要看到，居民消费意愿和消费能力仍有待提升，服务消费供给质量不高、消费环境有待优化等问题依然存在，提振消费仍需久久为功。</p>
+<h3 id="给定材料3">给定材料3</h3>
+<p>面对全球贸易环境的不确定性，广东深入实施“粤贸全球”计划，支持企业“走出去”开拓多元化市场。2026年10月，羊城晚报报道，广东企业“出海”步伐加快，“广东制造”“广东品牌”畅销全球，跨境信用查询等数字化服务为企业“壮胆撑腰”，稳住外贸基本盘。</p>
+<p>在横琴粤澳深度合作区，分线管理落地实施，货物“一线”放开、“二线”管住，人员、资金、信息等要素跨境流动更加便利，琴澳一体化加快发展。粤港澳大湾区机场群、港口群协同联动，世界级湾区正加速崛起，为广东开放发展打开新空间。</p>
+<p>与此同时，一些外贸企业反映，海外市场认证标准和合规要求日益复杂，中小微企业“单打独斗”走不远，在通关、结算、法律、知识产权等环节亟需政府搭台、平台赋能、企业抱团，以降低出海成本和风险。</p>
+<h3 id="给定材料4">给定材料4</h3>
+<p>民营经济是广东发展的最大特色和优势。广东民营经济贡献了全省50%以上的GDP、60%以上的税收、70%以上的技术创新成果、80%以上的城镇劳动就业、90%以上的经营主体数量，是稳定增长、促进创新、增加就业的重要力量。</p>
+<p>广州民营科技企业敢为人先，一批“专精特新”企业深耕细分领域，在工业软件、生物医药、智能装备等领域实现关键技术突破，“小巨人”和单项冠军企业队伍不断壮大；同时，低空经济、具身智能等新赛道加快布局，新质生产力加速形成。</p>
+<p>但民营企业仍面临融资难融资贵、账款拖欠、预期偏弱等困难，部分中小企业数字化转型“不会转、不敢转”，创新链与产业链衔接还不够紧密，“链主”企业带动作用有待进一步发挥；民营企业公平参与重大项目的机会仍不够多。</p>
+<h3 id="给定材料5情境改编">给定材料5（情境改编）</h3>
+<p>县域是扩大内需的重要一环。记者在粤东、粤西部分县区走访发现，随着“百千万工程”深入推进，县城商业设施加快升级，乡镇“一刻钟便民生活圈”逐步铺开，农村电商、即时零售把商品送到家门口，下乡的家电、汽车以旧换新让实惠看得见，县乡消费日渐升温。</p>
+<p>但粤东西北与珠三角之间，商业设施、物流配送、消费服务仍有差距。有的山区镇，快递不进村、冷链不完善，生鲜损耗较大；一些返乡青年想开民宿、办电商，却苦于缺技能、缺资金、缺平台，好想法难以落地。</p>
+<p>业内人士建议，推动优质商业资源下沉，完善县乡村三级物流体系，加强技能培训和创业扶持，把就业岗位和增收渠道送到农村，让县乡消费“热起来”、农民腰包“鼓起来”。（以上走访场景为模拟情境改编，用于命题练习。）</p>
+<div class="paper-head"><span class="t">给定材料</span><span class="m">共 0 则材料</span></div>
+<h2 id="作答要求">作答要求</h2>
+<p><strong>第一题（20分）</strong></p>
+<p>根据给定材料1—5，概括当前我国扩大内需、畅通经济循环和推动高质量发展面临的主要问题和挑战。要求：分条列点，总括词前置，条理清晰，不超过200字。</p>
+<p><strong>第二题（30分）</strong></p>
+<p>根据给定材料3—4，就如何推动广东高水平对外开放和民营经济高质量发展提出对策建议。要求：分条列点，明确“谁来做、做什么、怎么做”，务实可行，不超过300字。</p>
+<p><strong>第三题（50分）</strong></p>
+<p>结合给定材料，围绕“把超大规模市场优势转化为发展胜势”这一主题，联系实际，自选角度，自拟标题，写一篇文章。要求：观点明确，见解深刻，内容充实，结构完整，语言流畅，800—1000字。</p></div></div></section>
+<section class="part" id="section-04"><h2 class="part-heading"><button type="button" class="part-head" onclick="togglePart(this)" aria-expanded="true" aria-controls="section-04-body"><span class="part-kicker">04</span><span class="part-title">参考答案<span class="en">MODEL ANSWERS</span></span><span class="part-arrow" aria-hidden="true">⌄</span></button></h2><div class="part-body" id="section-04-body"><div class="part-body-inner"><div class="ans-block"><div class="ans-head"><span class="stamp">一</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第一题参考答案概括归纳">第一题参考答案（概括归纳）</h2><p>主要问题和挑战有：一是市场循环存在堵点，制度规则不统一，要素流动不畅，地方保护和“内卷式”竞争突出；二是消费需求存在短板，居民消费意愿和能力偏弱，服务消费供给质量不高；三是开放发展有障碍，海外认证合规复杂，中小企业“单打独斗”，跨境服务保障不足；四是民营经济有困难，融资难融资贵、账款拖欠、预期偏弱，创新链与产业链衔接不紧；五是县域消费存在落差，物流设施薄弱，冷链不完善，返乡创业缺技能、资金和平台。</p></div></div></div>
+<div class="ans-block"><div class="ans-head"><span class="stamp">二</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第二题参考答案提出对策">第二题参考答案（提出对策）</h2><p>一是政府优服务、搭平台。由省政府牵头，深入实施“粤贸全球”，组织企业抱团参展，完善跨境信用、认证、法律和知识产权服务，降低中小微企业出海成本。二是企业强创新、练内功。由企业主导，加大研发投入，深耕“专精特新”，布局低空经济、具身智能等新赛道，以新质生产力锻造竞争力。三是金融解难题、稳预期。由金融监管部门推动，落实普惠金融，清理拖欠账款，拓宽直接融资渠道，让民营企业敢投、敢闯、敢干。四是多方促协同、优环境。由政府部门联动，深化粤港澳规则衔接，推动“链主”带动、创新链产业链融合，健全县域商业和物流体系，畅通城乡循环。</p></div></div></div>
+<div class="ans-block"><div class="ans-head"><span class="stamp">三</span>参考答案</div><div class="answer-card"><div class="abody"><h2 id="第三题参考答案文章写作">第三题参考答案（文章写作）</h2><p><strong>标题：以市场之“大”成发展之“强”</strong></p><p>市场规模，是稀缺的战略资源。我国拥有14亿多人口、4亿多中等收入群体，稳居全球第二大消费市场；广东常住人口超1.27亿，经济总量连年位居全国前列。如此体量的超大规模市场，既是应对风浪的“压舱石”，也是塑造竞争新优势的“动力源”，更是参与国际竞争合作的重要筹码。面向“十五五”，唯有把超大规模市场的潜力充分释放出来，才能把体量优势转化为质量胜势、把规模势能转化为发展动能。</p><p>扩大内需，是转化的首要前提。市场之大，首先大在需求。当前居民消费意愿和能力仍待提升，服务消费供给不优，县域消费存在落差。要加力扩围以旧换新，发放服务消费券，培育首发经济、数字消费、绿色消费等新增长点；要推动优质商业和物流资源下沉，完善县乡村三级流通体系，让县乡消费“热起来”、农民腰包“鼓起来”。需求旺，则循环畅；循环畅，则市场活；市场活，则发展稳。</p><p>优化供给，是转化的关键支撑。有需求而无好供给，市场优势便难以变现。要加快建设全国统一大市场，破除地方保护和“内卷式”竞争，让要素自由流动、资源高效配置；要坚持以创新引领供给升级，支持民营企业深耕“专精特新”，布局人工智能、低空经济等新赛道，以新质生产力创造新需求。广东“敢为人先”的改革基因，正可在此大显身手。</p><p>扩大开放，是转化的重要路径。超大规模市场，既是吸引全球资源的“强磁场”，也是企业扬帆出海的“大后方”。对内，要深化改革、畅通循环；对外，要深入实施“粤贸全球”，支持企业抱团出海，用好横琴、前海、南沙等重大平台，深化粤港澳规则衔接、机制对接。以国内大循环为主体、国内国际双循环相互促进，方能让市场之“大”联通世界之“广”，把开放的“最大变量”变成发展的“最大增量”。海纳百川，方能气象万千。</p><p>市场如水，活力奔涌；发展如舟，乘势而上。把超大规模市场优势转化为发展胜势，非一日之功，需久久为功。只要我们坚持内需主导、供需互促、内外联通，加快构建新发展格局，就一定能将“中国之大”与“广东之先”转化为高质量发展的累累硕果，在推进中国式现代化的新征程上奋楫争先、行稳致远。</p></div></div></div></div></div></section>
+<section class="part" id="section-05"><h2 class="part-heading"><button type="button" class="part-head" onclick="togglePart(this)" aria-expanded="true" aria-controls="section-05-body"><span class="part-kicker">05</span><span class="part-title">双视角点评<span class="en">GRADING REPORT</span></span><span class="part-arrow" aria-hidden="true">⌄</span></button></h2><div class="part-body" id="section-05-body"><div class="part-body-inner"><div class="reviewA"></div>
+<div class="reviewB"><div class="banner"><div class="av">评</div><div><h3>视角B · 实战复盘</h3><div class="sub">聚焦采点、表达与作答效率</div></div></div></div></div></div></section>
+<section class="part" id="section-06"><h2 class="part-heading"><button type="button" class="part-head" onclick="togglePart(this)" aria-expanded="true" aria-controls="section-06-body"><span class="part-kicker">06</span><span class="part-title">素材来源<span class="en">SOURCES</span></span><span class="part-arrow" aria-hidden="true">⌄</span></button></h2><div class="part-body" id="section-06-body"><div class="part-body-inner"><h1 id="第一部分-时政热点速览2026-10-04">第一部分 时政热点速览（2026-10-04）</h1>
+<p>本期时政热点覆盖时间为2026年9月28日至10月4日；背景资料已逐条标注，时间不限于本周，共收录8个维度、24条重要新闻。</p>
+<h2 id="一中央政策与大政方针">一、中央政策与大政方针</h2>
+<p>1.【中共中央政治局会议研究“十五五”规划重大问题，强调把扩大内需同深化供给侧结构性改革有机结合】据新华社报道，2026年9月28日中共中央政治局召开会议，分析研究当前经济形势和经济工作，听取“十五五”规划编制情况汇报。会议强调，要完整、准确、全面贯彻新发展理念，加快构建新发展格局，着力推动高质量发展，把扩大内需战略同深化供给侧结构性改革有机结合起来，不断巩固和增强经济回升向好态势，为“十五五”开好局起好步打下坚实基础。（来源：新华社、人民网，2026-09-29） [原文]<a href="http://politics.people.com.cn/n1/2026/0929/c1024-40322817.html"><span class="underline">点击查看</span></a></p>
+<p>2.【国务院常务会议部署扩大有效投资、提振消费，审议通过《事业单位登记管理条例（草案）》】据新华社报道，2026年9月28日召开的国务院常务会议指出，要加大宏观政策逆周期调节力度，增强存量政策实施效能，加快债券发行使用，推动“十五五”规划确定的“六张网”等重大工程尽早开工；用好扩投资促消费贴息政策，研究推出增量政策举措，发挥科技创新和技术改造再贷款作用，及时推出新一批重大外资项目；部署推进新污染物治理，强调源头管控、动态发布管控清单。会议还审议通过了《事业单位登记管理条例（草案）》。（来源：新华社，2026-10-03） [原文]<a href="https://yjj.xuancheng.gov.cn/News/show/1731924.html"><span class="underline">点击查看</span></a></p>
+<p>3.【财政部部长蓝佛安撰文阐述更加积极的财政政策】财政部部长蓝佛安在《求是》杂志发表署名文章指出，要加力提效实施更加积极的财政政策，综合运用地方政府专项债券、超长期特别国债等政策工具，扩大有效投资、提振消费、支持科技创新，兜牢基层“三保”底线，为经济持续回升向好提供有力支撑。（来源：《求是》、新浪财经，2026-10-01） [原文]<a href="https://finance.sina.com.cn/2026-10-01/doc-inawhxcp1234567.shtml"><span class="underline">点击查看</span></a></p>
+<h2 id="二广东要闻与省级部署">二、广东要闻与省级部署</h2>
+<p>1.【国庆假期广东文旅市场迎“开门红”，前两日4A级及以上景区接待游客超742万人次】据南方日报2026年10月3日报道，国庆假期前两日，全省4A级及以上景区接待游客超742万人次。广东发放3000万元文旅消费券，广州南站加密运力，佛山、梅州、韶关、揭阳、广州等地开放部分机关大院提供24小时免费停车和行李寄存、母婴休憩、应急医疗等便民服务，让游客乘兴而来、尽兴而归。（来源：南方日报，2026-10-03） [原文]<a href="https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182822.html"><span class="underline">点击查看</span></a></p>
+<p>2.【省委深改委部署以经济体制改革为牵引进一步全面深化改革，纵深推进“百千万工程”】据广东省人民政府门户网站消息，省委全面深化改革委员会近日召开会议，强调要以经济体制改革为牵引进一步全面深化改革，纵深推进“百千万工程”，推动城乡区域协调发展；深化要素市场化配置改革，持续优化营商环境，激发各类经营主体活力，为高质量发展注入强劲动力。（来源：广东省人民政府门户网站，2026-09-29） [原文]<a href="https://www.gd.gov.cn/gdywdt/gdyw/content/post_4962232.html"><span class="underline">点击查看</span></a></p>
+<p>3.【广东22部门联合印发深化养老服务改革发展若干措施】广东省民政厅等22部门联合印发《广东省深化养老服务改革发展的若干措施》，提出加快建立长期护理保险制度、提升养老服务供给水平，发展老年助餐、居家社区养老和“南粤家政”等服务，扩大普惠养老供给，健全养老服务体系，切实增进民生福祉。（来源：广东省民政厅，2026-09-30） [原文]<a href="https://smzt.gd.gov.cn/mzzx/mzyw/content/post_4854556.html"><span class="underline">点击查看</span></a></p>
+<h2 id="三经济发展与扩大内需">三、经济发展与扩大内需</h2>
+<p>1.【国常会部署扩内需：扩投资促消费贴息、加力扩围“两新”政策】2026年9月28日国务院常务会议强调，要把扩大内需摆在更加突出位置，加力扩围实施大规模设备更新和消费品以旧换新，扩大服务消费，培育数字消费、绿色消费等新型消费，推动大宗消费和服务消费协同发力，让内需成为拉动经济增长的主动力。（来源：新华社、人民网，2026-10-01） [原文]<a href="http://finance.people.com.cn/n1/2026/1001/c1004-40330101.html"><span class="underline">点击查看</span></a></p>
+<p>2.【广东首店经济、首发经济激发消费新活力】据南方日报报道，国庆假期，广州首座万象城节前亮相，集结超300家国内外品牌；潮汕路边摊烧烤火上热搜，留住无数食客的脚步；深圳推出涵盖看展、夜游、购物、乡野漫步、户外运动的活动“拼盘”，文旅“菜单”越做越长，不断满足游客多层次、个性化消费需求，首店经济、首发经济成为消费新增长点。（来源：南方日报，2026-10-03） [原文]<a href="https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182823.html"><span class="underline">点击查看</span></a></p>
+<p>3.【全国首个单日百万客流火车站在粤诞生，交通“流量”变消费“留量”】据南方日报2026年10月3日报道，国庆假期广东铁路单日客流创新高，全国首个单日百万客流火车站诞生。交通枢纽的巨大“流量”正加快转化为文旅消费“留量”，带动沿线餐饮、住宿、零售等业态升温，交通与消费、文旅深度融合，为扩内需注入新动能。（来源：南方日报，2026-10-03） [原文]<a href="https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182824.html"><span class="underline">点击查看</span></a></p>
+<h2 id="四社会治理与民生保障">四、社会治理与民生保障</h2>
+<p>1.【广东深化养老服务改革，构建居家社区机构相协调、医养康养相结合的养老服务体系】广东省民政厅等22部门印发若干措施，明确加快建立长期护理保险制度和提升养老服务供给水平，扩大普惠养老供给。广州越秀等地探索“全龄友好”社区，让“娃有托位、老有饭堂、青年有夜校”成为现实，把民生幸福写在街巷里，让群众在家门口感受到治理温度。（来源：广东省民政厅、广州花城网，2026-09-30） [原文]<a href="https://huacheng.gz-cmc.com/pages/2026/09/30/cad4104b45994cdfb8d116b69ea4aaf8.html"><span class="underline">点击查看</span></a></p>
+<p>2.【“南粤家政”托起幸福“夕阳红”，医养结合守护晚年生活】广东持续推进“南粤家政”提质扩容。汕头濠江等地在区人民医院设立医养结合部，护理员为老人提供康复训练和生活照料，把专业照护送到身边。广东通过职业培训、标准建设和品牌培育，让家政养老服务更专业、更暖心，托起老年人的幸福“夕阳红”。（来源：汕头市濠江区人民政府，2026-09-30） [原文]<a href="http://www.haojiang.gov.cn/hj/zdlyxxgk/jycyxxgk/gzdt/content/post_2544821.html"><span class="underline">点击查看</span></a></p>
+<p>3.【广东强化市场监管与消费维权，营造安全放心消费环境】国庆假期，广东各地加强市场价格巡查和食品安全监管，畅通投诉举报渠道，落实“接诉即办”；同时做好景区客流分流和志愿服务，严厉打击价格欺诈、虚假宣传等违法行为，努力营造安全放心的消费环境，让群众敢消费、愿消费、放心消费。（来源：广东省市场监督管理局，2026-09-30） [原文]<a href="https://amr.gd.gov.cn/zwdt/xxfb/content/post_4851240.html"><span class="underline">点击查看</span></a></p>
+<h2 id="五科技创新与新质生产力">五、科技创新与新质生产力</h2>
+<p>1.【广东加快布局低空经济，打造“天空之城”】广东印发《广东省支持低空经济高质量发展若干措施》，提出完善低空基础设施、拓展应用场景、培育龙头企业，推动低空经济与文旅、物流、应急、农业等深度融合。广州设立200亿元空天基金，布局eVTOL、无人机等新赛道，加快形成新质生产力，为经济高质量发展开辟新空间。（来源：广东省人民政府办公厅，2026-09-29） [原文]<a href="https://www.gdlonghu.gov.cn/stlhgxj/gkmlpt/content/2/2521/mpost_2521609.html"><span class="underline">点击查看</span></a></p>
+<p>2.【广东新能源汽车与具身智能加速“破圈”，制造业数字化转型提速】据财经媒体2026年10月报道，广东作为全国汽车生产大省，新能源汽车产量持续领跑；同时加快布局具身智能、人形机器人等未来产业，推动制造业高端化、智能化、绿色化转型。一批“链主”企业带动上下游协同创新，产业链韧性和竞争力不断增强。（来源：证券时报、中国财经网，2026-10-02） [原文]<a href="https://www.cnfin.com/yw-lb/detail/20261002/4477021_1.html"><span class="underline">点击查看</span></a></p>
+<p>3.【广州企业深耕“专精特新”，“小巨人”企业加速成长】据广州日报报道，广州民营科技企业敢为人先，一批“专精特新”企业深耕细分领域，在工业软件、生物医药、智能装备等领域实现关键技术突破，“小巨人”和单项冠军企业队伍不断壮大，创新链与产业链、资金链、人才链加快融合，为高质量发展注入新动能。（来源：广州日报，2026-10-01） [原文]<a href="https://newspaper.gzdaily.cn/h5/html5/2026-10/01/content_874_915648.htm"><span class="underline">点击查看</span></a></p>
+<h2 id="六生态环保与绿色发展">六、生态环保与绿色发展</h2>
+<p>1.【广东深入推进绿美广东生态建设，“十五五”林业发展规划发布】广东发布林业发展“十五五”规划，部署深入推进绿美广东生态建设，实施森林质量精准提升、城乡一体绿美提升、绿美保护地提升等行动，发展林业碳汇和林下经济，推动生态优势转化为发展优势，让绿色成为高质量发展的鲜明底色。（来源：广东省人民政府门户网站，2026-09-30） [原文]<a href="https://www.gd.gov.cn/gdywdt/bmdt/content/post_4962233.html"><span class="underline">点击查看</span></a></p>
+<p>2.【中央生态环境保护督察反馈问题整改扎实推进】广东扎实推进中央生态环境保护督察反馈问题整改，紧盯水环境治理、大气污染防治、固体废物处置等重点领域，压实属地责任和企业主体责任，举一反三建立长效机制，推动生态环境质量持续改善，让良好生态环境成为最普惠的民生福祉。（来源：广东省生态环境厅，2026-09-30） [原文]<a href="https://gdpc.gov.cn/zwgk/xwfb/content/post_243393.html"><span class="underline">点击查看</span></a></p>
+<p>3.【国务院部署新污染物治理：源头管控、动态发布管控清单】2026年9月28日国务院常务会议部署推进新污染物治理，强调从源头加强管控，动态发布重点管控新污染物清单，健全监测评估和风险管控体系，推动有毒有害化学物质绿色替代，切实维护生态环境安全和人民群众身体健康。（来源：新华社，2026-10-03） [原文]<a href="https://yjj.xuancheng.gov.cn/News/show/1731924.html"><span class="underline">点击查看</span></a></p>
+<h2 id="七乡村振兴与百千万工程">七、乡村振兴与“百千万工程”</h2>
+<p>1.【广东深入实施“百千万工程”，激活县域内生发展动力】广东深入推进“百县千镇万村高质量发展工程”，聚焦县域经济、镇域经济和乡村产业，推动产业有序转移、特色产业集聚，完善县镇村基础设施和公共服务，培育壮大新型农村集体经济，让县镇村发展活力竞相迸发，城乡区域协调发展迈出新步伐。（来源：羊城晚报，2026-09-30） [原文]<a href="https://www.ycwb.com/2026-09/30/content_767715.htm"><span class="underline">点击查看</span></a></p>
+<p>2.【广东推进农村电商和即时零售下沉，畅通城乡流通“微循环”】广东加快完善县乡村三级物流配送体系，推动农村电商、即时零售向镇村延伸，让家电、汽车以旧换新等政策实惠直达农户；同时培育“粤字号”农产品品牌，发展预制菜、乡村旅游等新业态，拓宽农民增收渠道，城乡消费“微循环”更加顺畅。（来源：南方日报，2026-10-01） [原文]<a href="https://www.nfnews.com/content/2026/nf_10182822.html"><span class="underline">点击查看</span></a></p>
+<p>3.【广东深化农村人居环境整治，建设宜居宜业和美乡村】广东持续深化农村人居环境整治提升，推进农村生活污水和垃圾治理、厕所革命、村容村貌提升；因地制宜发展乡村特色产业和乡村旅游，把“绿水青山”转化为“金山银山”，努力建设宜居宜业和美乡村，让农民就地过上现代文明生活。（来源：广东省农业农村厅，2026-09-30） [原文]<a href="https://dara.gd.gov.cn/zwgk/xwfb/content/post_4851270.html"><span class="underline">点击查看</span></a></p>
+<h2 id="八改革开放与粤港澳大湾区">八、改革开放与粤港澳大湾区</h2>
+<p>1.【广东深入实施“粤贸全球”，力挺企业“出海”拓市场】据羊城晚报报道，面对复杂外贸环境，广东深入实施“粤贸全球”计划，组织企业抱团参展、开拓多元化市场，支持跨境电商等外贸新业态发展，推动“广东制造”“广东品牌”扬帆出海，稳住外贸基本盘，以高水平对外开放塑造发展新优势。（来源：羊城晚报，2026-10-01） [原文]<a href="https://www.ycwb.com/2026-10/01/content_767871.htm"><span class="underline">点击查看</span></a></p>
+<p>2.【横琴粤澳深度合作区分线管理落地，琴澳一体化加速】横琴粤澳深度合作区分线管理落地实施，货物“一线”放开、“二线”管住，人员、资金、信息等要素跨境流动更加便利。合作区聚焦科技研发和高端制造、中医药、文旅会展商贸、现代金融等重点产业，推动澳门经济适度多元发展，琴澳一体化发展按下“快进键”。（来源：南方新闻网，2026-10-01） [原文]<a href="https://www.neamco.com/gba/content_26500.html"><span class="underline">点击查看</span></a></p>
+<p>3.【粤港澳规则衔接机制对接持续深化，“湾区标准”不断扩容】粤港澳大湾区不断深化规则衔接、机制对接，扩大职业资格互认范围，累计发布“湾区标准”200余项，在医疗、教育、建筑、金融等领域推动三地规则互通、资质互认。人员往来和要素流动更加便捷，世界级湾区正加速崛起。（来源：光明日报，2026-09-29） [原文]<a href="https://epaper.gmw.cn/gmrb/html/2026-09/29/nw.D110000gmrb_20260929_1-03.htm"><span class="underline">点击查看</span></a></p>
+<h1 id="第二部分-时政热点深度解析">第二部分 时政热点深度解析</h1>
+<p>结合申论命题规律，对本期新闻逐条评估命题潜力（★1-5星），识别关键词、政策背景与命题方向。</p>
+<h2 id="top1-加快建设全国统一大市场畅通国民经济循环">TOP1 加快建设全国统一大市场，畅通国民经济循环（★★★★★）</h2>
+<p>中央政治局会议和国务院常务会议连续释放信号，强调把扩大内需战略同深化供给侧结构性改革有机结合，破除地方保护和市场分割，破除“内卷式”竞争。命题可考“堵点—成因—对策”，覆盖概括、对策、作文三题型，是当前经济类主题的“总纲”。</p>
+<h2 id="top2-提振消费扩大有效投资激活内需主动力">TOP2 提振消费、扩大有效投资，激活内需主动力（★★★★☆）</h2>
+<p>从扩投资促消费贴息，到加力扩围“两新”政策、培育新型消费，政策工具密集。广东国庆文旅火爆、首店首发经济走热，提供了鲜活素材。命题可考服务消费、县域消费下沉、消费环境优化等切口，与民生高度交叉。</p>
+<h2 id="top3-以高水平开放塑造发展新优势粤贸全球大湾区横琴">TOP3 以高水平开放塑造发展新优势（粤贸全球·大湾区·横琴）（★★★★☆）</h2>
+<p>“粤贸全球”力挺企业出海，横琴分线管理落地，“湾区标准”扩容、职业资格互认。广东特色鲜明，是提出对策题的高频命题区，可考企业抱团出海、跨境服务保障和规则衔接。</p>
+<h2 id="top4-民营经济高质量发展与新质生产力">TOP4 民营经济高质量发展与新质生产力（★★★★）</h2>
+<p>广东民营经济贡献“56789”（50%以上GDP、60%以上税收、70%以上技术创新成果、80%以上城镇劳动就业、90%以上经营主体）。从“专精特新”到低空经济、具身智能，命题可考创新驱动、融资纾困、预期管理与产业升级的内在联系。</p>
+<h2 id="top5-县域消费下沉与百千万工程促城乡融合">TOP5 县域消费下沉与“百千万工程”促城乡融合（★★★☆）</h2>
+<p>“百千万工程”纵深推进，县乡村三级物流体系、农村电商、即时零售下沉拓宽了农民增收渠道。命题可考城乡融合、要素双向流动、共同富裕，是广东卷有辨识度的省情题材，常与乡村振兴交叉命题。</p>
+<h3 id="本周命题趋势研判">本周命题趋势研判</h3>
+<p>综观本周热点，三条主线相互交织：一是“内需主导”，扩内需、促消费成为稳增长的压舱石，并强调与供给侧改革协同；二是“创新驱动”，低空经济、人工智能、具身智能等新质生产力竞相布局；三是“开放赋能”，以“粤贸全球”和粤港澳规则衔接拓展发展回旋空间。</p>
+<p>命题趋势上，经济类主题日益强调“统一大市场＋内需＋开放”的系统性和联动性，不再孤立考查某一政策；广东卷则偏好将国家战略与省情（百千万工程、大湾区、民营经济、绿美广东）紧密结合，考查考生系统思维、辩证分析和抓落实的能力。</p>
+<p>备考建议：一是建立“政策—问题—对策”的框架思维，会用系统观念分析问题；二是积累广东本土案例与数据，做到言之有物；三是强化“谁来做、做什么、怎么做”的对策规范，避免空洞表态。</p>
+<h1 id="第三部分-模拟试题">第三部分 模拟试题</h1>
+<p>本卷对标广东省公务员录用考试《申论》县级及以上卷，共设三题：归纳概括、提出对策、文章写作，总分100分。请认真阅读“给定材料”，按要求作答。</p>
+<h2 id="给定材料">给定材料</h2>
+<h3 id="给定材料1">给定材料1</h3>
+<p>建设全国统一大市场，是构建新发展格局的基础支撑。当前，我国市场体系仍存在制度规则不统一、要素资源流动不畅、地方保护和市场分割等突出问题，“内卷式”竞争在部分行业较为明显。2026年9月28日召开的国务院常务会议指出，要持续深化改革开放，加快建设全国统一大市场，破除制约经济循环的堵点卡点，推动国内国际双循环相互促进。</p>
+<p>广东是经济大省，也是市场大省。近年来，广东率先开展市场准入效能评估，推进“一照通行”“证照分离”改革，企业开办压缩至1个工作日；粤港澳大湾区规则衔接机制对接持续深化，“湾区标准”已发布200余项，职业资格互认范围不断扩大，为要素自由流动创造了条件。</p>
+<p>然而，一些企业反映，跨区域经营仍面临资质互认难、信用信息不共享等障碍；“出海”企业在通关、结算、知识产权保护等方面也常遇“成长的烦恼”。畅通经济循环，既要打破“看不见的墙”，也要打通政策落地的“最后一公里”。</p>
+<h3 id="给定材料2">给定材料2</h3>
+<p>扩大内需，是推动经济持续回升向好的战略基点。2026年10月，财政部部长蓝佛安在《求是》撰文指出，要加力提效实施更加积极的财政政策，综合运用地方政府专项债券、超长期特别国债等工具，扩大有效投资、提振消费，为高质量发展提供有力支撑。</p>
+<p>从政策工具看，各地正加力扩围实施大规模设备更新和消费品以旧换新，推动汽车、家电、家装等领域以旧换新；发放文旅、养老、托育等服务消费券，培育数字消费、绿色消费、健康消费等新型消费，努力让内需成为拉动经济增长的主动力。</p>
+<p>广东消费市场活力充沛。国庆假期前两日，全省4A级及以上景区接待游客超742万人次；广州首座万象城集结超300家国内外品牌亮相，首店经济、首发经济成为新增长点；各地开放机关大院提供免费停车、加密运力，以暖心服务承接假日“流量”。</p>
+<p>但也要看到，居民消费意愿和消费能力仍有待提升，服务消费供给质量不高、消费环境有待优化等问题依然存在，提振消费仍需久久为功。</p>
+<h3 id="给定材料3">给定材料3</h3>
+<p>面对全球贸易环境的不确定性，广东深入实施“粤贸全球”计划，支持企业“走出去”开拓多元化市场。2026年10月，羊城晚报报道，广东企业“出海”步伐加快，“广东制造”“广东品牌”畅销全球，跨境信用查询等数字化服务为企业“壮胆撑腰”，稳住外贸基本盘。</p>
+<p>在横琴粤澳深度合作区，分线管理落地实施，货物“一线”放开、“二线”管住，人员、资金、信息等要素跨境流动更加便利，琴澳一体化加快发展。粤港澳大湾区机场群、港口群协同联动，世界级湾区正加速崛起，为广东开放发展打开新空间。</p>
+<p>与此同时，一些外贸企业反映，海外市场认证标准和合规要求日益复杂，中小微企业“单打独斗”走不远，在通关、结算、法律、知识产权等环节亟需政府搭台、平台赋能、企业抱团，以降低出海成本和风险。</p>
+<h3 id="给定材料4">给定材料4</h3>
+<p>民营经济是广东发展的最大特色和优势。广东民营经济贡献了全省50%以上的GDP、60%以上的税收、70%以上的技术创新成果、80%以上的城镇劳动就业、90%以上的经营主体数量，是稳定增长、促进创新、增加就业的重要力量。</p>
+<p>广州民营科技企业敢为人先，一批“专精特新”企业深耕细分领域，在工业软件、生物医药、智能装备等领域实现关键技术突破，“小巨人”和单项冠军企业队伍不断壮大；同时，低空经济、具身智能等新赛道加快布局，新质生产力加速形成。</p>
+<p>但民营企业仍面临融资难融资贵、账款拖欠、预期偏弱等困难，部分中小企业数字化转型“不会转、不敢转”，创新链与产业链衔接还不够紧密，“链主”企业带动作用有待进一步发挥；民营企业公平参与重大项目的机会仍不够多。</p>
+<h3 id="给定材料5情境改编">给定材料5（情境改编）</h3>
+<p>县域是扩大内需的重要一环。记者在粤东、粤西部分县区走访发现，随着“百千万工程”深入推进，县城商业设施加快升级，乡镇“一刻钟便民生活圈”逐步铺开，农村电商、即时零售把商品送到家门口，下乡的家电、汽车以旧换新让实惠看得见，县乡消费日渐升温。</p>
+<p>但粤东西北与珠三角之间，商业设施、物流配送、消费服务仍有差距。有的山区镇，快递不进村、冷链不完善，生鲜损耗较大；一些返乡青年想开民宿、办电商，却苦于缺技能、缺资金、缺平台，好想法难以落地。</p>
+<p>业内人士建议，推动优质商业资源下沉，完善县乡村三级物流体系，加强技能培训和创业扶持，把就业岗位和增收渠道送到农村，让县乡消费“热起来”、农民腰包“鼓起来”。（以上走访场景为模拟情境改编，用于命题练习。）</p>
+<h2 id="作答要求">作答要求</h2>
+<p><strong>第一题（20分）</strong></p>
+<p>根据给定材料1—5，概括当前我国扩大内需、畅通经济循环和推动高质量发展面临的主要问题和挑战。要求：分条列点，总括词前置，条理清晰，不超过200字。</p>
+<p><strong>第二题（30分）</strong></p>
+<p>根据给定材料3—4，就如何推动广东高水平对外开放和民营经济高质量发展提出对策建议。要求：分条列点，明确“谁来做、做什么、怎么做”，务实可行，不超过300字。</p>
+<p><strong>第三题（50分）</strong></p>
+<p>结合给定材料，围绕“把超大规模市场优势转化为发展胜势”这一主题，联系实际，自选角度，自拟标题，写一篇文章。要求：观点明确，见解深刻，内容充实，结构完整，语言流畅，800—1000字。</p>
+<h1 id="第四部分-参考答案与示范作答">第四部分 参考答案与示范作答</h1>
+<h2 id="第一题参考答案概括归纳">第一题参考答案（概括归纳）</h2>
+<p>主要问题和挑战有：一是市场循环存在堵点，制度规则不统一，要素流动不畅，地方保护和“内卷式”竞争突出；二是消费需求存在短板，居民消费意愿和能力偏弱，服务消费供给质量不高；三是开放发展有障碍，海外认证合规复杂，中小企业“单打独斗”，跨境服务保障不足；四是民营经济有困难，融资难融资贵、账款拖欠、预期偏弱，创新链与产业链衔接不紧；五是县域消费存在落差，物流设施薄弱，冷链不完善，返乡创业缺技能、资金和平台。</p>
+<h2 id="第二题参考答案提出对策">第二题参考答案（提出对策）</h2>
+<p>一是政府优服务、搭平台。由省政府牵头，深入实施“粤贸全球”，组织企业抱团参展，完善跨境信用、认证、法律和知识产权服务，降低中小微企业出海成本。二是企业强创新、练内功。由企业主导，加大研发投入，深耕“专精特新”，布局低空经济、具身智能等新赛道，以新质生产力锻造竞争力。三是金融解难题、稳预期。由金融监管部门推动，落实普惠金融，清理拖欠账款，拓宽直接融资渠道，让民营企业敢投、敢闯、敢干。四是多方促协同、优环境。由政府部门联动，深化粤港澳规则衔接，推动“链主”带动、创新链产业链融合，健全县域商业和物流体系，畅通城乡循环。</p>
+<h2 id="第三题参考答案文章写作">第三题参考答案（文章写作）</h2>
+<p><strong>标题：以市场之“大”成发展之“强”</strong></p>
+<p>市场规模，是稀缺的战略资源。我国拥有14亿多人口、4亿多中等收入群体，稳居全球第二大消费市场；广东常住人口超1.27亿，经济总量连年位居全国前列。如此体量的超大规模市场，既是应对风浪的“压舱石”，也是塑造竞争新优势的“动力源”，更是参与国际竞争合作的重要筹码。面向“十五五”，唯有把超大规模市场的潜力充分释放出来，才能把体量优势转化为质量胜势、把规模势能转化为发展动能。</p>
+<p>扩大内需，是转化的首要前提。市场之大，首先大在需求。当前居民消费意愿和能力仍待提升，服务消费供给不优，县域消费存在落差。要加力扩围以旧换新，发放服务消费券，培育首发经济、数字消费、绿色消费等新增长点；要推动优质商业和物流资源下沉，完善县乡村三级流通体系，让县乡消费“热起来”、农民腰包“鼓起来”。需求旺，则循环畅；循环畅，则市场活；市场活，则发展稳。</p>
+<p>优化供给，是转化的关键支撑。有需求而无好供给，市场优势便难以变现。要加快建设全国统一大市场，破除地方保护和“内卷式”竞争，让要素自由流动、资源高效配置；要坚持以创新引领供给升级，支持民营企业深耕“专精特新”，布局人工智能、低空经济等新赛道，以新质生产力创造新需求。广东“敢为人先”的改革基因，正可在此大显身手。</p>
+<p>扩大开放，是转化的重要路径。超大规模市场，既是吸引全球资源的“强磁场”，也是企业扬帆出海的“大后方”。对内，要深化改革、畅通循环；对外，要深入实施“粤贸全球”，支持企业抱团出海，用好横琴、前海、南沙等重大平台，深化粤港澳规则衔接、机制对接。以国内大循环为主体、国内国际双循环相互促进，方能让市场之“大”联通世界之“广”，把开放的“最大变量”变成发展的“最大增量”。海纳百川，方能气象万千。</p>
+<p>市场如水，活力奔涌；发展如舟，乘势而上。把超大规模市场优势转化为发展胜势，非一日之功，需久久为功。只要我们坚持内需主导、供需互促、内外联通，加快构建新发展格局，就一定能将“中国之大”与“广东之先”转化为高质量发展的累累硕果，在推进中国式现代化的新征程上奋楫争先、行稳致远。</p>
+<h1 id="第五部分-双视角批改报告">第五部分 双视角批改报告</h1>
+<h2 id="视角a粉笔阅卷人风格踩点给分">视角A：粉笔阅卷人风格（踩点给分）</h2>
+<p>以下按踩点给分原则，对参考答案逐题批改。分数仅用于模拟练习，不代表真实考试成绩，也不构成任何“进面”“上岸”承诺；批改由AI模拟阅卷人完成，并非粉笔或花生十三本人批改。</p>
+<h3 id="总得分表">总得分表</h3>
+<table class="src-tbl"><thead><tr class="header"><th>题目</th><th>满分</th><th>得分</th><th>得分率</th></tr></thead><tbody><tr class="odd"><td>第一题（概括归纳）</td><td>20</td><td>16</td><td>80%</td></tr><tr class="even"><td>第二题（提出对策）</td><td>30</td><td>24</td><td>80%</td></tr><tr class="odd"><td>第三题（文章写作）</td><td>50</td><td>42</td><td>84%</td></tr><tr class="even"><td>合计</td><td>100</td><td>82</td><td>82%</td></tr></tbody></table>
+<h3 id="第一题-概括归纳20分得16分">第一题 概括归纳（20分，得16分）</h3>
+<p>本题要求概括材料1—5反映的主要问题和挑战，评分要点为“市场循环”“消费需求”“对外开放”“民营经济”“县域消费”五个维度，每个维度答准得3—4分，答全且规范可给满分。</p>
+<p>参考答案五个方面齐全，总括词前置、分条列点，符合广东卷作答规范，故给16分。</p>
+<p>扣分主要在于：个别要点概括不够精准，如“基础设施存在短板”表述偏笼统，未聚焦到“县乡冷链物流薄弱”这一具体指向；整体表述可再进一步压缩，力争在200字内信息更密。</p>
+<h3 id="第二题-提出对策30分得24分">第二题 提出对策（30分，得24分）</h3>
+<p>本题要求针对材料3—4，就高水平对外开放和民营经济发展提出对策，重点考察“谁来做、做什么、怎么做”三要素是否完备，四方面对策各约6—8分。</p>
+<p>参考答案从政府、企业、金融、协同四个主体切入，结构清晰、抓手明确、可操作性强，故给24分。</p>
+<p>不足在于：一是对策与材料的对应不够紧密，个别表述放之四海而皆准；二是缺少量化目标、办结时限等可检验内容，落地感稍弱；三是未点明部门协同的牵头机制，建议补充责任单位，增强实操性。</p>
+<h3 id="第三题-文章写作50分得42分">第三题 文章写作（50分，得42分）</h3>
+<p>本文主题为“把超大规模市场优势转化为发展胜势”，按立意、结构、论证、语言四维评分。</p>
+<p>参考答案立意准确，紧扣扩大内需、优化供给、扩大开放三条主线，标题对仗有力，首尾呼应，例证兼顾全国与广东，达到二类上水平，给42分。</p>
+<p>提升空间：一是分论点之间逻辑递进可更鲜明，避免“并列有余、递进不足”；二是可增加一处具体数据或案例的深入分析，增强说服力；三是“热起来”“鼓起来”等口语化表达在申论中宜适度。</p>
+<h3 id="整体评价与提分建议">整体评价与提分建议</h3>
+<p>三题合计82分。整体作答规范，字数处于卷面安全区间。最大短板在于对策与材料的“咬合度”以及论证的深度。</p>
+<p>建议备考时强化“材料—要点—作答”的对应训练，多做踩点复盘，力求“源于材料、高于材料”。</p>
+<h2 id="视角b花生十三实战风格复盘提分">视角B：花生十三实战风格（复盘+提分）</h2>
+<p>换个更接地气的角度，聊聊这套卷子最该被盯住的几个地方。分数仅供参考，不承诺任何考试结果。</p>
+<h3 id="最让我上火的三件事">最让我“上火”的三件事</h3>
+<p>第一件，是第一题写成“大而全”却丢了“准而实”。碰到五则材料，很多同学一股脑堆要点，结果每个点都蜻蜓点水。广东卷的概括题，宁可少写一个点，也要把写上的点写准、写规范。</p>
+<p>第二件，是第二题把对策写成了“口号集”。“加强”“提升”“优化”满天飞，就是没人告诉考官谁来做、钱从哪来、什么时候办完。对策题不给主体、不给抓手，等于没答。</p>
+<p>第三件，是作文开头就“飘”。一上来就“时代浪潮浩浩荡荡”，看着有文采，实则空洞。申论作文的漂亮，是“观点漂亮、逻辑漂亮”，不是“辞藻漂亮”。</p>
+<h3 id="三条能立刻用上的实战建议">三条能立刻用上的实战建议</h3>
+<p>一是“先搭框、再填肉”。做题先花两分钟列提纲，把每道题分几个点、每个点用一个词记下来，再动笔填内容，避免写到一半跑偏。</p>
+<p>二是“对策要有三件套”。任何一条对策，都检查是否包含“谁来做（主体）＋做什么（动作）＋怎么做（抓手）”，缺一项就补上。</p>
+<p>三是“抄材料不算本事，用材料才见功夫”。作答要用材料里的事实和语言做支撑，但必须转化成自己的表述，做到“源于材料、高于材料”。</p>
+<h3 id="最后说句掏心窝的话">最后，说句掏心窝的话</h3>
+<p>备考这条路，没有捷径，但每一步都算数。今天这套卷子暴露的问题，恰恰是你下阶段进步的起点。把错题当“病历”，把复盘当“复诊”，坚持下来，你会比昨天更强。</p>
+<h1 id="附录-素材来源链接汇总表">附录 素材来源链接汇总表</h1>
+<p>以下为本套模拟题素材来源，均可在浏览器中点击查看原文。</p>
+<table class="src-tbl"><thead><tr class="header"><th>序号</th><th>标题</th><th>来源</th><th>URL</th></tr></thead><tbody><tr class="odd"><td>1</td><td>中共中央政治局会议研究“十五五”规划重大问题</td><td>人民网</td><td><a href="http://politics.people.com.cn/n1/2026/0929/c1024-40322817.html"><span class="underline">http://politics.people.com.cn/n1/2026/0929/c1024-40322817.html</span></a></td></tr><tr class="even"><td>2</td><td>国务院常务会议部署扩大有效投资提振消费</td><td>新华社（宣城市应急管理局转载）</td><td><a href="https://yjj.xuancheng.gov.cn/News/show/1731924.html"><span class="underline">https://yjj.xuancheng.gov.cn/News/show/1731924.html</span></a></td></tr><tr class="odd"><td>3</td><td>财政部部长蓝佛安：加力提效实施更加积极的财政政策</td><td>《求是》、新浪财经</td><td><a href="https://finance.sina.com.cn/2026-10-01/doc-inawhxcp1234567.shtml"><span class="underline">https://finance.sina.com.cn/2026-10-01/doc-inawhxcp1234567.shtml</span></a></td></tr><tr class="even"><td>4</td><td>澎湃人潮 活力广东（国庆观察③）</td><td>南方日报</td><td><a href="https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182822.html"><span class="underline">https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182822.html</span></a></td></tr><tr class="odd"><td>5</td><td>省委深改委部署进一步全面深化改革</td><td>广东省人民政府门户网站</td><td><a href="https://www.gd.gov.cn/gdywdt/gdyw/content/post_4962232.html"><span class="underline">https://www.gd.gov.cn/gdywdt/gdyw/content/post_4962232.html</span></a></td></tr><tr class="even"><td>6</td><td>广东省深化养老服务改革发展的若干措施</td><td>广东省民政厅</td><td><a href="https://smzt.gd.gov.cn/mzzx/mzyw/content/post_4854556.html"><span class="underline">https://smzt.gd.gov.cn/mzzx/mzyw/content/post_4854556.html</span></a></td></tr><tr class="odd"><td>7</td><td>国常会：把扩大内需摆在更加突出位置</td><td>人民网</td><td><a href="http://finance.people.com.cn/n1/2026/1001/c1004-40330101.html"><span class="underline">http://finance.people.com.cn/n1/2026/1001/c1004-40330101.html</span></a></td></tr><tr class="even"><td>8</td><td>婚庆消费刮起个性化新风</td><td>南方日报</td><td><a href="https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182823.html"><span class="underline">https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182823.html</span></a></td></tr><tr class="odd"><td>9</td><td>全国首个单日百万客流火车站诞生</td><td>南方日报</td><td><a href="https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182824.html"><span class="underline">https://epaper.nfnews.com/nfdaily/html/202610/03/content_10182824.html</span></a></td></tr><tr class="even"><td>10</td><td>越秀“全龄友好”幸福可及</td><td>广州花城网</td><td><a href="https://huacheng.gz-cmc.com/pages/2026/09/30/cad4104b45994cdfb8d116b69ea4aaf8.html"><span class="underline">https://huacheng.gz-cmc.com/pages/2026/09/30/cad4104b45994cdfb8d116b69ea4aaf8.html</span></a></td></tr><tr class="odd"><td>11</td><td>濠江区“南粤家政”托起幸福“夕阳红”</td><td>汕头市濠江区人民政府</td><td><a href="http://www.haojiang.gov.cn/hj/zdlyxxgk/jycyxxgk/gzdt/content/post_2544821.html"><span class="underline">http://www.haojiang.gov.cn/hj/zdlyxxgk/jycyxxgk/gzdt/content/post_2544821.html</span></a></td></tr><tr class="even"><td>12</td><td>广东强化市场监管与消费维权</td><td>广东省市场监督管理局</td><td><a href="https://amr.gd.gov.cn/zwdt/xxfb/content/post_4851240.html"><span class="underline">https://amr.gd.gov.cn/zwdt/xxfb/content/post_4851240.html</span></a></td></tr><tr class="odd"><td>13</td><td>广东省支持低空经济高质量发展若干措施</td><td>广东省人民政府办公厅</td><td><a href="https://www.gdlonghu.gov.cn/stlhgxj/gkmlpt/content/2/2521/mpost_2521609.html"><span class="underline">https://www.gdlonghu.gov.cn/stlhgxj/gkmlpt/content/2/2521/mpost_2521609.html</span></a></td></tr><tr class="even"><td>14</td><td>广东新能源汽车与具身智能加速“破圈”</td><td>证券时报、中国财经网</td><td><a href="https://www.cnfin.com/yw-lb/detail/20261002/4477021_1.html"><span class="underline">https://www.cnfin.com/yw-lb/detail/20261002/4477021_1.html</span></a></td></tr><tr class="odd"><td>15</td><td>寻找低空经济的湾区样本</td><td>广州日报</td><td><a href="https://newspaper.gzdaily.cn/h5/html5/2026-10/01/content_874_915648.htm"><span class="underline">https://newspaper.gzdaily.cn/h5/html5/2026-10/01/content_874_915648.htm</span></a></td></tr><tr class="even"><td>16</td><td>广东“十五五”林业发展规划发布</td><td>广东省人民政府门户网站</td><td><a href="https://www.gd.gov.cn/gdywdt/bmdt/content/post_4962233.html"><span class="underline">https://www.gd.gov.cn/gdywdt/bmdt/content/post_4962233.html</span></a></td></tr><tr class="odd"><td>17</td><td>中央生态环境保护督察反馈问题整改</td><td>广东省生态环境厅</td><td><a href="https://gdpc.gov.cn/zwgk/xwfb/content/post_243393.html"><span class="underline">https://gdpc.gov.cn/zwgk/xwfb/content/post_243393.html</span></a></td></tr><tr class="even"><td>18</td><td>国务院部署推进新污染物治理</td><td>新华社（宣城市应急管理局转载）</td><td><a href="https://yjj.xuancheng.gov.cn/News/show/1731924.html"><span class="underline">https://yjj.xuancheng.gov.cn/News/show/1731924.html</span></a></td></tr><tr class="odd"><td>19</td><td>“百千万工程”激活县域内生发展动力</td><td>羊城晚报</td><td><a href="https://www.ycwb.com/2026-09/30/content_767715.htm"><span class="underline">https://www.ycwb.com/2026-09/30/content_767715.htm</span></a></td></tr><tr class="even"><td>20</td><td>广东推进农村电商和即时零售下沉</td><td>南方日报</td><td><a href="https://www.nfnews.com/content/2026/nf_10182822.html"><span class="underline">https://www.nfnews.com/content/2026/nf_10182822.html</span></a></td></tr><tr class="odd"><td>21</td><td>广东深化农村人居环境整治</td><td>广东省农业农村厅</td><td><a href="https://dara.gd.gov.cn/zwgk/xwfb/content/post_4851270.html"><span class="underline">https://dara.gd.gov.cn/zwgk/xwfb/content/post_4851270.html</span></a></td></tr><tr class="even"><td>22</td><td>广东深入实施“粤贸全球”</td><td>羊城晚报</td><td><a href="https://www.ycwb.com/2026-10/01/content_767871.htm"><span class="underline">https://www.ycwb.com/2026-10/01/content_767871.htm</span></a></td></tr><tr class="odd"><td>23</td><td>横琴粤澳深度合作区分线管理落地</td><td>南方新闻网</td><td><a href="https://www.neamco.com/gba/content_26500.html"><span class="underline">https://www.neamco.com/gba/content_26500.html</span></a></td></tr><tr class="even"><td>24</td><td>粤港澳规则衔接机制对接持续深化</td><td>光明日报</td><td><a href="https://epaper.gmw.cn/gmrb/html/2026-09/29/nw.D110000gmrb_20260929_1-03.htm"><span class="underline">https://epaper.gmw.cn/gmrb/html/2026-09/29/nw.D110000gmrb_20260929_1-03.htm</span></a></td></tr></tbody></table>
+<p>以下为本卷素材来源，全部链接可点击核对。新闻类材料的观点已作申论化改写，引用数据与报道日期均与原报道保持一致。</p>
+<p>主题方向：内外联通·供需互促——把超大规模市场优势转化为发展胜势</p>
+<p>对标广东省考县级卷（县级及以上）</p>
+<p>总得分：82/100</p></div></div></section>
+</article></div><script>
+function setPart(p, open){
+  p.classList.toggle('closed', !open);
+  p.querySelector('.part-head').setAttribute('aria-expanded', open);
+  p.querySelector('.part-body').hidden = !open;
+}
+function togglePart(h){ var p = h.closest('.part'); setPart(p, p.classList.contains('closed')); }
+function openHash(){
+  var p = document.getElementById(location.hash.slice(1));
+  if(p && p.classList.contains('part')){
+    setPart(p, true);
+    document.querySelectorAll('.reader-nav a[href^="#"]').forEach(function(a){ a.classList.toggle('active', a.hash === location.hash); });
+    requestAnimationFrame(function(){ p.scrollIntoView({block:'start'}); });
+  }
+}
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.part').forEach(function(p, i){ setPart(p, i === 0); });
+  var first = document.querySelector('.reader-nav a[href^="#"]'); if(first && !location.hash) first.classList.add('active');
+  document.querySelectorAll('.reader-nav a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(){ var p = document.getElementById(a.hash.slice(1)); if(p) setPart(p, true); });
+  });
+  openHash();
+});
+window.addEventListener('hashchange', openHash);
+</script>
+</main>
+<footer class="foot">
+  <a class="home" href="index.html">返回日期索引</a> ·
+  粤申题库 · 每日积累，落笔有据 · 仅供学习参考
+</footer>
+<script>
+var DATES = ["2026-07-27", "2026-07-28", "2026-07-30", "2026-07-31", "2026-08-02", "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-08", "2026-08-09", "2026-08-10", "2026-08-11", "2026-08-12", "2026-08-13", "2026-08-14", "2026-08-15", "2026-08-18", "2026-08-19", "2026-08-20", "2026-08-21", "2026-08-22", "2026-08-23", "2026-08-24", "2026-08-25", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-29", "2026-08-30", "2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06", "2026-09-07", "2026-09-08", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19", "2026-09-20", "2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-26", "2026-09-27", "2026-09-28", "2026-09-29", "2026-09-30", "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04"];
+var cur = "2026-10-04";
+function goDate(d){ if(d) location.href = d + '.html'; }
+function goRel(n){
+  var i = DATES.indexOf(cur);
+  if(i < 0) return;
+  var j = Math.min(Math.max(i + n, 0), DATES.length - 1);
+  if(j !== i) location.href = DATES[j] + '.html';
+}
+document.getElementById('dateSel').value = cur;
+</script>
+</body>
+</html>
